@@ -1,29 +1,75 @@
 import 'package:flutter/material.dart';
+import 'package:jobshub/clients/client_assign_user_screen.dart';
+import 'package:jobshub/clients/client_create_project.dart';
+import 'package:jobshub/users/login_screen.dart';
+import 'package:jobshub/users/project_model.dart';
+import 'package:jobshub/users/user_model.dart';
 
 class ClientDashboardPage extends StatelessWidget {
-  const ClientDashboardPage({super.key});
+  ClientDashboardPage({super.key});
 
   // Mock data
   final int totalWorks = 12;
   final int pendingApproval = 5;
   final int completedWorks = 7;
   final double walletBalance = 12500.50;
+  final List<ProjectModel> projects = [
+    ProjectModel(
+      title: 'Website Design',
+      description: 'Landing page project',
+      budget: 5000,
+      category: 'Design',
+      paymentType: 'Salary',
+      paymentValue: 5000,
+      status: 'In Progress',
+      deadline: DateTime.now().add(const Duration(days: 7)),
+      applicants: [
+        {
+          'name': 'Alice Johnson',
+          'proposal': 'I can complete this in 3 days with high quality.',
+        },
+        {
+          'name': 'Bob Smith',
+          'proposal': 'I will deliver in 2 days with responsive design.',
+        },
+      ],
+    ),
+    ProjectModel(
+      title: 'Sales Partner',
+      description: 'Earn commission per sale',
+      budget: 0,
+      category: 'Marketing',
+      paymentType: 'Commission',
+      paymentValue: 15,
+      status: 'In Progress',
+      deadline: DateTime.now().add(const Duration(days: 15)),
+      applicants: [
+        {
+          'name': 'Charlie Brown',
+          'proposal': 'Experienced in sales, I’ll close deals in 4 days.',
+        },
+        {
+          'name': 'Daisy Miller',
+          'proposal': 'I have a wide network, can boost sales quickly.',
+        },
+      ],
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Client Dashboard"),
-  backgroundColor: Colors.blue.shade700,
+        title: const Text("Client Dashboard",style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white),),
+        iconTheme: IconThemeData(color: Colors.white),
+        backgroundColor: Colors.blue.shade700,
       ),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              decoration: BoxDecoration(
-                color: Colors.blue.shade700,
-              ),
+              decoration: BoxDecoration(color: Colors.blue.shade700),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: const [
@@ -37,7 +83,7 @@ class ClientDashboardPage extends StatelessWidget {
                     style: TextStyle(color: Colors.white, fontSize: 18),
                   ),
                   Text(
-                    "client@email.com",
+                    "Mobile No: 9090909090",
                     style: TextStyle(color: Colors.white70, fontSize: 14),
                   ),
                 ],
@@ -46,27 +92,36 @@ class ClientDashboardPage extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.add_box),
               title: const Text("Add Work"),
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => ClientCreateProject()),
+                );
+              },
             ),
             ListTile(
               leading: const Icon(Icons.work_outline),
-              title: const Text("View Works"),
-              onTap: () {},
-            ),
-            ListTile(
-              leading: const Icon(Icons.account_balance_wallet),
-              title: const Text("Payments / Wallet"),
-              onTap: () {},
-            ),
-            ListTile(
-              leading: const Icon(Icons.group),
-              title: const Text("Referrals"),
-              onTap: () {},
+              title: const Text("Assign User Works"),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        ClientAssignUserScreen(project: projects[0]),
+                  ),
+                );
+              },
             ),
             ListTile(
               leading: const Icon(Icons.logout),
               title: const Text("Logout"),
-              onTap: () {},
+              onTap: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginScreen(),
+                  ),
+                );
+              },
             ),
           ],
         ),
@@ -75,7 +130,6 @@ class ClientDashboardPage extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // 🔹 Quick Stats Cards
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -112,7 +166,6 @@ class ClientDashboardPage extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 24),
-
           ],
         ),
       ),
@@ -156,10 +209,7 @@ class ClientDashboardPage extends StatelessWidget {
             ),
             Text(
               title,
-              style: const TextStyle(
-                color: Colors.white70,
-                fontSize: 14,
-              ),
+              style: const TextStyle(color: Colors.white70, fontSize: 14),
             ),
           ],
         ),

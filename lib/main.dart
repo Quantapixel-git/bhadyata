@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:jobshub/users/login_screen.dart';
-import 'users/dashboard_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,11 +12,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Jobshub',
+      title: 'BHADYATA',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const LoginScreen(),
+      home: LoginScreen(),
     );
   }
 }

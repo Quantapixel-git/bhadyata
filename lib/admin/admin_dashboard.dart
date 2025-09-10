@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:jobshub/admin/admin_approved_screen.dart';
 import 'package:jobshub/admin/manage_kyc.dart';
-import 'package:jobshub/admin/manage_works.dart';
-import 'package:jobshub/admin/payment_page.dart';
-import 'package:jobshub/admin/reffereal_page.dart';
-import 'package:jobshub/admin/report_page.dart';
+import 'package:jobshub/admin/admin_report_page.dart';
+import 'package:jobshub/users/login_screen.dart';
 
 class AdminDashboardPage extends StatelessWidget {
   const AdminDashboardPage({super.key});
@@ -12,17 +11,18 @@ class AdminDashboardPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Admin Dashboard"),
+        title: const Text(
+          "Admin Dashboard",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+        iconTheme: IconThemeData(color: Colors.white),
         backgroundColor: Colors.blue.shade700,
       ),
       drawer: _buildDrawer(context),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          children: [
-            _dashboardStats(context),
-            const SizedBox(height: 24),
-          ],
+          children: [_dashboardStats(context), const SizedBox(height: 24)],
         ),
       ),
     );
@@ -31,24 +31,65 @@ class AdminDashboardPage extends StatelessWidget {
   Drawer _buildDrawer(BuildContext context) {
     return Drawer(
       child: ListView(
+        padding: EdgeInsets.zero,
         children: [
-          DrawerHeader(
-            decoration: BoxDecoration(color: Colors.blue.shade700),
-            child: const Text(
-              "Admin Panel",
-              style: TextStyle(color: Colors.white, fontSize: 22),
+         DrawerHeader(
+              decoration: BoxDecoration(color: Colors.blue.shade700),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  CircleAvatar(
+                    radius: 30,
+                    backgroundImage: AssetImage("assets/client.png"),
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    "Admin Panel",
+                    style: TextStyle(color: Colors.white, fontSize: 18),
+                  ),
+                  Text(
+                    "Mobile No: 9090909090",
+                    style: TextStyle(color: Colors.white70, fontSize: 14),
+                  ),
+                ],
+              ),
             ),
+          _drawerItem(
+            context,
+            Icons.dashboard,
+            "Dashboard",
+            AdminDashboardPage(),
           ),
-          _drawerItem(context, Icons.dashboard, "Dashboard", AdminDashboardPage()),
-          _drawerItem(context, Icons.person_search, "Approve KYC", const ManageKyc()),
-          _drawerItem(context, Icons.work_outline, "Approve Works", const ManageWorks()),
-          _drawerItem(context, Icons.report, "Reports", const ReportsPage()),
+          _drawerItem(
+            context,
+            Icons.person_search,
+            "Manage KYC",
+            const ManageKyc(),
+          ),
+          _drawerItem(
+            context,
+            Icons.work_outline,
+            "Manage Works",
+            AdminApprovalScreen(projects: dummyProjects),
+          ),
+          _drawerItem(
+            context,
+            Icons.report,
+            "Reports",
+            AdminReportsPage(projects: dummyProjectsReports),
+          ),
+          _drawerItem(context, Icons.logout, "Log out", LoginScreen()),
         ],
       ),
     );
   }
 
-  Widget _drawerItem(BuildContext context, IconData icon, String title, Widget page) {
+  Widget _drawerItem(
+    BuildContext context,
+    IconData icon,
+    String title,
+    Widget page,
+  ) {
     return ListTile(
       leading: Icon(icon, color: Colors.blue.shade700),
       title: Text(title),
@@ -65,14 +106,29 @@ class AdminDashboardPage extends StatelessWidget {
       children: [
         Row(
           children: [
-            _dashboardCard("Pending KYC", "12", Colors.orange.shade400, Icons.person_search),
-            _dashboardCard("Pending Works", "8", Colors.purple.shade400, Icons.work_outline),
+            _dashboardCard(
+              "Pending KYC",
+              "12",
+              Colors.orange.shade400,
+              Icons.person_search,
+            ),
+            _dashboardCard(
+              "Pending Works",
+              "8",
+              Colors.purple.shade400,
+              Icons.work_outline,
+            ),
           ],
         ),
         const SizedBox(height: 16),
         Row(
           children: [
-            _dashboardCard("Wallet Balance", "\$15230", Colors.green.shade400, Icons.account_balance_wallet),
+            _dashboardCard(
+              "Wallet Balance",
+              "\$15230",
+              Colors.green.shade400,
+              Icons.account_balance_wallet,
+            ),
             _dashboardCard("Users", "120", Colors.blue.shade400, Icons.people),
           ],
         ),
@@ -80,7 +136,12 @@ class AdminDashboardPage extends StatelessWidget {
     );
   }
 
-  Widget _dashboardCard(String title, String value, Color color, IconData icon) {
+  Widget _dashboardCard(
+    String title,
+    String value,
+    Color color,
+    IconData icon,
+  ) {
     return Expanded(
       child: Container(
         height: 120,
@@ -97,12 +158,47 @@ class AdminDashboardPage extends StatelessWidget {
             const Spacer(),
             Text(
               value,
-              style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-            Text(title, style: const TextStyle(color: Colors.white70, fontSize: 14)),
+            Text(
+              title,
+              style: const TextStyle(color: Colors.white70, fontSize: 14),
+            ),
           ],
         ),
       ),
     );
   }
 }
+
+final List<ProjectModelReport> dummyProjectsReports = [
+  ProjectModelReport(
+    title: "Website Development",
+    category: "IT & Software",
+    budget: 50000,
+    paymentType: "Fixed",
+    paymentValue: 50000,
+    deadline: DateTime.now().add(Duration(days: 30)),
+    applicants: [
+      {"name": "Alice", "proposal": "I will build your website in Flutter"},
+      {"name": "Bob", "proposal": "I can do it with ReactJS"},
+    ],
+    assignedUser: "Alice",
+  ),
+  ProjectModelReport(
+    title: "Logo Design",
+    category: "Design",
+    budget: 5000,
+    paymentType: "Fixed",
+    paymentValue: 5000,
+    deadline: DateTime.now().add(Duration(days: 10)),
+    applicants: [
+      {"name": "Charlie", "proposal": "Professional logo design"},
+    ],
+    assignedUser: "Charlie",
+  ),
+];

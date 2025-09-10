@@ -36,9 +36,13 @@ class MyApplicationsPage extends StatelessWidget {
     ];
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.blue,
-        title: const Text("My Applications"),
+       appBar: AppBar(
+        title: const Text(
+          "My Applications",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+        iconTheme: IconThemeData(color: Colors.white),
+        backgroundColor: Colors.blue.shade700,
       ),
       body: ListView.builder(
         padding: const EdgeInsets.all(16),

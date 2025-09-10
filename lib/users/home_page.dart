@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:jobshub/users/user_assigned_projects_screen.dart';
+import 'package:jobshub/users/applicans_page.dart';
+import 'package:jobshub/users/login_screen.dart';
+import 'package:jobshub/users/user_browser_project.dart';
+import 'package:jobshub/users/user_model.dart';
+import 'package:jobshub/users/user_work_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -7,7 +13,8 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-        /// 🔹 Drawer Added
+
+      /// 🔹 Drawer Added
       drawer: Drawer(
         child: Column(
           children: [
@@ -27,15 +34,29 @@ class HomePage extends StatelessWidget {
               ),
             ),
 
-            /// My Profile
             ListTile(
               leading: const Icon(Icons.person, color: Colors.blue),
-              title: const Text("My Profile"),
+              title: const Text("Projects"),
               onTap: () {
                 Navigator.pop(context);
                 // Navigate to profile page later
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("My Profile Clicked")),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => BrowseProjectsScreen()),
+                );
+              },
+            ),
+
+            ListTile(
+              leading: const Icon(Icons.person, color: Colors.blue),
+              title: const Text("User Work"),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => UserAssignedProjectsScreen(),
+                  ),
                 );
               },
             ),
@@ -47,8 +68,9 @@ class HomePage extends StatelessWidget {
               onTap: () {
                 Navigator.pop(context);
                 // Navigate to My Applications page later
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("My Applications Clicked")),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => MyApplicationsPage()),
                 );
               },
             ),
@@ -60,10 +82,9 @@ class HomePage extends StatelessWidget {
               leading: const Icon(Icons.logout, color: Colors.red),
               title: const Text("Logout"),
               onTap: () {
-                Navigator.pop(context);
-                // Add logout logic later
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Logged out")),
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginScreen()),
                 );
               },
             ),
@@ -93,93 +114,93 @@ class HomePage extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-
             const SizedBox(height: 30),
           ],
         ),
       ),
     );
   }
-/// 🔹 Header with AppBar + Search
-Widget _buildHeader(BuildContext context) {
-  return Container(
-    padding: const EdgeInsets.only(bottom: 20),
-    decoration: const BoxDecoration(
-      gradient: LinearGradient(
-        colors: [Color(0xFF1976D2), Color(0xFF42A5F5)], // Blue gradient
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
+
+  /// 🔹 Header with AppBar + Search
+  Widget _buildHeader(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.only(bottom: 20),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF1976D2), Color(0xFF42A5F5)], // Blue gradient
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
       ),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        /// ✅ AppBar inside header
-        AppBar(
-          backgroundColor: Colors.transparent, // transparent over gradient
-          elevation: 0,
-          title:  Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          /// ✅ AppBar inside header
+          AppBar(
+            backgroundColor: Colors.transparent, // transparent over gradient
+            elevation: 0,
+            title: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const TextField(
+                  decoration: InputDecoration(
+                    hintText: "Search for jobs or services",
+                    border: InputBorder.none,
+                    icon: Icon(Icons.search, color: Colors.grey),
+                  ),
+                ),
+              ),
             ),
-            child: const TextField(
-              decoration: InputDecoration(
-                hintText: "Search for jobs or services",
-                border: InputBorder.none,
-                icon: Icon(Icons.search, color: Colors.grey),
+            leading: Builder(
+              builder: (context) => IconButton(
+                icon: const Icon(Icons.menu, color: Colors.white),
+                onPressed: () {
+                  Scaffold.of(context).openDrawer(); // opens drawer
+                },
               ),
             ),
           ),
-        ),
-          leading: Builder(
-            builder: (context) => IconButton(
-              icon: const Icon(Icons.menu, color: Colors.white),
-              onPressed: () {
-                Scaffold.of(context).openDrawer(); // opens drawer
-              },
+
+          const SizedBox(height: 20),
+
+          /// Section Title
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              "Trending Jobs",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
           ),
-        ),
+          const SizedBox(height: 12),
 
-        const SizedBox(height: 20),
-
-        /// Section Title
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16),
-          child: Text(
-            "Trending Jobs",
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+          /// Trending Jobs Icons
+          SizedBox(
+            height: 90,
+            child: ListView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              children: [
+                _buildJobCategory("Designer", Icons.design_services),
+                _buildJobCategory("Developer", Icons.code),
+                _buildJobCategory("Delivery", Icons.delivery_dining),
+                _buildJobCategory("Teacher", Icons.school),
+                _buildJobCategory("Driver", Icons.local_taxi),
+              ],
             ),
           ),
-        ),
-        const SizedBox(height: 12),
-
-        /// Trending Jobs Icons
-        SizedBox(
-          height: 90,
-          child: ListView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            children: [
-              _buildJobCategory("Designer", Icons.design_services),
-              _buildJobCategory("Developer", Icons.code),
-              _buildJobCategory("Delivery", Icons.delivery_dining),
-              _buildJobCategory("Teacher", Icons.school),
-              _buildJobCategory("Driver", Icons.local_taxi),
-            ],
-          ),
-        ),
-      ],
-    ),
-  );
-}
+        ],
+      ),
+    );
+  }
 
   /// 🔹 Promo Banner
   Widget _buildPromoBanner() {
@@ -234,8 +255,10 @@ Widget _buildHeader(BuildContext context) {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Get Hired in 3 Easy Steps",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          const Text(
+            "Get Hired in 3 Easy Steps",
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 16),
 
           Row(
@@ -266,8 +289,10 @@ Widget _buildHeader(BuildContext context) {
                 ),
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
-              child: const Text("Start Now",
-                  style: TextStyle(fontSize: 16, color: Colors.white)),
+              child: const Text(
+                "Start Now",
+                style: TextStyle(fontSize: 16, color: Colors.white),
+              ),
             ),
           ),
         ],
@@ -301,8 +326,10 @@ Widget _buildHeader(BuildContext context) {
   Widget _sectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Text(title,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+      child: Text(
+        title,
+        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      ),
     );
   }
 
@@ -320,9 +347,11 @@ Widget _buildHeader(BuildContext context) {
         children: [
           Icon(icon, size: 30, color: Colors.white),
           const SizedBox(height: 6),
-          Text(title,
-              style: const TextStyle(fontSize: 12, color: Colors.white),
-              textAlign: TextAlign.center),
+          Text(
+            title,
+            style: const TextStyle(fontSize: 12, color: Colors.white),
+            textAlign: TextAlign.center,
+          ),
         ],
       ),
     );
@@ -341,9 +370,10 @@ Widget _buildHeader(BuildContext context) {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title,
-              style:
-                  const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          Text(
+            title,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 6),
           Text(company, style: const TextStyle(color: Colors.black54)),
           const SizedBox(height: 6),
@@ -361,18 +391,18 @@ Widget _buildHeader(BuildContext context) {
               onPressed: () {},
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.blue,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
               ),
               child: const Text("Apply", style: TextStyle(color: Colors.white)),
             ),
-          )
+          ),
         ],
       ),
     );
   }
-
-
 }
 
 /// 🔹 Steps Widget
@@ -404,10 +434,15 @@ class StartNowPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(backgroundColor: Colors.blue, title: const Text("Get Started")),
+      appBar: AppBar(
+        backgroundColor: Colors.blue,
+        title: const Text("Get Started"),
+      ),
       body: const Center(
-        child: Text("Welcome! Let's get started 🚀",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        child: Text(
+          "Welcome! Let's get started 🚀",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
       ),
     );
   }
