@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jobshub/utils/AppColor.dart';
 
 class UserWorksPage extends StatefulWidget {
   const UserWorksPage({super.key});
@@ -58,7 +59,7 @@ class _UserWorksPageState extends State<UserWorksPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_currentIndex == 0 ? "Available Works" : "My Works"),
-        backgroundColor: Colors.blue.shade700,
+        backgroundColor: AppColors.primary,
       ),
       body: displayedWorks.isEmpty
           ? Center(
@@ -88,8 +89,8 @@ class _UserWorksPageState extends State<UserWorksPage> {
                         Row(
                           children: [
                             CircleAvatar(
-                              backgroundColor: Colors.blue.shade100,
-                              child: const Icon(Icons.work, color: Colors.blue),
+                              backgroundColor: AppColors.primary,
+                              child: const Icon(Icons.work, color: AppColors.primary),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -103,9 +104,9 @@ class _UserWorksPageState extends State<UserWorksPage> {
                             ),
                             Chip(
                               label: Text(work["category"]),
-                              backgroundColor: Colors.blue.shade50,
+                              backgroundColor: AppColors.primary,
                               labelStyle:
-                                  const TextStyle(color: Colors.blue),
+                                  const TextStyle(color: AppColors.primary),
                             ),
                           ],
                         ),
@@ -152,7 +153,7 @@ class _UserWorksPageState extends State<UserWorksPage> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: work["applied"]
                                     ? Colors.grey
-                                    : Colors.blue.shade700,
+                                    : AppColors.primary,
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
@@ -169,7 +170,7 @@ class _UserWorksPageState extends State<UserWorksPage> {
             ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
-        selectedItemColor: Colors.blue.shade700,
+        selectedItemColor: AppColors.primary,
         unselectedItemColor: Colors.grey,
         onTap: (index) => setState(() => _currentIndex = index),
         items: const [

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jobshub/utils/AppColor.dart';
 
 class ManageKyc extends StatefulWidget {
   const ManageKyc({super.key});
@@ -83,7 +84,7 @@ class _ManageKycState extends State<ManageKyc> {
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         iconTheme: IconThemeData(color: Colors.white),
-        backgroundColor: Colors.blue.shade700,
+        backgroundColor: AppColors.primary,
           elevation: 4,
       ),
       body: ListView.builder(
@@ -114,9 +115,8 @@ class _ManageKycState extends State<ManageKyc> {
                   children: [
                     CircleAvatar(
                       radius: 28,
-                      backgroundColor: Colors.blue.shade100,
                       child: const Icon(Icons.person,
-                          size: 32, color: Colors.blue),
+                          size: 32, color: AppColors.primary),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -175,7 +175,7 @@ class KycDetailScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: Colors.blue),
+          Icon(icon, size: 20, color: AppColors.primary),
           const SizedBox(width: 8),
           Text(
             title,
@@ -213,7 +213,7 @@ class KycDetailScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("KYC Details"),
-        backgroundColor: Colors.blue.shade700,
+        backgroundColor: AppColors.primary,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -231,9 +231,9 @@ class KycDetailScreen extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 40,
-                      backgroundColor: Colors.blue.shade100,
+                      backgroundColor: AppColors.primary,
                       child: const Icon(Icons.person,
-                          size: 40, color: Colors.blue),
+                          size: 40, color: AppColors.primary),
                     ),
                     const SizedBox(width: 16),
                     Column(

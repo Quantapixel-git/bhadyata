@@ -3,6 +3,7 @@ import 'package:jobshub/admin/admin_approved_screen.dart';
 import 'package:jobshub/admin/manage_kyc.dart';
 import 'package:jobshub/admin/admin_report_page.dart';
 import 'package:jobshub/users/login_screen.dart';
+import 'package:jobshub/utils/AppColor.dart';
 
 class AdminDashboardPage extends StatelessWidget {
   const AdminDashboardPage({super.key});
@@ -16,7 +17,7 @@ class AdminDashboardPage extends StatelessWidget {
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         iconTheme: IconThemeData(color: Colors.white),
-        backgroundColor: Colors.blue.shade700,
+        backgroundColor: AppColors.primary,
       ),
       drawer: _buildDrawer(context),
       body: Padding(
@@ -34,7 +35,7 @@ class AdminDashboardPage extends StatelessWidget {
         padding: EdgeInsets.zero,
         children: [
          DrawerHeader(
-              decoration: BoxDecoration(color: Colors.blue.shade700),
+              decoration: BoxDecoration(color: AppColors.primary),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: const [
@@ -78,6 +79,39 @@ class AdminDashboardPage extends StatelessWidget {
             "Reports",
             AdminReportsPage(projects: dummyProjectsReports),
           ),
+
+             ListTile(
+              leading: const Icon(Icons.contact_page, ),
+              title: const Text("Contact Us"),
+              onTap: () {
+              },
+            ),
+
+             ListTile(
+              leading: const Icon(Icons.terminal_sharp, ),
+              title: const Text("Terms & Conditions"),
+              onTap: () {
+              },
+            ),
+
+             ListTile(
+              leading: const Icon(Icons.notifications, ),
+              title: const Text("Notifications"),
+              onTap: () {
+              },
+            ),
+             ListTile(
+              leading: const Icon(Icons.notifications_active, ),
+              title: const Text("View Notifications"),
+              onTap: () {
+              },
+            ),
+             ListTile(
+              leading: const Icon(Icons.help, ),
+              title: const Text("Help Support"),
+              onTap: () {
+              },
+            ),
           _drawerItem(context, Icons.logout, "Log out", LoginScreen()),
         ],
       ),
@@ -91,7 +125,7 @@ class AdminDashboardPage extends StatelessWidget {
     Widget page,
   ) {
     return ListTile(
-      leading: Icon(icon, color: Colors.blue.shade700),
+      leading: Icon(icon, ),
       title: Text(title),
       onTap: () {
         Navigator.pop(context); // Close drawer
@@ -129,7 +163,7 @@ class AdminDashboardPage extends StatelessWidget {
               Colors.green.shade400,
               Icons.account_balance_wallet,
             ),
-            _dashboardCard("Users", "120", Colors.blue.shade400, Icons.people),
+            _dashboardCard("Users", "120", AppColors.primary, Icons.people),
           ],
         ),
       ],

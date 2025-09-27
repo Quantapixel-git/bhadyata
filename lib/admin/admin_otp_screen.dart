@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jobshub/utils/AppColor.dart';
 import 'admin_dashboard.dart';
 
 class AdminOtpPage extends StatefulWidget {
@@ -30,10 +31,9 @@ class _AdminOtpPageState extends State<AdminOtpPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blue.shade50,
       appBar: AppBar(
         title: const Text("Verify OTP"),
-        backgroundColor: Colors.blue.shade700,
+        backgroundColor: AppColors.primary,
       ),
       body: SafeArea(
         child: Padding(
@@ -94,7 +94,7 @@ class _AdminOtpPageState extends State<AdminOtpPage> {
                 child: ElevatedButton(
                   onPressed: _verifyOtp,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue.shade700,
+                    backgroundColor: AppColors.primary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -109,7 +109,7 @@ class _AdminOtpPageState extends State<AdminOtpPage> {
               const SizedBox(height: 20),
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text("Change Mobile Number?"),
+                child: const Text("Change Mobile Number?",style: TextStyle(color : AppColors.primary),),
               ),
             ],
           ),

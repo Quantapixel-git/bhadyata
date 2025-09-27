@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jobshub/utils/AppColor.dart';
 
 class AddWorkPage extends StatefulWidget {
   const AddWorkPage({super.key});
@@ -45,7 +46,7 @@ class _AddWorkPageState extends State<AddWorkPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("✅ Work submitted for approval"),
-          backgroundColor: Colors.blue,
+          backgroundColor: AppColors.primary,
         ),
       );
     }
@@ -56,7 +57,7 @@ class _AddWorkPageState extends State<AddWorkPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Client Work Submission"),
-        backgroundColor: Colors.blue.shade700,
+        backgroundColor: AppColors.primary,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -124,7 +125,7 @@ class _AddWorkPageState extends State<AddWorkPage> {
                       icon: const Icon(Icons.add),
                       label: const Text("Submit Work"),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue.shade700,
+                        backgroundColor: AppColors.primary,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -158,8 +159,8 @@ class _AddWorkPageState extends State<AddWorkPage> {
                           elevation: 3,
                           child: ListTile(
                             leading: CircleAvatar(
-                              backgroundColor: Colors.blue.shade100,
-                              child: const Icon(Icons.work, color: Colors.blue),
+                              backgroundColor: AppColors.primary,
+                              child: const Icon(Icons.work, color: AppColors.primary),
                             ),
                             title: Text(work["title"]),
                             subtitle: Text(

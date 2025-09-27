@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jobshub/utils/AppColor.dart';
 import 'project_model.dart';
 
 class BrowseProjectsScreen extends StatelessWidget {
@@ -42,7 +43,7 @@ class BrowseProjectsScreen extends StatelessWidget {
           'Projects',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
-        backgroundColor: Colors.blue,
+        backgroundColor: AppColors.primary,
          iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: ListView.builder(

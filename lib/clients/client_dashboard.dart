@@ -3,7 +3,7 @@ import 'package:jobshub/clients/client_assign_user_screen.dart';
 import 'package:jobshub/clients/client_create_project.dart';
 import 'package:jobshub/users/login_screen.dart';
 import 'package:jobshub/users/project_model.dart';
-import 'package:jobshub/users/user_model.dart';
+import 'package:jobshub/utils/AppColor.dart';
 
 class ClientDashboardPage extends StatelessWidget {
   ClientDashboardPage({super.key});
@@ -62,14 +62,14 @@ class ClientDashboardPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Client Dashboard",style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white),),
         iconTheme: IconThemeData(color: Colors.white),
-        backgroundColor: Colors.blue.shade700,
+        backgroundColor: AppColors.primary,
       ),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              decoration: BoxDecoration(color: Colors.blue.shade700),
+              decoration: BoxDecoration(color: AppColors.primary),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: const [
@@ -99,17 +99,50 @@ class ClientDashboardPage extends StatelessWidget {
                 );
               },
             ),
-            ListTile(
-              leading: const Icon(Icons.work_outline),
-              title: const Text("Assign User Works"),
+            // ListTile(
+            //   leading: const Icon(Icons.work_outline),
+            //   title: const Text("Assign User Works"),
+            //   onTap: () {
+            //     Navigator.push(
+            //       context,
+            //       MaterialPageRoute(
+            //         builder: (_) =>
+            //             ClientAssignUserScreen(project: projects[0]),
+            //       ),
+            //     );
+            //   },
+            // ),
+
+             ListTile(
+              leading: const Icon(Icons.contact_page, ),
+              title: const Text("Contact Us"),
               onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) =>
-                        ClientAssignUserScreen(project: projects[0]),
-                  ),
-                );
+              },
+            ),
+
+             ListTile(
+              leading: const Icon(Icons.terminal_sharp, ),
+              title: const Text("Terms & Conditions"),
+              onTap: () {
+              },
+            ),
+
+             ListTile(
+              leading: const Icon(Icons.notifications, ),
+              title: const Text("Notifications"),
+              onTap: () {
+              },
+            ),
+             ListTile(
+              leading: const Icon(Icons.notifications_active, ),
+              title: const Text("View Notifications"),
+              onTap: () {
+              },
+            ),
+             ListTile(
+              leading: const Icon(Icons.help, ),
+              title: const Text("Help Support"),
+              onTap: () {
               },
             ),
             ListTile(
@@ -136,7 +169,7 @@ class ClientDashboardPage extends StatelessWidget {
                 _statCard(
                   title: "Total Works",
                   value: totalWorks.toString(),
-                  color: Colors.blue.shade400,
+                  color: AppColors.primary,
                   icon: Icons.work,
                 ),
                 _statCard(

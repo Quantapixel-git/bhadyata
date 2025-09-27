@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jobshub/utils/AppColor.dart';
 
 class UserWorkScreen extends StatefulWidget {
   final String projectTitle;
@@ -67,14 +68,14 @@ class _UserWorkScreenState extends State<UserWorkScreen> {
               duration: const Duration(milliseconds: 400),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: isCompleted ? Colors.green.shade100 : Colors.blue.shade100,
+                color: isCompleted ? Colors.green.shade100 : AppColors.primary,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Row(
                 children: [
                   Icon(
                     isCompleted ? Icons.check_circle : Icons.timelapse,
-                    color: isCompleted ? Colors.green : Colors.blue,
+                    color: isCompleted ? Colors.green : AppColors.primary,
                     size: 32,
                   ),
                   const SizedBox(width: 12),
@@ -86,7 +87,7 @@ class _UserWorkScreenState extends State<UserWorkScreen> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: isCompleted ? Colors.green.shade900 : Colors.blue.shade900,
+                        color: isCompleted ? Colors.green.shade900 : AppColors.primary,
                       ),
                     ),
                   ),

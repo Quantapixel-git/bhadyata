@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:jobshub/admin/admin_otp_screen.dart';
+import 'package:jobshub/utils/AppColor.dart';
 
 class AdminLoginPage extends StatefulWidget {
   const AdminLoginPage({super.key});
@@ -37,7 +38,6 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.blue.shade50,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 60),
@@ -51,7 +51,7 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: Colors.blue.shade700,
+                  color: AppColors.primary,
                 ),
               ),
               const SizedBox(height: 8),
@@ -82,7 +82,7 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
                 child: ElevatedButton(
                   onPressed: _sendOtp,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue.shade700,
+                    backgroundColor: AppColors.primary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),

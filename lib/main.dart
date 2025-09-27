@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:jobshub/clients/client_dashboard.dart';
+import 'package:jobshub/users/dashboard_screen.dart';
 import 'package:jobshub/users/login_screen.dart';
 
 void main() {
@@ -12,11 +14,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'BHADYATA',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: LoginScreen(),
+      title: 'BADHYATA',
+      // home: LoginScreen(),
+      home: ClientDashboardPage(),
     );
   }
 }

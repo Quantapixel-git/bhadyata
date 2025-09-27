@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jobshub/utils/AppColor.dart';
 
 class AdminApprovalScreen extends StatefulWidget {
   final List<ProjectModel> projects;
@@ -55,7 +56,7 @@ class _AdminApprovalScreenState extends State<AdminApprovalScreen> {
       appBar: AppBar(
         title: const Text("Manage Works",style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white),),
          iconTheme: IconThemeData(color: Colors.white),
-        backgroundColor: Colors.blue.shade700,
+        backgroundColor: AppColors.primary,
       ),
       body: assignedProjects.isEmpty
           ? const Center(child: Text("No projects assigned yet."))

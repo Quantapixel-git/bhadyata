@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:jobshub/utils/AppColor.dart';
 
 class AdminReportsPage extends StatelessWidget {
   final List<ProjectModelReport> projects;
@@ -25,103 +27,157 @@ class AdminReportsPage extends StatelessWidget {
     int completed = projects.where((p) => p.isCompleted).length;
 
     return Scaffold(
-       appBar: AppBar(
-        title: const Text("Work Reports",style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white),),
-         iconTheme: IconThemeData(color: Colors.white),
-        backgroundColor: Colors.blue.shade700,
+      appBar: AppBar(
+        title: const Text(
+          "Work Reports",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+        iconTheme: const IconThemeData(color: Colors.white),
+        backgroundColor: AppColors.primary,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            // Top summary card
-            Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              elevation: 6,
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    const Text(
-                      "Project Overview",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // Web layout
+            if (kIsWeb && constraints.maxWidth >= 1024) {
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Left: Project cards
+                  Expanded(
+                    flex: 3,
+                    child: GridView.builder(
+                      itemCount: projects.length,
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: constraints.maxWidth > 1600
+                            ? 3
+                            : constraints.maxWidth > 1200
+                                ? 2
+                                : 2,
+                        crossAxisSpacing: 20,
+                        mainAxisSpacing: 20,
+                        childAspectRatio: 1.4,
                       ),
+                      itemBuilder: (_, index) =>
+                          _projectCard(context, projects[index]),
                     ),
-                    const SizedBox(height: 12),
-                    Column(
-                      children: [
-                        _statusBadge("Total", totalProjects, Colors.blue),
-                        const SizedBox(height: 8),
-                        _statusBadge("Approved", approved, Colors.green),
-                        const SizedBox(height: 8),
-                        _statusBadge("Pending", pending, Colors.orange),
-                        const SizedBox(height: 8),
-                        _statusBadge("Rejected", rejected, Colors.red),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Project list
-            Expanded(
-              child: ListView.builder(
-                itemCount: projects.length,
-                itemBuilder: (_, index) {
-                  final project = projects[index];
-                  return Card(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    elevation: 4,
-                    margin: const EdgeInsets.symmetric(vertical: 8),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            project.title,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text("Assigned User: ${project.assignedUser ?? '-'}"),
-                          Text("Category: ${project.category}"),
-                          Text("Budget: ₹${project.budget}"),
-                          Text(
-                            "Deadline: ${project.deadline.toLocal().toString().split(' ')[0]}",
-                          ),
-                          const SizedBox(height: 10),
-                          Row(
+                  ),
+                  const SizedBox(width: 24),
+                  // Right: Summary
+                  Expanded(
+                    flex: 1,
+                    child: SingleChildScrollView(
+                      child: Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        elevation: 6,
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
                             children: [
-                              _statusBadge(
-                                project.adminStatus[0].toUpperCase() +
-                                    project.adminStatus.substring(1),
-                                0,
-                                getStatusColor(project.adminStatus),
+                              const Text(
+                                "Project Overview",
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                              const SizedBox(width: 10),
-                              if (project.isCompleted)
-                                _statusBadge("Completed", 0, Colors.purple),
+                              const SizedBox(height: 12),
+                              Wrap(
+                                spacing: 16,
+                                runSpacing: 12,
+                                children: [
+                                  _statusBadge("Total", totalProjects, AppColors.primary),
+                                  _statusBadge("Approved", approved, Colors.green),
+                                  _statusBadge("Pending", pending, Colors.orange),
+                                  _statusBadge("Rejected", rejected, Colors.red),
+                                  if (completed > 0)
+                                    _statusBadge("Completed", completed, Colors.purple),
+                                ],
+                              ),
                             ],
                           ),
-                        ],
+                        ),
                       ),
                     ),
-                  );
-                },
-              ),
-            ),
-          ],
+                  ),
+                ],
+              );
+            }
+
+            // Tablet / Mobile layout
+            return Column(
+              children: [
+                // Top summary card
+                Card(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  elevation: 6,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        const Text(
+                          "Project Overview",
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 16,
+                          runSpacing: 12,
+                          children: [
+                            _statusBadge("Total", totalProjects, AppColors.primary),
+                            _statusBadge("Approved", approved, Colors.green),
+                            _statusBadge("Pending", pending, Colors.orange),
+                            _statusBadge("Rejected", rejected, Colors.red),
+                            if (completed > 0)
+                              _statusBadge("Completed", completed, Colors.purple),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                // Project list
+                Expanded(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      int crossAxisCount = 1;
+                      if (constraints.maxWidth >= 601 && constraints.maxWidth < 1024) {
+                        crossAxisCount = 2; // Tablet
+                      }
+                      if (crossAxisCount == 1) {
+                        return ListView.builder(
+                          itemCount: projects.length,
+                          itemBuilder: (_, index) =>
+                              _projectCard(context, projects[index]),
+                        );
+                      } else {
+                        return GridView.builder(
+                          itemCount: projects.length,
+                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: crossAxisCount,
+                            crossAxisSpacing: 20,
+                            mainAxisSpacing: 20,
+                            childAspectRatio: 1.4,
+                          ),
+                          itemBuilder: (_, index) =>
+                              _projectCard(context, projects[index]),
+                        );
+                      }
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -131,8 +187,9 @@ class AdminReportsPage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.2),
+        color: color.withOpacity(0.15),
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withOpacity(0.5)),
       ),
       child: Column(
         children: [
@@ -149,8 +206,55 @@ class AdminReportsPage extends StatelessWidget {
       ),
     );
   }
+
+  Widget _projectCard(BuildContext context, ProjectModelReport project) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 5,
+      margin: EdgeInsets.zero,
+      clipBehavior: Clip.hardEdge,
+      child: InkWell(
+        onTap: () {}, // Placeholder for click behavior
+        hoverColor: AppColors.primary,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                project.title,
+                style: const TextStyle(
+                    fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 6),
+              Text("Assigned User: ${project.assignedUser ?? '-'}"),
+              Text("Category: ${project.category}"),
+              Text("Budget: ₹${project.budget}"),
+              Text(
+                  "Deadline: ${project.deadline.toLocal().toString().split(' ')[0]}"),
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 8,
+                children: [
+                  _statusBadge(
+                    project.adminStatus[0].toUpperCase() +
+                        project.adminStatus.substring(1),
+                    0,
+                    getStatusColor(project.adminStatus),
+                  ),
+                  if (project.isCompleted)
+                    _statusBadge("Completed", 0, Colors.purple),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
+// ================== PROJECT MODEL ==================
 class ProjectModelReport {
   final String title;
   final String category;

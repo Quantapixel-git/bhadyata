@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:jobshub/users/project_model.dart';
+import 'package:jobshub/utils/AppColor.dart';
 
 class UserAssignedProjectsScreen extends StatefulWidget {
   @override
@@ -42,7 +43,7 @@ class _UserAssignedProjectsScreenState
           'My Assigned Projects',
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
-        backgroundColor: Colors.blue,
+        backgroundColor: AppColors.primary,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: ListView.builder(

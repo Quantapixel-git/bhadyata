@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:jobshub/clients/client_otp_screen.dart';
+import 'package:jobshub/utils/AppColor.dart';
 
 class ClientLoginPage extends StatefulWidget {
   const ClientLoginPage({super.key});
@@ -49,7 +50,7 @@ class _ClientLoginPageState extends State<ClientLoginPage> {
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
-                  color: Colors.blue.shade700,
+                  color: AppColors.primary,
                 ),
               ),
               const SizedBox(height: 8),
@@ -80,7 +81,7 @@ class _ClientLoginPageState extends State<ClientLoginPage> {
                 child: ElevatedButton(
                   onPressed: _sendOtp,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue.shade700,
+                    backgroundColor: AppColors.primary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),

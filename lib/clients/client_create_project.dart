@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:jobshub/users/project_model.dart';
+import 'package:jobshub/utils/AppColor.dart';
 
 class ClientCreateProject extends StatefulWidget {
   const ClientCreateProject({super.key});
@@ -23,7 +24,7 @@ class _ClientCreateProjectState extends State<ClientCreateProject> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Create Project',style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),),        backgroundColor: Colors.blue,
+      appBar: AppBar(title: const Text('Create Project',style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),),        backgroundColor: AppColors.primary,
          iconTheme: const IconThemeData(color: Colors.white),elevation: 4,),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),

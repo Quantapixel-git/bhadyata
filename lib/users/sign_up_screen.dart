@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:jobshub/users/login_screen.dart';
+import 'package:jobshub/utils/AppColor.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -49,8 +50,9 @@ class _SignUpPageState extends State<SignUpPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("JobHub - Sign Up"),
-        backgroundColor: Colors.blue.shade700,
+        title: const Text("Sign Up",style: TextStyle(fontWeight: FontWeight.bold,color:Colors.white),),
+        backgroundColor: AppColors.primary,
+        automaticallyImplyLeading: false,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -142,7 +144,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 child: ElevatedButton(
                   onPressed: _signUp,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue.shade700,
+                    backgroundColor: AppColors.primary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -153,6 +155,25 @@ class _SignUpPageState extends State<SignUpPage> {
                   ),
                 ),
               ),
+
+// 🔹 Already have an account? Login
+Center(
+  child: TextButton(
+    onPressed: () {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginScreen()),
+      );
+    },
+    child: const Text(
+      "Already have an account? Login",
+      style: TextStyle(
+        color: AppColors.primary,
+        fontWeight: FontWeight.w600,
+      ),
+    ),
+  ),
+),
             ],
           ),
         ),

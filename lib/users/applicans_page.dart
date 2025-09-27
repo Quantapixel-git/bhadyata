@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jobshub/utils/AppColor.dart';
 
 class MyApplicationsPage extends StatelessWidget {
   const MyApplicationsPage({super.key});
@@ -42,7 +43,7 @@ class MyApplicationsPage extends StatelessWidget {
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         iconTheme: IconThemeData(color: Colors.white),
-        backgroundColor: Colors.blue.shade700,
+        backgroundColor: AppColors.primary,
       ),
       body: ListView.builder(
         padding: const EdgeInsets.all(16),
@@ -58,8 +59,7 @@ class MyApplicationsPage extends StatelessWidget {
             child: ListTile(
               contentPadding: const EdgeInsets.all(16),
               leading: CircleAvatar(
-                backgroundColor: Colors.blue.shade100,
-                child: const Icon(Icons.work, color: Colors.blue),
+                child: const Icon(Icons.work, color: AppColors.primary),
               ),
               title: Text(
                 job["title"]!,
@@ -86,7 +86,7 @@ class MyApplicationsPage extends StatelessWidget {
               trailing: const Icon(
                 Icons.arrow_forward_ios,
                 size: 16,
-                color: Colors.blue,
+                color: AppColors.primary,
               ),
               onTap: () {
                 Navigator.push(
@@ -110,7 +110,7 @@ class JobDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(job["title"]!), backgroundColor: Colors.blue),
+      appBar: AppBar(title: Text(job["title"]!), backgroundColor: AppColors.primary),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -121,8 +121,7 @@ class JobDetailPage extends StatelessWidget {
               children: [
                 CircleAvatar(
                   radius: 28,
-                  backgroundColor: Colors.blue.shade100,
-                  child: const Icon(Icons.work, color: Colors.blue, size: 30),
+                  child: const Icon(Icons.work, color: AppColors.primary, size: 30),
                 ),
                 const SizedBox(width: 16),
                 Expanded(

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:jobshub/clients/client_dashboard.dart';
+import 'package:jobshub/users/kyc_screen.dart';
+import 'package:jobshub/utils/AppColor.dart';
 
 class ClientOtpPage extends StatefulWidget {
   final String mobile;
@@ -22,16 +24,15 @@ class _ClientOtpPageState extends State<ClientOtpPage> {
       }
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text("Login Successful 🎉"),
+            content: Text("Login Successful"),
             backgroundColor: Colors.green,
           ),
         );
-         Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ClientDashboardPage(),
-          ),
-        );
+         Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => KycStepperPage()),
+        (route) => false,
+      );
     });
   }
 
@@ -40,7 +41,7 @@ class _ClientOtpPageState extends State<ClientOtpPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Verify OTP",style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white),),
-        backgroundColor: Colors.blue.shade700,
+        backgroundColor: AppColors.primary,
          iconTheme: const IconThemeData(
     color: Colors.white,)),
       body: SafeArea(
@@ -102,7 +103,7 @@ class _ClientOtpPageState extends State<ClientOtpPage> {
                 child: ElevatedButton(
                   onPressed: _verifyOtp,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue.shade700,
+                    backgroundColor: AppColors.primary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -116,7 +117,7 @@ class _ClientOtpPageState extends State<ClientOtpPage> {
               const SizedBox(height: 20),
               TextButton(
                 onPressed: () => Navigator.pop(context),
-                child: const Text("Change Mobile Number?"),
+                child: const Text("Change Mobile Number?",style: TextStyle(color: AppColors.primary),),
               ),
             ],
           ),
