@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:jobshub/users/applicans_page.dart';
 import 'package:jobshub/users/home_page.dart';
 import 'package:jobshub/users/jobs_screen.dart';
-import 'package:jobshub/users/referal_screen.dart';
+import 'package:jobshub/users/profile_screen.dart';
 import 'package:jobshub/utils/AppColor.dart';
 
 class DashBoardScreen extends StatefulWidget {
@@ -20,7 +20,7 @@ class _DashBoardScreenState extends State<DashBoardScreen> {
      HomePage(),
     const JobsPage(),
   const MyApplicationsPage(),
-    const InviteFriendsScreen(),
+    const ProfileScreen(),
   ];
 
   final List<String> _titles = [

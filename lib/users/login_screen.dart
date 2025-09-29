@@ -60,7 +60,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   },
                   child: Column(
                     children: [
-                      Image.asset("assets/job.png", height: 90),
+                      Image.asset("assets/job_bgr.png", height: 90),
                       const SizedBox(height: 12),
                       Text(
                         "Badhyata Login",

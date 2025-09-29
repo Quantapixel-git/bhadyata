@@ -49,21 +49,6 @@ class _ClientCreateProjectState extends State<ClientCreateProject> {
                     : null,
               ),
               const SizedBox(height: 10),
-              TextFormField(
-                controller: budgetController,
-                decoration: const InputDecoration(labelText: 'Budget',border: OutlineInputBorder()),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Budget is required';
-                  }
-                  if (double.tryParse(value) == null) {
-                    return 'Enter a valid number';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 10),
               DropdownButtonFormField<String>(
                 value: selectedCategory,
                 items: ['Design', 'Development', 'Writing']

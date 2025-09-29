@@ -1,9 +1,14 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:jobshub/users/user_assigned_projects_screen.dart';
 import 'package:jobshub/users/applicans_page.dart';
 import 'package:jobshub/users/login_screen.dart';
 import 'package:jobshub/users/user_browser_project.dart';
+import 'package:jobshub/users/user_contact_page.dart';
+import 'package:jobshub/users/user_help_support_screen.dart';
+import 'package:jobshub/users/user_job_duration.dart' hide ReviewEmployerScreen;
+import 'package:jobshub/users/user_notification.dart';
+import 'package:jobshub/users/user_terms_condi_screen.dart';
+import 'package:jobshub/users/work_assignment_screen.dart';
 import 'package:jobshub/utils/AppColor.dart';
 
 class HomePage extends StatelessWidget {
@@ -36,107 +41,119 @@ class HomePageMobile extends StatelessWidget {
 
       /// 🔹 Drawer Added
       drawer: Drawer(
-        child: Column(
-          children: [
-            UserAccountsDrawerHeader(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color.fromARGB(255, 246, 32, 175), Color.fromARGB(255, 178, 82, 188)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              UserAccountsDrawerHeader(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color.fromARGB(255, 246, 32, 175), Color.fromARGB(255, 178, 82, 188)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                accountName: const Text("John Doe"),
+                accountEmail: const Text("johndoe@email.com"),
+                currentAccountPicture: const CircleAvatar(
+                  backgroundColor: Colors.white,
+                  child: Icon(Icons.person, size: 40, color: AppColors.primary),
                 ),
               ),
-              accountName: const Text("John Doe"),
-              accountEmail: const Text("johndoe@email.com"),
-              currentAccountPicture: const CircleAvatar(
-                backgroundColor: Colors.white,
-                child: Icon(Icons.person, size: 40, color: AppColors.primary),
+              ListTile(
+                leading: const Icon(Icons.person, color: AppColors.primary),
+                title: const Text("Work Assignment"),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => WorkAssignmentScreen()),
+                  );
+                },
               ),
-            ),
-
-            ListTile(
-              leading: const Icon(Icons.person, color: AppColors.primary),
-              title: const Text("Projects"),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => BrowseProjectsScreen()),
-                );
-              },
-            ),
-
-            ListTile(
-              leading: const Icon(Icons.work, color: AppColors.primary),
-              title: const Text("User Work"),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => UserAssignedProjectsScreen(),
-                  ),
-                );
-              },
-            ),
-
-            ListTile(
-              leading: const Icon(Icons.assignment, color: AppColors.primary),
-              title: const Text("My Applications"),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => MyApplicationsPage()),
-                );
-              },
-            ),
-
-             ListTile(
-              leading: const Icon(Icons.contact_page, color: AppColors.primary),
-              title: const Text("Contact Us"),
-              onTap: () {
-              },
-            ),
-
-             ListTile(
-              leading: const Icon(Icons.terminal_sharp, color: AppColors.primary),
-              title: const Text("Terms & Conditions"),
-              onTap: () {
-              },
-            ),
-
-             ListTile(
-              leading: const Icon(Icons.notifications, color: AppColors.primary),
-              title: const Text("Notifications"),
-              onTap: () {
-              },
-            ),
-             ListTile(
-              leading: const Icon(Icons.reviews, color: AppColors.primary),
-              title: const Text("Review"),
-              onTap: () {
-              },
-            ),
-             ListTile(
-              leading: const Icon(Icons.help, color: AppColors.primary),
-              title: const Text("Help Support"),
-              onTap: () {
-              },
-            ),
-
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.logout, color: Colors.red),
-              title: const Text("Logout"),
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => LoginScreen()),
-                );
-              },
-            ),
-          ],
+              ListTile(
+                leading: const Icon(Icons.person, color: AppColors.primary),
+                title: const Text("Job Status"),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => JobDurationScreen()),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.assignment, color: AppColors.primary),
+                title: const Text("My Applications"),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => MyApplicationsPage()),
+                  );
+                },
+              ),
+          
+               ListTile(
+                leading: const Icon(Icons.contact_page, color: AppColors.primary),
+                title: const Text("Contact Us"),
+                onTap: () {
+                    Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => UserContactUsPage()),
+                  );
+                },
+              ),
+          
+               ListTile(
+                leading: const Icon(Icons.terminal_sharp, color: AppColors.primary),
+                title: const Text("Terms & Conditions"),
+                onTap: () {
+                    Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => UserTermsConditionsPage()),
+                  );
+                  
+                },
+              ),
+          
+               ListTile(
+                leading: const Icon(Icons.notifications, color: AppColors.primary),
+                title: const Text("Notifications"),
+                onTap: () {
+                     Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => UserNotificationsPage()),
+                  );
+                },
+              ),
+               ListTile(
+                leading: const Icon(Icons.help, color: AppColors.primary),
+                title: const Text("Help Support"),
+                onTap: () {
+                      Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => UserHelpSupportPage()),
+                  );
+                },
+              ),
+          
+              const Divider(),
+              ListTile(
+                leading: const Icon(Icons.logout, color: Colors.red),
+                title: const Text("Logout"),
+                onTap: () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => LoginScreen()),
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
 
@@ -295,27 +312,6 @@ class HomePageMobile extends StatelessWidget {
               _StepWidget(icon: Icons.check_circle, text: "Get Hired"),
             ],
           ),
-
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const StartNowPage()),
-                );
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-              ),
-              child: const Text("Start Now",
-                  style: TextStyle(fontSize: 16, color: Colors.white)),
-            ),
-          ),
         ],
       ),
     );
@@ -469,14 +465,6 @@ class HomePageWeb extends StatelessWidget {
                   title: const Text("Projects"),
                   onTap: () {
         Navigator.push(context, MaterialPageRoute(builder: (_) => BrowseProjectsScreen()));
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.assignment, color: AppColors.primary),
-                  title: const Text("User Work"),
-                  onTap: () {
-        Navigator.push(context, MaterialPageRoute(builder: (_) => UserAssignedProjectsScreen()));
-
                   },
                 ),
                 ListTile(

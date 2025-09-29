@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:jobshub/admin/admin_approved_screen.dart';
+import 'package:jobshub/admin/admin_contact_us.dart';
+import 'package:jobshub/admin/admin_job_status.dart';
+import 'package:jobshub/admin/admin_user.dart';
+import 'package:jobshub/admin/admin_view_notification_screen.dart';
 import 'package:jobshub/admin/manage_kyc.dart';
 import 'package:jobshub/admin/admin_report_page.dart';
 import 'package:jobshub/users/login_screen.dart';
@@ -34,27 +38,27 @@ class AdminDashboardPage extends StatelessWidget {
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-         DrawerHeader(
-              decoration: BoxDecoration(color: AppColors.primary),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  CircleAvatar(
-                    radius: 30,
-                    backgroundImage: AssetImage("assets/client.png"),
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    "Admin Panel",
-                    style: TextStyle(color: Colors.white, fontSize: 18),
-                  ),
-                  Text(
-                    "Mobile No: 9090909090",
-                    style: TextStyle(color: Colors.white70, fontSize: 14),
-                  ),
-                ],
-              ),
+          DrawerHeader(
+            decoration: BoxDecoration(color: AppColors.primary),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                CircleAvatar(
+                  radius: 30,
+                  backgroundImage: AssetImage("assets/client.png"),
+                ),
+                SizedBox(height: 10),
+                Text(
+                  "Admin Panel",
+                  style: TextStyle(color: Colors.white, fontSize: 18),
+                ),
+                Text(
+                  "Mobile No: 9090909090",
+                  style: TextStyle(color: Colors.white70, fontSize: 14),
+                ),
+              ],
             ),
+          ),
           _drawerItem(
             context,
             Icons.dashboard,
@@ -63,10 +67,12 @@ class AdminDashboardPage extends StatelessWidget {
           ),
           _drawerItem(
             context,
-            Icons.person_search,
-            "Manage KYC",
-            const ManageKyc(),
+            Icons.dashboard,
+            "Job Status",
+            JobStatusScreen(),
           ),
+          _drawerItem(context, Icons.dashboard, "Manage Users", AdminUser()),
+          _drawerItem(context, Icons.person_search, "Manage KYC", ManageKyc()),
           _drawerItem(
             context,
             Icons.work_outline,
@@ -80,38 +86,19 @@ class AdminDashboardPage extends StatelessWidget {
             AdminReportsPage(projects: dummyProjectsReports),
           ),
 
-             ListTile(
-              leading: const Icon(Icons.contact_page, ),
-              title: const Text("Contact Us"),
-              onTap: () {
-              },
-            ),
+          _drawerItem(
+            context,
+            Icons.contact_page,
+            "Contact Us",
+            AdminContactUsPage(),
+          ),
 
-             ListTile(
-              leading: const Icon(Icons.terminal_sharp, ),
-              title: const Text("Terms & Conditions"),
-              onTap: () {
-              },
-            ),
-
-             ListTile(
-              leading: const Icon(Icons.notifications, ),
-              title: const Text("Notifications"),
-              onTap: () {
-              },
-            ),
-             ListTile(
-              leading: const Icon(Icons.notifications_active, ),
-              title: const Text("View Notifications"),
-              onTap: () {
-              },
-            ),
-             ListTile(
-              leading: const Icon(Icons.help, ),
-              title: const Text("Help Support"),
-              onTap: () {
-              },
-            ),
+          _drawerItem(
+            context,
+            Icons.notifications,
+            "View Notifications",
+            AdminViewNotificationScreen(),
+          ),
           _drawerItem(context, Icons.logout, "Log out", LoginScreen()),
         ],
       ),
@@ -125,7 +112,7 @@ class AdminDashboardPage extends StatelessWidget {
     Widget page,
   ) {
     return ListTile(
-      leading: Icon(icon, ),
+      leading: Icon(icon),
       title: Text(title),
       onTap: () {
         Navigator.pop(context); // Close drawer

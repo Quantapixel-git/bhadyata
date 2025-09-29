@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:jobshub/clients/client_assign_user_screen.dart';
-import 'package:jobshub/clients/client_create_project.dart';
+import 'package:jobshub/clients/client_project_screen.dart';
+import 'package:jobshub/clients/client_review_screen.dart';
+import 'package:jobshub/clients/client_assign_work.dart';
+import 'package:jobshub/clients/client_view_notification.dart';
+import 'package:jobshub/clients/new_mark_attendetion_screen.dart';
 import 'package:jobshub/users/login_screen.dart';
 import 'package:jobshub/users/project_model.dart';
 import 'package:jobshub/utils/AppColor.dart';
@@ -91,58 +94,65 @@ class ClientDashboardPage extends StatelessWidget {
             ),
             ListTile(
               leading: const Icon(Icons.add_box),
-              title: const Text("Add Work"),
+              title: const Text("Manage Project"),
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => ClientCreateProject()),
+                  MaterialPageRoute(builder: (_) => ProjectListScreen(projects: projects,)),
                 );
               },
             ),
-            // ListTile(
-            //   leading: const Icon(Icons.work_outline),
-            //   title: const Text("Assign User Works"),
-            //   onTap: () {
-            //     Navigator.push(
-            //       context,
-            //       MaterialPageRoute(
-            //         builder: (_) =>
-            //             ClientAssignUserScreen(project: projects[0]),
-            //       ),
-            //     );
-            //   },
-            // ),
-
-             ListTile(
-              leading: const Icon(Icons.contact_page, ),
-              title: const Text("Contact Us"),
+            ListTile(
+              leading: const Icon(Icons.work_outline),
+              title: const Text("Assign User Works"),
               onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        AssignedWorkListScreen(),
+                  ),
+                );
+              },
+            ),
+             ListTile(
+              leading: const Icon(Icons.work_outline),
+              title: const Text("Mark attendance"),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        ClientMonthlyAttendanceDashboard(),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.work_outline),
+              title: const Text("ClientReview"),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        CandidateReviewsScreen(),
+                  ),
+                );
               },
             ),
 
-             ListTile(
-              leading: const Icon(Icons.terminal_sharp, ),
-              title: const Text("Terms & Conditions"),
-              onTap: () {
-              },
-            ),
-
-             ListTile(
-              leading: const Icon(Icons.notifications, ),
-              title: const Text("Notifications"),
-              onTap: () {
-              },
-            ),
              ListTile(
               leading: const Icon(Icons.notifications_active, ),
               title: const Text("View Notifications"),
               onTap: () {
-              },
-            ),
-             ListTile(
-              leading: const Icon(Icons.help, ),
-              title: const Text("Help Support"),
-              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        ClientViewNotification(),
+                  ),
+                );
               },
             ),
             ListTile(

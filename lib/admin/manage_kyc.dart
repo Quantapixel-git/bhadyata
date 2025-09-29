@@ -153,11 +153,23 @@ class _ManageKycState extends State<ManageKyc> {
     );
   }
 }
-
-class KycDetailScreen extends StatelessWidget {
+class KycDetailScreen extends StatefulWidget {
   final Map<String, dynamic> user;
 
   const KycDetailScreen({super.key, required this.user});
+
+  @override
+  State<KycDetailScreen> createState() => _KycDetailScreenState();
+}
+
+class _KycDetailScreenState extends State<KycDetailScreen> {
+  late String _status;
+
+  @override
+  void initState() {
+    super.initState();
+    _status = widget.user["status"];
+  }
 
   Color getStatusColor(String status) {
     switch (status) {
@@ -208,8 +220,6 @@ class KycDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final status = user["status"];
-
     return Scaffold(
       appBar: AppBar(
         title: const Text("KYC Details"),
@@ -239,11 +249,11 @@ class KycDetailScreen extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(user["name"],
+                        Text(widget.user["name"],
                             style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold)),
-                        Text(user["email"],
+                        Text(widget.user["email"],
                             style: const TextStyle(
                                 fontSize: 14, color: Colors.grey)),
                       ],
@@ -254,40 +264,65 @@ class KycDetailScreen extends StatelessWidget {
 
                 // Personal Info
                 _sectionTitle("Personal Information", Icons.person),
-                _infoTile("DOB", user["dob"]),
-                _infoTile("Gender", user["gender"]),
-                _infoTile("Mobile", user["mobile"]),
-                _infoTile("Address", user["address"]),
-                _infoTile("Guardian", user["guardian"]),
+                _infoTile("DOB", widget.user["dob"]),
+                _infoTile("Gender", widget.user["gender"]),
+                _infoTile("Mobile", widget.user["mobile"]),
+                _infoTile("Address", widget.user["address"]),
+                _infoTile("Guardian", widget.user["guardian"]),
 
                 const Divider(height: 30),
 
                 // Work Info
                 _sectionTitle("Work Information", Icons.work),
-                _infoTile("Job Title", user["jobTitle"]),
-                _infoTile("Experience", "${user["experience"]} years"),
-                _infoTile("Skills", user["skills"]),
+                _infoTile("Job Title", widget.user["jobTitle"]),
+                _infoTile("Experience", "${widget.user["experience"]} years"),
+                _infoTile("Skills", widget.user["skills"]),
 
                 const Divider(height: 30),
 
                 // Documents
                 _sectionTitle("Uploaded Documents", Icons.file_copy),
-                _infoTile("Identity Proof", user["identityProof"]),
-                _infoTile("Address Proof", user["addressProof"]),
-                _infoTile("Education Proof", user["educationProof"]),
-                _infoTile("Selfie", user["selfie"]),
+                _infoTile("Identity Proof", widget.user["identityProof"]),
+                _infoTile("Address Proof", widget.user["addressProof"]),
+                _infoTile("Education Proof", widget.user["educationProof"]),
+                _infoTile("Selfie", widget.user["selfie"]),
 
                 const Divider(height: 30),
 
-                // Status
+                // Status with Dropdown
                 _sectionTitle("KYC Status", Icons.verified_user),
-                Text(
-                  status[0].toUpperCase() + status.substring(1),
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: getStatusColor(status),
-                  ),
+                Row(
+                  children: [
+                    const Text("Status: ",
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w600)),
+                    const SizedBox(width: 12),
+                    DropdownButton<String>(
+                      value: _status,
+                      items: const [
+                        DropdownMenuItem(
+                            value: "pending", child: Text("Pending")),
+                        DropdownMenuItem(
+                            value: "approved", child: Text("Approved")),
+                        DropdownMenuItem(
+                            value: "rejected", child: Text("Rejected")),
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          _status = value!;
+                          widget.user["status"] = _status;
+                        });
+
+                        // TODO: send updated status to admin backend/API
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content:
+                                  Text("Status updated to $_status")),
+                        );
+                      },
+                      dropdownColor: Colors.white,
+                    ),
+                  ],
                 ),
               ],
             ),

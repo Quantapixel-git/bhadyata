@@ -1,18 +1,19 @@
 
 
-// ----------------- 1️⃣ Work Assign Screen -----------------
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:intl/intl.dart';
+import 'package:jobshub/clients/client_attendance_screen.dart';
+import 'package:jobshub/utils/AppColor.dart';
 
-class WorkAssignScreen extends StatefulWidget {
-  const WorkAssignScreen({super.key});
+class ClientAssignUserWorkScreen extends StatefulWidget {
+  const ClientAssignUserWorkScreen({super.key});
 
   @override
-  State<WorkAssignScreen> createState() => _WorkAssignScreenState();
+  State<ClientAssignUserWorkScreen> createState() => _ClientAssignUserWorkScreenState();
 }
 
-class _WorkAssignScreenState extends State<WorkAssignScreen> {
+class _ClientAssignUserWorkScreenState extends State<ClientAssignUserWorkScreen> {
   String? selectedCandidate;
   DateTime? startDate;
   DateTime? endDate;
@@ -57,7 +58,9 @@ class _WorkAssignScreenState extends State<WorkAssignScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Assign Work')),
+      appBar: AppBar(title: const Text('Assign Work'),
+        backgroundColor: AppColors.primary,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -111,62 +114,9 @@ class _WorkAssignScreenState extends State<WorkAssignScreen> {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const AttendanceScreen()));
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const ClientAttendanceScreen()));
                 },
                 child: const Text('Assign Job', style: TextStyle(fontSize: 18)),
-              ),
-            )
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ----------------- 2️⃣ Mark Attendance Screen -----------------
-class AttendanceScreen extends StatelessWidget {
-  const AttendanceScreen({super.key});
-
-  final List<String> assignedCandidates = const ['John Doe', 'Jane Smith', 'Alice Johnson'];
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Mark Attendance')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView.builder(
-                itemCount: assignedCandidates.length,
-                itemBuilder: (context, index) {
-                  return Card(
-                    margin: const EdgeInsets.symmetric(vertical: 8),
-                    child: ListTile(
-                      leading: const Icon(Icons.person, color: Colors.deepPurple),
-                      title: Text(assignedCandidates[index]),
-                      trailing: Switch(
-                        value: true,
-                        onChanged: (val) {},
-                        activeColor: Colors.deepPurple,
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const DurationScreen()));
-                },
-                child: const Text('Submit Attendance', style: TextStyle(fontSize: 18)),
               ),
             )
           ],

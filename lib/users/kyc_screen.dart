@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:jobshub/clients/client_dashboard.dart';
-import 'package:jobshub/users/dashboard_screen.dart';
 import 'package:jobshub/utils/AppColor.dart';
 
 class KycStepperPage extends StatefulWidget {

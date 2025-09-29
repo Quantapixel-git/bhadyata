@@ -52,7 +52,7 @@ class _SplashScreenState extends State<SplashScreen>
         child: FadeTransition(
           opacity: _fadeAnimation,
           child: Image.asset(
-            "assets/job.png",
+            "assets/job_bgr.png",
             height: 250,
           ),
         ),
