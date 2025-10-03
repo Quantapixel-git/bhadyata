@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:jobshub/users/login_screen.dart';
+import 'package:jobshub/users/dashboard_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,7 +13,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'BADHYATA',
-      home: LoginScreen(),
+      home: DashBoardScreen(),
+      // home: SplashScreen(),
     );
   }
 }

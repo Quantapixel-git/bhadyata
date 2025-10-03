@@ -40,7 +40,7 @@ class _SignUpPageState extends State<SignUpPage> {
       Future.delayed(const Duration(seconds: 1), () {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) =>  LoginScreen()),
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
         );
       });
     }
@@ -48,17 +48,14 @@ class _SignUpPageState extends State<SignUpPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Sign Up",style: TextStyle(fontWeight: FontWeight.bold,color:Colors.white),),
-        backgroundColor: AppColors.primary,
-        automaticallyImplyLeading: false,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        bool isWeb = constraints.maxWidth > 800;
+
+        Widget formContent = Form(
           key: _formKey,
           child: ListView(
+            shrinkWrap: true,
             children: [
               const SizedBox(height: 20),
 
@@ -140,7 +137,7 @@ class _SignUpPageState extends State<SignUpPage> {
               // Sign Up Button
               SizedBox(
                 width: double.infinity,
-                height: 50,
+                height: isWeb ? 55 : 50,
                 child: ElevatedButton(
                   onPressed: _signUp,
                   style: ElevatedButton.styleFrom(
@@ -149,35 +146,102 @@ class _SignUpPageState extends State<SignUpPage> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     "Sign Up",
-                    style: TextStyle(fontSize: 16, color: Colors.white),
+                    style: TextStyle(
+                      fontSize: isWeb ? 18 : 16,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
 
-// 🔹 Already have an account? Login
-Center(
-  child: TextButton(
-    onPressed: () {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
-      );
-    },
-    child: const Text(
-      "Already have an account? Login",
-      style: TextStyle(
-        color: AppColors.primary,
-        fontWeight: FontWeight.w600,
-      ),
-    ),
-  ),
-),
+              const SizedBox(height: 10),
+
+              // 🔹 Already have an account? Login
+              Center(
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => const LoginScreen()),
+                    );
+                  },
+                  child: Text(
+                    "Already have an account? Login",
+                    style: TextStyle(
+                      fontSize: isWeb ? 16 : 14,
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
-        ),
-      ),
+        );
+
+        return Scaffold(
+          // 🔹 AppBar only on mobile
+          appBar: isWeb
+              ? null
+              : AppBar(
+                  title: const Text(
+                    "Sign Up",
+                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                  backgroundColor: AppColors.primary,
+                  automaticallyImplyLeading: false,
+                ),
+          body: isWeb
+              ? Container(
+                  color: Colors.grey.shade100,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // 🔹 Logo & Title only for Web
+                        Column(
+                          children: [
+                            Image.asset(
+                              "assets/job_bgr.png",
+                              height: 100,
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              "Welcome to Badhyata",
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                          ],
+                        ),
+                        Card(
+                          elevation: 6,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(maxWidth: 500),
+                            child: Padding(
+                              padding: const EdgeInsets.all(24.0),
+                              child: formContent,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: formContent,
+                ),
+        );
+      },
     );
   }
 }

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:jobshub/users/home_page.dart';
 import 'package:jobshub/users/kyc_screen.dart';
 import 'package:jobshub/utils/AppColor.dart';
 
-class MyApplicationsPage extends StatelessWidget {
-  const MyApplicationsPage({super.key});
+class UserMyApplicationsPage extends StatelessWidget {
+  const UserMyApplicationsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -55,30 +56,37 @@ class MyApplicationsPage extends StatelessWidget {
             backgroundColor: AppColors.primary,
             centerTitle: isWeb,
           ),
-          body: Padding(
-            padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 16),
-            child: GridView.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: crossAxisCount,
-                crossAxisSpacing: 20,
-                mainAxisSpacing: 20,
-                childAspectRatio: isWeb ? 3 : 3.5,
+          body: Row(
+            children: [
+               const AppDrawer(),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: GridView.builder(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossAxisCount,
+                      crossAxisSpacing: 20,
+                      mainAxisSpacing: 20,
+                      childAspectRatio: isWeb ? 3 : 3.5,
+                    ),
+                    itemCount: appliedJobs.length,
+                    itemBuilder: (context, index) {
+                      final job = appliedJobs[index];
+                      return _HoverApplicationCard(
+                        job: job,
+                        isWeb: isWeb,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => JobDetailPage(job: job)),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
               ),
-              itemCount: appliedJobs.length,
-              itemBuilder: (context, index) {
-                final job = appliedJobs[index];
-                return _HoverApplicationCard(
-                  job: job,
-                  isWeb: isWeb,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => JobDetailPage(job: job)),
-                    );
-                  },
-                );
-              },
-            ),
+            ],
           ),
         );
       },

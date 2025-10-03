@@ -36,7 +36,6 @@ class AdminContactUsPage extends StatelessWidget {
         ),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      
       body: ListView.builder(
         padding: const EdgeInsets.all(12),
         itemCount: queries.length,

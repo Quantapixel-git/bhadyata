@@ -54,15 +54,6 @@ final TextEditingController resumeController = TextEditingController();
 
   Widget _buildWebUI(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.primary,
-      appBar: AppBar(
-        elevation: 2,
-        title: const Text(
-          "Rewards & Resume",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-      ),
       body: Center(
         child: Container(
           width: 800,

@@ -25,7 +25,7 @@ class _ClientLoginPageState extends State<ClientLoginPage> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => ClientOtpPage(mobile: mobile),
+            builder: (_) => ClientOtpScreen(mobile: mobile),
           ),
         );
       } else {
@@ -38,62 +38,89 @@ class _ClientLoginPageState extends State<ClientLoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 60),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Image.asset("assets/job_bgr.png", height: 100),
-              const SizedBox(height: 20),
-              Text(
-                "Client Login",
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.primary,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                "Enter your mobile number to login",
-                style: TextStyle(fontSize: 14, color: Colors.black54),
-              ),
-              const SizedBox(height: 40),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            bool isWeb = constraints.maxWidth > 800;
 
-              TextField(
-                controller: _mobileController,
-                decoration: InputDecoration(
-                  labelText: "Mobile Number",
-                  prefixIcon: const Icon(Icons.phone),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
+            // 🔹 Shared login content
+            Widget loginContent = Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Image.asset("assets/job_bgr.png", height: 100),
+                const SizedBox(height: 20),
+                Text(
+                  "Client Login",
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primary,
                   ),
-                  errorText: _mobileError,
                 ),
-                keyboardType: TextInputType.phone,
-                maxLength: 10,
-              ),
-              const SizedBox(height: 30),
+                const SizedBox(height: 8),
+                const Text(
+                  "Enter your mobile number to login",
+                  style: TextStyle(fontSize: 14, color: Colors.black54),
+                ),
+                const SizedBox(height: 40),
 
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: _sendOtp,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    shape: RoundedRectangleBorder(
+                TextField(
+                  controller: _mobileController,
+                  decoration: InputDecoration(
+                    labelText: "Mobile Number",
+                    prefixIcon: const Icon(Icons.phone),
+                    border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
+                    errorText: _mobileError,
                   ),
-                  child: const Text(
-                    "Send OTP",
-                    style: TextStyle(fontSize: 16, color: Colors.white),
+                  keyboardType: TextInputType.phone,
+                  maxLength: 10,
+                ),
+                const SizedBox(height: 30),
+
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    onPressed: _sendOtp,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: const Text(
+                      "Send OTP",
+                      style: TextStyle(fontSize: 16, color: Colors.white),
+                    ),
                   ),
                 ),
+              ],
+            );
+
+            return Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 60),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: isWeb ? 450 : double.infinity,
+                  ),
+                  child: isWeb
+                      ? Card(
+                          elevation: 8,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(32.0),
+                            child: loginContent,
+                          ),
+                        )
+                      : loginContent, // mobile stays same
+                ),
               ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );

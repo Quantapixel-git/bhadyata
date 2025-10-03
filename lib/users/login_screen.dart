@@ -26,11 +26,10 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_isValidMobile(mobile)) {
       setState(() => _mobileError = null);
 
-      // Navigate to OTP verification screen
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => OtpPage(mobile: mobile),
+          builder: (_) => OtpScreen(mobile: mobile),
         ),
       );
     } else {
@@ -46,12 +45,13 @@ class _LoginScreenState extends State<LoginScreen> {
           builder: (context, constraints) {
             bool isWeb = constraints.maxWidth > 800;
 
+            // 🔹 Login content (shared between web & mobile)
             Widget loginContent = Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const SizedBox(height: 80),
+                SizedBox(height: isWeb ? 50 : 60),
 
-                // 🔹 Logo and Title (long press to show admin button)
+                // 🔹 Logo and Title
                 GestureDetector(
                   onLongPress: () {
                     setState(() {
@@ -60,26 +60,32 @@ class _LoginScreenState extends State<LoginScreen> {
                   },
                   child: Column(
                     children: [
-                      Image.asset("assets/job_bgr.png", height: 90),
-                      const SizedBox(height: 12),
+                      Image.asset(
+                        "assets/job_bgr.png",
+                        height: isWeb ? 100 : 90,
+                      ),
+                      const SizedBox(height: 16),
                       Text(
                         "Badhyata Login",
                         style: TextStyle(
-                          fontSize: 28,
+                          fontSize: isWeb ? 28 : 24,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.primary
+                          color: AppColors.primary,
                         ),
                       ),
-                      const SizedBox(height: 6),
-                      const Text(
+                      const SizedBox(height: 8),
+                      Text(
                         "Enter your mobile number to continue",
-                        style: TextStyle(color: Colors.black54),
+                        style: TextStyle(
+                          fontSize: isWeb ? 18 : 14,
+                          color: Colors.black54,
+                        ),
                       ),
                     ],
                   ),
                 ),
 
-                const SizedBox(height: 50),
+                SizedBox(height: isWeb ? 40 : 30),
 
                 // 🔹 Mobile input
                 TextField(
@@ -100,7 +106,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 // 🔹 Send OTP button
                 SizedBox(
                   width: double.infinity,
-                  height: 50,
+                  height: isWeb ? 55 : 48,
                   child: ElevatedButton(
                     onPressed: _sendOtp,
                     style: ElevatedButton.styleFrom(
@@ -109,37 +115,40 @@ class _LoginScreenState extends State<LoginScreen> {
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-                    child: const Text(
+                    child: Text(
                       "Send OTP",
                       style: TextStyle(
-                          fontWeight: FontWeight.bold, color: Colors.white),
+                        fontSize: isWeb ? 18 : 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
 
                 const SizedBox(height: 20),
 
+                // 🔹 New User? Sign Up
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const SignUpPage(),
+                      ),
+                    );
+                  },
+                  child: Text(
+                    "New User? Sign Up",
+                    style: TextStyle(
+                      fontSize: isWeb ? 16 : 14,
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
 
-// 🔹 New User? Sign Up
-TextButton(
-  onPressed: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => const SignUpPage(),
-      ),
-    );
-  },
-  child: const Text(
-    "New User? Sign Up",
-    style: TextStyle(
-      color: AppColors.primary,
-      fontWeight: FontWeight.w600,
-    ),
-  ),
-),
-
-                // 🔹 Show Admin Login button (optional)
+                // 🔹 Show Admin Login button (appears on long press)
                 if (_showAdminButton) ...[
                   const SizedBox(height: 20),
                   Center(
@@ -148,7 +157,8 @@ TextButton(
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (_) => AdminLoginPage()),
+                            builder: (_) => AdminLoginPage(),
+                          ),
                         );
                       },
                       icon: const Icon(Icons.admin_panel_settings),
@@ -166,46 +176,64 @@ TextButton(
             );
 
             return Column(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          maxWidth: isWeb ? 400 : double.infinity,
-                        ),
-                        child: loginContent,
-                      ),
+  children: [
+    Expanded(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24.0),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: isWeb ? 450 : double.infinity,
+            ),
+            child: isWeb
+                ? Card(
+                    elevation: 8,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                  ),
-                ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(32.0),
+                      child: loginContent,
+                    ),
+                  )
+                : loginContent,
+          ),
+        ),
+      ),
+    ),
 
-                // 🔹 Bottom client login link
-                Container(
-                  color: Colors.grey.shade100,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const ClientLoginPage()),
-                      );
-                    },
-                    child: const Center(
-                      child: Text(
-                        "Are you a client?",
-                        style: TextStyle(
-                           color: AppColors.primary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            );
+    // 🔹 Bottom client login link stays outside card
+    // 🔹 Bottom client login link stays outside card
+Container(
+  color: Colors.grey.shade100,
+  width: double.infinity,
+  padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+  child: Center(
+    child: TextButton(
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const ClientLoginPage(),
+          ),
+        );
+      },
+      child: Text(
+        "Are you a client?",
+        style: TextStyle(
+          fontSize: isWeb ? 16 : 14,
+          color: AppColors.primary,
+          fontWeight: FontWeight.bold,
+          decoration: TextDecoration.underline, // makes it look like a link
+        ),
+      ),
+    ),
+  ),
+),
+
+  ],
+);
+
           },
         ),
       ),

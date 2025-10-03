@@ -48,14 +48,23 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Center(
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: Image.asset(
-            "assets/job_bgr.png",
-            height: 250,
-          ),
-        ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          // Check if it’s web/large screen or mobile
+          bool isWeb = constraints.maxWidth > 600;
+
+          return Center(
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: Image.asset(
+                "assets/job_bgr.png",
+                height: isWeb ? 400 : 250,
+                width: isWeb ? 400 : null,
+                fit: BoxFit.contain,
+              ),
+            ),
+          );
+        },
       ),
     );
   }
