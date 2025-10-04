@@ -96,6 +96,7 @@ class _WorkAssignmentScreenState extends State<WorkAssignmentScreen> {
           // Mobile layout
           if (constraints.maxWidth <= 600) {
             return ListView.builder(
+              shrinkWrap:false,
               padding: const EdgeInsets.all(16),
               itemCount: assignedWorks.length,
               itemBuilder: (context, index) {
@@ -143,8 +144,7 @@ class _WorkAssignmentScreenState extends State<WorkAssignmentScreen> {
     );
   }
 }
-
-class WorkCard extends StatefulWidget {
+class WorkCard extends StatelessWidget {
   final Work work;
   final VoidCallback onAccept;
   final VoidCallback onReject;
@@ -159,107 +159,78 @@ class WorkCard extends StatefulWidget {
   });
 
   @override
-  State<WorkCard> createState() => _WorkCardState();
-}
-
-class _WorkCardState extends State<WorkCard> {
-  bool isHovered = false;
-
-  @override
   Widget build(BuildContext context) {
-    final card = Card(
-      elevation: isHovered ? 12 : 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      shadowColor: Colors.black26,
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              widget.work.title,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text("Company: ${widget.work.company}"),
-            Text("Duration: ${widget.work.duration}"),
-            const Spacer(),
-            Row(
-              children: [
-                Expanded(
-                  child: MouseRegion(
-                    cursor: widget.work.accepted
-                        ? SystemMouseCursors.basic
-                        : SystemMouseCursors.click,
-                    child: ElevatedButton(
-                      onPressed: widget.work.accepted ? null : widget.onAccept,
-                      style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.resolveWith((
-                          states,
-                        ) {
-                          if (states.contains(MaterialState.hovered))
-                            return Colors.green.shade700;
-                          return Colors.green;
-                        }),
-                        padding: MaterialStateProperty.all(
-                          const EdgeInsets.symmetric(vertical: 16),
-                        ),
-                        shape: MaterialStateProperty.all(
-                          RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                      child: Text(widget.work.accepted ? "Accepted" : "Accept"),
+    final cardContent = Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                work.title,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text("Company: ${work.company}"),
+              Text("Duration: ${work.duration}"),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: work.accepted ? null : onAccept,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
+                  child: Text(work.accepted ? "Accepted" : "Accept"),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: MouseRegion(
-                    cursor: SystemMouseCursors.click,
-                    child: ElevatedButton(
-                      onPressed: widget.onReject,
-                      style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.resolveWith((
-                          states,
-                        ) {
-                          if (states.contains(MaterialState.hovered))
-                            return Colors.red.shade700;
-                          return Colors.red;
-                        }),
-                        padding: MaterialStateProperty.all(
-                          const EdgeInsets.symmetric(vertical: 16),
-                        ),
-                        shape: MaterialStateProperty.all(
-                          RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                      child: const Text("Reject"),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: onReject,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
+                  child: const Text("Reject"),
                 ),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
 
-    return widget.isWeb
-        ? MouseRegion(
-            onEnter: (_) => setState(() => isHovered = true),
-            onExit: (_) => setState(() => isHovered = false),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              transform: isHovered
-                  ? Matrix4.translationValues(0, -5, 0)
-                  : Matrix4.identity(),
-              child: card,
-            ),
-          )
-        : card;
+    final card = Card(
+      elevation: isWeb ? 6 : 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shadowColor: Colors.black26,
+      child: cardContent,
+    );
+
+    if (isWeb) {
+      // ✅ Add hover animation only for web
+      return MouseRegion(
+        onEnter: (_) {},
+        onExit: (_) {},
+        child: card,
+      );
+    }
+
+    return card; // ✅ Mobile gets a plain card
   }
 }
+

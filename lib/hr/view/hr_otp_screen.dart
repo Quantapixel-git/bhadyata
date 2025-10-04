@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:jobshub/clients/client_dashboard.dart';
+import 'package:jobshub/hr/view/hr_drawer_screen.dart';
 import 'package:jobshub/utils/AppColor.dart';
 
-class ClientOtpScreen extends StatefulWidget {
+class HrOtpScreen extends StatefulWidget {
   final String mobile;
-  const ClientOtpScreen({super.key, required this.mobile});
+  const HrOtpScreen({super.key, required this.mobile});
 
   @override
-  State<ClientOtpScreen> createState() => ClientOtpScreenState();
+  State<HrOtpScreen> createState() => HrOtpScreenState();
 }
 
-class ClientOtpScreenState extends State<ClientOtpScreen> {
+class HrOtpScreenState extends State<HrOtpScreen> {
   final _otpController = TextEditingController();
   String? _otpError;
 
@@ -24,8 +24,9 @@ class ClientOtpScreenState extends State<ClientOtpScreen> {
       }
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (_) =>  ClientDashboardPage()),
-           (route) => false
+        MaterialPageRoute(builder: (_) =>  HrDrawer()),
+        (route) => false
+
       );
     });
   }

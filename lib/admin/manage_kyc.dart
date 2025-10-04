@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jobshub/admin/admin_sidebar.dart';
 import 'package:jobshub/utils/AppColor.dart';
 
 class ManageKyc extends StatefulWidget {
@@ -76,83 +77,145 @@ class _ManageKycState extends State<ManageKyc> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey.shade100,
-       appBar: AppBar(
-        title: const Text(
-          "Manage KYC",
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        iconTheme: IconThemeData(color: Colors.white),
-        backgroundColor: AppColors.primary,
-          elevation: 4,
-      ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: users.length,
-        itemBuilder: (_, index) {
-          final user = users[index];
-          final status = user["status"];
+    return LayoutBuilder(builder: (context, constraints) {
+      bool isMobile = constraints.maxWidth < 600;
+      bool isWeb = constraints.maxWidth > 900;
 
-          return GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => KycDetailScreen(user: user),
-                ),
-              );
-            },
-            child: Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              elevation: 3,
-              margin: const EdgeInsets.only(bottom: 14),
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 28,
-                      child: const Icon(Icons.person,
-                          size: 32, color: AppColors.primary),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(user["name"],
-                              style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold)),
-                          Text(user["email"],
-                              style: const TextStyle(
-                                  fontSize: 13, color: Colors.grey)),
-                          const SizedBox(height: 6),
-                          Text(
-                            "Status: ${status[0].toUpperCase()}${status.substring(1)}",
-                            style: TextStyle(
-                              color: getStatusColor(status),
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
+      Widget content = Padding(
+        padding: EdgeInsets.all(isWeb ? 24 : 16),
+        child: users.isEmpty
+            ? const Center(child: Text("No KYC submissions found"))
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (isWeb)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: Text(
+                        "KYC Submissions",
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
+                        ),
                       ),
                     ),
-                    Icon(Icons.arrow_forward_ios,
-                        size: 16, color: Colors.grey.shade600),
-                  ],
-                ),
+                  Expanded(
+                    child: isMobile
+                        ? ListView.builder(
+                            itemCount: users.length,
+                            itemBuilder: (_, index) =>
+                                _buildUserCard(users[index], isWeb: false),
+                          )
+                        : GridView.builder(
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount:
+                                  constraints.maxWidth < 1200 ? 2 : 3,
+                              crossAxisSpacing: 20,
+                              mainAxisSpacing: 20,
+                              childAspectRatio: 2.8,
+                            ),
+                            itemCount: users.length,
+                            itemBuilder: (_, index) =>
+                                _buildUserCard(users[index], isWeb: true),
+                          ),
+                  ),
+                ],
               ),
+      );
+
+      return Scaffold(
+        appBar: isMobile
+            ? AppBar(
+                iconTheme: const IconThemeData(color: Colors.white),
+                title: const Text(
+                  "Manage KYC",
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+                backgroundColor: AppColors.primary,
+                elevation: 4,
+              )
+            : null,
+        drawer:
+            isMobile ? const AdminSidebar(selectedPage: "Manage KYC") : null,
+        body: Row(
+          children: [
+            if (!isMobile)
+              const SizedBox(
+                width: 260,
+                child: AdminSidebar(selectedPage: "Manage KYC", isWeb: true),
+              ),
+            Expanded(child: content),
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget _buildUserCard(Map<String, dynamic> user, {required bool isWeb}) {
+    final status = user["status"];
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => KycDetailScreen(user: user),
+          ),
+        );
+      },
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: Card(
+          elevation: isWeb ? 6 : 3,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: Padding(
+            padding: EdgeInsets.all(isWeb ? 20 : 14),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: isWeb ? 32 : 28,
+                  backgroundColor: AppColors.primary.withOpacity(0.1),
+                  child: const Icon(Icons.person,
+                      size: 32, color: AppColors.primary),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(user["name"],
+                          style: TextStyle(
+                              fontSize: isWeb ? 18 : 16,
+                              fontWeight: FontWeight.bold)),
+                      Text(user["email"],
+                          style: const TextStyle(
+                              fontSize: 13, color: Colors.grey)),
+                      const SizedBox(height: 6),
+                      Text(
+                        "Status: ${status[0].toUpperCase()}${status.substring(1)}",
+                        style: TextStyle(
+                          color: getStatusColor(status),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.arrow_forward_ios,
+                    size: 16, color: Colors.grey.shade600),
+              ],
             ),
-          );
-        },
+          ),
+        ),
       ),
     );
   }
 }
+
+// -------------------- KYC DETAIL SCREEN -------------------
 class KycDetailScreen extends StatefulWidget {
   final Map<String, dynamic> user;
 
@@ -182,6 +245,121 @@ class _KycDetailScreenState extends State<KycDetailScreen> {
     }
   }
 
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(builder: (context, constraints) {
+      bool isWeb = constraints.maxWidth > 900;
+
+      Widget card = Card(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        elevation: 4,
+        child: Padding(
+          padding: EdgeInsets.all(isWeb ? 32 : 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Profile
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 40,
+                    backgroundColor: AppColors.primary.withOpacity(0.1),
+                    child: const Icon(Icons.person,
+                        size: 40, color: AppColors.primary),
+                  ),
+                  const SizedBox(width: 16),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(widget.user["name"],
+                          style: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold)),
+                      Text(widget.user["email"],
+                          style: const TextStyle(
+                              fontSize: 14, color: Colors.grey)),
+                    ],
+                  )
+                ],
+              ),
+              const Divider(height: 30),
+
+              _sectionTitle("Personal Information", Icons.person),
+              _infoTile("DOB", widget.user["dob"]),
+              _infoTile("Gender", widget.user["gender"]),
+              _infoTile("Mobile", widget.user["mobile"]),
+              _infoTile("Address", widget.user["address"]),
+              _infoTile("Guardian", widget.user["guardian"]),
+
+              const Divider(height: 30),
+
+              _sectionTitle("Work Information", Icons.work),
+              _infoTile("Job Title", widget.user["jobTitle"]),
+              _infoTile("Experience", "${widget.user["experience"]} years"),
+              _infoTile("Skills", widget.user["skills"]),
+
+              const Divider(height: 30),
+
+              _sectionTitle("Uploaded Documents", Icons.file_copy),
+              _infoTile("Identity Proof", widget.user["identityProof"]),
+              _infoTile("Address Proof", widget.user["addressProof"]),
+              _infoTile("Education Proof", widget.user["educationProof"]),
+              _infoTile("Selfie", widget.user["selfie"]),
+
+              const Divider(height: 30),
+
+              _sectionTitle("KYC Status", Icons.verified_user),
+              Row(
+                children: [
+                  const Text("Status: ",
+                      style:
+                          TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                  const SizedBox(width: 12),
+                  DropdownButton<String>(
+                    value: _status,
+                    items: const [
+                      DropdownMenuItem(
+                          value: "pending", child: Text("Pending")),
+                      DropdownMenuItem(
+                          value: "approved", child: Text("Approved")),
+                      DropdownMenuItem(
+                          value: "rejected", child: Text("Rejected")),
+                    ],
+                    onChanged: (value) {
+                      setState(() {
+                        _status = value!;
+                        widget.user["status"] = _status;
+                      });
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Status updated to $_status")),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text("KYC Details"),
+          backgroundColor: AppColors.primary,
+        ),
+        body: SingleChildScrollView(
+          padding: EdgeInsets.all(isWeb ? 40 : 16),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: isWeb ? 700 : double.infinity),
+              child: card,
+            ),
+          ),
+        ),
+      );
+    });
+  }
+
   Widget _sectionTitle(String title, IconData icon) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
@@ -191,8 +369,7 @@ class _KycDetailScreenState extends State<KycDetailScreen> {
           const SizedBox(width: 8),
           Text(
             title,
-            style: const TextStyle(
-                fontSize: 16, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
         ],
       ),
@@ -210,124 +387,8 @@ class _KycDetailScreenState extends State<KycDetailScreen> {
               child: Text("$label:",
                   style: const TextStyle(
                       fontWeight: FontWeight.w600, fontSize: 14))),
-          Expanded(
-              child: Text(value,
-                  style: const TextStyle(fontSize: 14))),
+          Expanded(child: Text(value, style: const TextStyle(fontSize: 14))),
         ],
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("KYC Details"),
-        backgroundColor: AppColors.primary,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Card(
-          shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16)),
-          elevation: 3,
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Profile
-                Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 40,
-                      backgroundColor: AppColors.primary,
-                      child: const Icon(Icons.person,
-                          size: 40, color: AppColors.primary),
-                    ),
-                    const SizedBox(width: 16),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(widget.user["name"],
-                            style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold)),
-                        Text(widget.user["email"],
-                            style: const TextStyle(
-                                fontSize: 14, color: Colors.grey)),
-                      ],
-                    )
-                  ],
-                ),
-                const Divider(height: 30),
-
-                // Personal Info
-                _sectionTitle("Personal Information", Icons.person),
-                _infoTile("DOB", widget.user["dob"]),
-                _infoTile("Gender", widget.user["gender"]),
-                _infoTile("Mobile", widget.user["mobile"]),
-                _infoTile("Address", widget.user["address"]),
-                _infoTile("Guardian", widget.user["guardian"]),
-
-                const Divider(height: 30),
-
-                // Work Info
-                _sectionTitle("Work Information", Icons.work),
-                _infoTile("Job Title", widget.user["jobTitle"]),
-                _infoTile("Experience", "${widget.user["experience"]} years"),
-                _infoTile("Skills", widget.user["skills"]),
-
-                const Divider(height: 30),
-
-                // Documents
-                _sectionTitle("Uploaded Documents", Icons.file_copy),
-                _infoTile("Identity Proof", widget.user["identityProof"]),
-                _infoTile("Address Proof", widget.user["addressProof"]),
-                _infoTile("Education Proof", widget.user["educationProof"]),
-                _infoTile("Selfie", widget.user["selfie"]),
-
-                const Divider(height: 30),
-
-                // Status with Dropdown
-                _sectionTitle("KYC Status", Icons.verified_user),
-                Row(
-                  children: [
-                    const Text("Status: ",
-                        style: TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w600)),
-                    const SizedBox(width: 12),
-                    DropdownButton<String>(
-                      value: _status,
-                      items: const [
-                        DropdownMenuItem(
-                            value: "pending", child: Text("Pending")),
-                        DropdownMenuItem(
-                            value: "approved", child: Text("Approved")),
-                        DropdownMenuItem(
-                            value: "rejected", child: Text("Rejected")),
-                      ],
-                      onChanged: (value) {
-                        setState(() {
-                          _status = value!;
-                          widget.user["status"] = _status;
-                        });
-
-                        // TODO: send updated status to admin backend/API
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content:
-                                  Text("Status updated to $_status")),
-                        );
-                      },
-                      dropdownColor: Colors.white,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }

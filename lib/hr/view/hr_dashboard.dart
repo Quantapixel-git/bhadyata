@@ -1,10 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:jobshub/clients/client_sidebar.dart';
+import 'package:jobshub/hr/view/hr_sidebar.dart';
+import 'package:jobshub/hr/view/hr_work_assign_screen.dart';
+import 'package:jobshub/clients/client_review_screen.dart';
+import 'package:jobshub/clients/client_view_notification.dart';
+import 'package:jobshub/users/login_screen.dart';
 import 'package:jobshub/users/project_model.dart';
 import 'package:jobshub/utils/AppColor.dart';
 
-class ClientDashboardPage extends StatelessWidget {
-  ClientDashboardPage({super.key});
+class HrDashboard extends StatefulWidget {
+  const HrDashboard({super.key});
+
+  @override
+  State<HrDashboard> createState() => _HrDashboardState();
+}
+
+class _HrDashboardState extends State<HrDashboard> {
+  String _selectedPage = "dashboard";
 
   final int totalWorks = 12;
   final int pendingApproval = 5;
@@ -42,60 +53,106 @@ class ClientDashboardPage extends StatelessWidget {
     ),
   ];
 
+  void _onItemSelected(String key) {
+    setState(() {
+      _selectedPage = key;
+    });
+
+    Widget screen;
+    switch (key) {
+      case "assign":
+        screen = const HrAssignedWorkListScreen();
+        break;
+      case "attendance":
+        screen =  HrAssignedWorkListScreen();
+        break;
+      case "review":
+        screen =  CandidateReviewsScreen();
+        break;
+      case "notifications":
+        screen =  ClientViewNotification();
+        break;
+      case "logout":
+        screen = const LoginScreen();
+        break;
+      default:
+        screen = widget;
+    }
+
+    // Only navigate on mobile; on web we keep content in the main area
+    if (MediaQuery.of(context).size.width < 900) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => screen),
+      );
+    } else {
+      // On web, update the main content if you want dynamic web content
+      // For now, we just show dashboard
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final bool isWeb = constraints.maxWidth >= 900;
 
-       // Web layout
-if (isWeb) {
-  return Scaffold(
-    body: Row(
-      children: [
-        SizedBox(
-          width: 250,
-          child: ClientSidebar(projects: projects, isWeb: true),
-        ),
-        Expanded(
-          child: Scaffold(
+        if (isWeb) {
+          return Scaffold(
+            body: Row(
+              children: [
+                SizedBox(
+                  width: 250,
+                  child: HrSidebar(
+                    selectedPage: _selectedPage,
+                    onItemSelected: _onItemSelected,
+                  ),
+                ),
+                Expanded(
+                  child: Scaffold(
+                    appBar: AppBar(
+                      title: const Text(
+                        "HR Dashboard",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      backgroundColor: Colors.white,
+                      elevation: 0,
+                      automaticallyImplyLeading: false,
+                    ),
+                    body: _buildDashboardContent(),
+                    backgroundColor: Colors.grey[100],
+                  ),
+                ),
+              ],
+            ),
+          );
+        } else {
+          return Scaffold(
             appBar: AppBar(
               title: const Text(
-                "Client Dashboard",
-                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
+                "HR Dashboard",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
-              backgroundColor: Colors.white,
-              elevation: 0,
-              automaticallyImplyLeading: false,
+              iconTheme: const IconThemeData(color: Colors.white),
+              backgroundColor: AppColors.primary,
+            ),
+            drawer: HrSidebar(
+              selectedPage: _selectedPage,
+              onItemSelected: _onItemSelected,
             ),
             body: _buildDashboardContent(),
-            backgroundColor: Colors.grey[100],
-          ),
-        ),
-      ],
-    ),
-  );
-} else {
-  // Mobile Drawer
-  return Scaffold(
-    appBar: AppBar(
-      title: const Text(
-        "Client Dashboard",
-        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-      ),
-      iconTheme: const IconThemeData(color: Colors.white),
-      backgroundColor: AppColors.primary,
-    ),
-    drawer: ClientSidebar(projects: projects),
-    body: _buildDashboardContent(),
-  );
-}
-
+          );
+        }
       },
     );
   }
 
-  // ---------- Dashboard Cards ----------
   Widget _buildDashboardContent() {
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -130,7 +187,9 @@ if (isWeb) {
         decoration: BoxDecoration(
           color: color,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: color.withOpacity(0.4), blurRadius: 8, offset: const Offset(0, 4))],
+          boxShadow: [
+            BoxShadow(color: color.withOpacity(0.4), blurRadius: 8, offset: const Offset(0, 4))
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

@@ -5,6 +5,7 @@ import 'package:jobshub/users/login_screen.dart';
 import 'package:jobshub/users/user_application_page.dart';
 import 'package:jobshub/users/user_contact_page.dart';
 import 'package:jobshub/users/user_help_support_screen.dart';
+import 'package:jobshub/users/user_leave_request.dart';
 import 'package:jobshub/users/work_assignment_screen.dart';
 import 'package:jobshub/utils/AppColor.dart';
 
@@ -536,6 +537,12 @@ class AppDrawer extends StatelessWidget {
                   icon: Icons.work,
                   text: "Work Assignment",
                   page: WorkAssignmentScreen(),
+                ),
+                  _drawerItem(
+                  context,
+                  icon: Icons.work,
+                  text: "Manage Leaves",
+                  page: EmployeeLeaveRequestScreen(employeeName: "John Doe"),
                 ),
                 _drawerItem(
                   context,

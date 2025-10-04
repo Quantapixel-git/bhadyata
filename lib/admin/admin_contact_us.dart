@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jobshub/admin/admin_sidebar.dart';
 import 'package:jobshub/utils/AppColor.dart';
 
 class AdminContactUsPage extends StatelessWidget {
@@ -27,43 +28,59 @@ class AdminContactUsPage extends StatelessWidget {
       },
     ];
 
+    bool isMobile = MediaQuery.of(context).size.width < 600;
+
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.primary,
-         title: const Text(
-          "Contact Queries",
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(12),
-        itemCount: queries.length,
-        itemBuilder: (context, index) {
-          final query = queries[index];
-          return Card(
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            margin: const EdgeInsets.symmetric(vertical: 8),
-            child: ListTile(
-              leading: CircleAvatar(
-                backgroundColor: AppColors.primary,
-                child: Text(query["name"]![0]), // first letter
+      appBar: isMobile
+          ? AppBar(
+              backgroundColor: AppColors.primary,
+              title: const Text(
+                "Contact Queries",
+                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
               ),
-              title: Text(query["name"]!),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("Role: ${query["role"]}"),
-                  Text("Message: ${query["message"]}"),
-                  Text("Date: ${query["date"]}"),
-                ],
-              ),
+              iconTheme: const IconThemeData(color: Colors.white),
+            )
+          : null,
+      drawer: isMobile ? const AdminSidebar(selectedPage: "Contact Us") : null,
+      body: Row(
+        children: [
+          if (!isMobile)
+            const SizedBox(
+              width: 260,
+              child: AdminSidebar(selectedPage: "Contact Us", isWeb: true),
             ),
-          );
-        },
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.all(12),
+              itemCount: queries.length,
+              itemBuilder: (context, index) {
+                final query = queries[index];
+                return Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  margin: const EdgeInsets.symmetric(vertical: 8),
+                  child: ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: AppColors.primary,
+                      child: Text(query["name"]![0]), // first letter
+                    ),
+                    title: Text(query["name"]!),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("Role: ${query["role"]}"),
+                        Text("Message: ${query["message"]}"),
+                        Text("Date: ${query["date"]}"),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

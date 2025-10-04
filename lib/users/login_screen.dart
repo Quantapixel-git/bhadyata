@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:jobshub/users/otp_screen.dart';
 import 'package:jobshub/admin/admin_login.dart';
 import 'package:jobshub/clients/client_login.dart';
+import 'package:jobshub/hr/view/hr_login_screen.dart';
+import 'package:jobshub/users/otp_screen.dart';
 import 'package:jobshub/users/sign_up_screen.dart';
 import 'package:jobshub/utils/AppColor.dart';
 
@@ -26,11 +27,10 @@ class _LoginScreenState extends State<LoginScreen> {
     if (_isValidMobile(mobile)) {
       setState(() => _mobileError = null);
 
-      Navigator.push(
+      Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(
-          builder: (_) => OtpScreen(mobile: mobile),
-        ),
+        MaterialPageRoute(builder: (_) => OtpScreen(mobile: mobile)),
+        (route) => false
       );
     } else {
       setState(() => _mobileError = "Enter a valid 10-digit mobile number");
@@ -133,9 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => const SignUpPage(),
-                      ),
+                      MaterialPageRoute(builder: (_) => const SignUpPage()),
                     );
                   },
                   child: Text(
@@ -156,9 +154,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (_) => AdminLoginPage(),
-                          ),
+                          MaterialPageRoute(builder: (_) => AdminLoginPage()),
                         );
                       },
                       icon: const Icon(Icons.admin_panel_settings),
@@ -176,64 +172,90 @@ class _LoginScreenState extends State<LoginScreen> {
             );
 
             return Column(
-  children: [
-    Expanded(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: isWeb ? 450 : double.infinity,
-            ),
-            child: isWeb
-                ? Card(
-                    elevation: 8,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: isWeb ? 450 : double.infinity,
+                        ),
+                        child: isWeb
+                            ? Card(
+                                elevation: 8,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(32.0),
+                                  child: loginContent,
+                                ),
+                              )
+                            : loginContent,
+                      ),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(32.0),
-                      child: loginContent,
+                  ),
+                ),
+
+                Container(
+                  color: Colors.grey.shade100,
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 20,
+                    horizontal: 16,
+                  ),
+                  child: Center(
+                    child: Column(
+                      children: [
+                        // ✅ Client Login
+                        TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const ClientLoginPage(),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            "Are you a client?",
+                            style: TextStyle(
+                              fontSize: isWeb ? 16 : 14,
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.bold,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 8),
+
+                        TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const HrLoginPage(),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            "Are you HR?",
+                            style: TextStyle(
+                              fontSize: isWeb ? 16 : 14,
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.bold,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  )
-                : loginContent,
-          ),
-        ),
-      ),
-    ),
-
-    // 🔹 Bottom client login link stays outside card
-    // 🔹 Bottom client login link stays outside card
-Container(
-  color: Colors.grey.shade100,
-  width: double.infinity,
-  padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-  child: Center(
-    child: TextButton(
-      onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const ClientLoginPage(),
-          ),
-        );
-      },
-      child: Text(
-        "Are you a client?",
-        style: TextStyle(
-          fontSize: isWeb ? 16 : 14,
-          color: AppColors.primary,
-          fontWeight: FontWeight.bold,
-          decoration: TextDecoration.underline, // makes it look like a link
-        ),
-      ),
-    ),
-  ),
-),
-
-  ],
-);
-
+                  ),
+                ),
+              ],
+            );
           },
         ),
       ),

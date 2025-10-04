@@ -36,6 +36,9 @@ dependencies:
   cupertino_icons: ^1.0.8
   intl:
   flutter_rating_bar: ^4.0.0
+  table_calendar:
+  percent_indicator:
+  fl_chart:
 
 dev_dependencies:
   flutter_test:

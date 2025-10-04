@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:jobshub/admin/admin_sidebar.dart';
 import 'package:jobshub/utils/AppColor.dart';
 
 class AdminReportsPage extends StatelessWidget {
@@ -26,25 +27,17 @@ class AdminReportsPage extends StatelessWidget {
     int pending = projects.where((p) => p.adminStatus == "pending").length;
     int completed = projects.where((p) => p.isCompleted).length;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          "Work Reports",
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        iconTheme: const IconThemeData(color: Colors.white),
-        backgroundColor: AppColors.primary,
-      ),
-      body: Padding(
+    return LayoutBuilder(builder: (context, constraints) {
+      bool isMobile = constraints.maxWidth < 600;
+
+      Widget content = Padding(
         padding: const EdgeInsets.all(16.0),
         child: LayoutBuilder(
           builder: (context, constraints) {
-            // Web layout
             if (kIsWeb && constraints.maxWidth >= 1024) {
               return Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Left: Project cards
                   Expanded(
                     flex: 3,
                     child: GridView.builder(
@@ -64,7 +57,6 @@ class AdminReportsPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 24),
-                  // Right: Summary
                   Expanded(
                     flex: 1,
                     child: SingleChildScrollView(
@@ -89,7 +81,8 @@ class AdminReportsPage extends StatelessWidget {
                                 spacing: 16,
                                 runSpacing: 12,
                                 children: [
-                                  _statusBadge("Total", totalProjects, AppColors.primary),
+                                  _statusBadge(
+                                      "Total", totalProjects, AppColors.primary),
                                   _statusBadge("Approved", approved, Colors.green),
                                   _statusBadge("Pending", pending, Colors.orange),
                                   _statusBadge("Rejected", rejected, Colors.red),
@@ -107,10 +100,9 @@ class AdminReportsPage extends StatelessWidget {
               );
             }
 
-            // Tablet / Mobile layout
+            // Mobile / Tablet
             return Column(
               children: [
-                // Top summary card
                 Card(
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
@@ -145,28 +137,30 @@ class AdminReportsPage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 20),
-                // Project list
                 Expanded(
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       int crossAxisCount = 1;
                       if (constraints.maxWidth >= 601 && constraints.maxWidth < 1024) {
-                        crossAxisCount = 2; // Tablet
+                        crossAxisCount = 2;
                       }
                       if (crossAxisCount == 1) {
                         return ListView.builder(
                           itemCount: projects.length,
-                          itemBuilder: (_, index) =>
-                              _projectCard(context, projects[index]),
+                          itemBuilder: (_, index) => Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: _projectCard(context, projects[index]),
+                          ),
                         );
                       } else {
                         return GridView.builder(
                           itemCount: projects.length,
-                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: crossAxisCount,
                             crossAxisSpacing: 20,
                             mainAxisSpacing: 20,
-                            childAspectRatio: 1.4,
+                            childAspectRatio: 1,
                           ),
                           itemBuilder: (_, index) =>
                               _projectCard(context, projects[index]),
@@ -179,8 +173,33 @@ class AdminReportsPage extends StatelessWidget {
             );
           },
         ),
-      ),
-    );
+      );
+
+      return Scaffold(
+        appBar: isMobile
+            ? AppBar(
+                title: const Text(
+                  "Work Reports",
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.white),
+                ),
+                backgroundColor: AppColors.primary,
+                iconTheme: const IconThemeData(color: Colors.white),
+              )
+            : null,
+        drawer: isMobile ? const AdminSidebar(selectedPage: "Reports") : null,
+        body: Row(
+          children: [
+            if (!isMobile)
+              const SizedBox(
+                width: 260,
+                child: AdminSidebar(selectedPage: "Reports", isWeb: true),
+              ),
+            Expanded(child: content),
+          ],
+        ),
+      );
+    });
   }
 
   Widget _statusBadge(String label, int count, Color color) {
@@ -214,24 +233,20 @@ class AdminReportsPage extends StatelessWidget {
       margin: EdgeInsets.zero,
       clipBehavior: Clip.hardEdge,
       child: InkWell(
-        onTap: () {}, // Placeholder for click behavior
+        onTap: () {}, // Placeholder
         hoverColor: AppColors.primary,
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                project.title,
-                style: const TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.bold),
-              ),
+              Text(project.title,
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 6),
               Text("Assigned User: ${project.assignedUser ?? '-'}"),
               Text("Category: ${project.category}"),
               Text("Budget: ₹${project.budget}"),
-              Text(
-                  "Deadline: ${project.deadline.toLocal().toString().split(' ')[0]}"),
+              Text("Deadline: ${project.deadline.toLocal().toString().split(' ')[0]}"),
               const SizedBox(height: 10),
               Wrap(
                 spacing: 8,
@@ -242,8 +257,7 @@ class AdminReportsPage extends StatelessWidget {
                     0,
                     getStatusColor(project.adminStatus),
                   ),
-                  if (project.isCompleted)
-                    _statusBadge("Completed", 0, Colors.purple),
+                  if (project.isCompleted) _statusBadge("Completed", 0, Colors.purple),
                 ],
               ),
             ],
@@ -283,3 +297,32 @@ class ProjectModelReport {
     this.completedOn,
   });
 }
+
+// ---- Dummy Report List ----
+final List<ProjectModelReport> dummyProjectsReports = [
+  ProjectModelReport(
+    title: "Website Development",
+    category: "IT & Software",
+    budget: 50000,
+    paymentType: "Fixed",
+    paymentValue: 50000,
+    deadline: DateTime.now().add(const Duration(days: 30)),
+    applicants: [
+      {"name": "Alice", "proposal": "I will build your website in Flutter"},
+      {"name": "Bob", "proposal": "I can do it with ReactJS"},
+    ],
+    assignedUser: "Alice",
+  ),
+  ProjectModelReport(
+    title: "Logo Design",
+    category: "Design",
+    budget: 5000,
+    paymentType: "Fixed",
+    paymentValue: 5000,
+    deadline: DateTime.now().add(const Duration(days: 10)),
+    applicants: [
+      {"name": "Charlie", "proposal": "Professional logo design"},
+    ],
+    assignedUser: "Charlie",
+  ),
+];

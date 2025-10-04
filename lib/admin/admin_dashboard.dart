@@ -1,173 +1,200 @@
 import 'package:flutter/material.dart';
-import 'package:jobshub/admin/admin_approved_screen.dart';
-import 'package:jobshub/admin/admin_contact_us.dart';
-import 'package:jobshub/admin/admin_job_status.dart';
-import 'package:jobshub/admin/admin_user.dart';
-import 'package:jobshub/admin/admin_view_notification_screen.dart';
-import 'package:jobshub/admin/manage_kyc.dart';
-import 'package:jobshub/admin/admin_report_page.dart';
-import 'package:jobshub/users/login_screen.dart';
 import 'package:jobshub/utils/AppColor.dart';
+
+import 'admin_sidebar.dart'; // <-- import the common sidebar
 
 class AdminDashboardPage extends StatelessWidget {
   const AdminDashboardPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          "Admin Dashboard",
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        iconTheme: IconThemeData(color: Colors.white),
-        backgroundColor: AppColors.primary,
-      ),
-      drawer: _buildDrawer(context),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [_dashboardStats(context), const SizedBox(height: 24)],
-        ),
-      ),
-    );
-  }
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        bool isWeb = constraints.maxWidth > 900;
 
-  Drawer _buildDrawer(BuildContext context) {
-    return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          DrawerHeader(
-            decoration: BoxDecoration(color: AppColors.primary),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                CircleAvatar(
-                  radius: 30,
-                  backgroundImage: AssetImage("assets/client.png"),
+        return Scaffold(
+          appBar: isWeb
+              ? null
+              : AppBar(
+                  title: const Text(
+                    "Admin Dashboard",
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                  iconTheme: const IconThemeData(color: Colors.white),
+                  backgroundColor: AppColors.primary,
                 ),
-                SizedBox(height: 10),
-                Text(
-                  "Admin Panel",
-                  style: TextStyle(color: Colors.white, fontSize: 18),
+          drawer: isWeb
+              ? null
+              : const AdminSidebar(selectedPage: "Dashboard"),
+          body: Row(
+            children: [
+              if (isWeb)
+                Container(
+                  width: 260,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        blurRadius: 8,
+                        offset: const Offset(2, 0),
+                        color: Colors.black.withOpacity(0.05),
+                      ),
+                    ],
+                  ),
+                  child: const AdminSidebar(
+                    selectedPage: "Dashboard",
+                    isWeb: true,
+                  ),
                 ),
-                Text(
-                  "Mobile No: 9090909090",
-                  style: TextStyle(color: Colors.white70, fontSize: 14),
+              Expanded(
+                child: Column(
+                  children: [
+                    if (isWeb)
+                      Container(
+                        height: 60,
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          boxShadow: [
+                            BoxShadow(
+                              blurRadius: 4,
+                              color: Colors.black.withOpacity(0.05),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Admin Dashboard",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .titleLarge
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.primary,
+                                  ),
+                            ),
+                            const CircleAvatar(
+                              backgroundImage:
+                                  AssetImage("assets/client.png"),
+                            ),
+                          ],
+                        ),
+                      ),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(24.0),
+                        child: _dashboardStats(context, isWeb),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-          _drawerItem(
-            context,
-            Icons.dashboard,
-            "Dashboard",
-            AdminDashboardPage(),
-          ),
-          _drawerItem(
-            context,
-            Icons.dashboard,
-            "Job Status",
-            JobStatusScreen(),
-          ),
-          _drawerItem(context, Icons.dashboard, "Manage Users", AdminUser()),
-          _drawerItem(context, Icons.person_search, "Manage KYC", ManageKyc()),
-          _drawerItem(
-            context,
-            Icons.work_outline,
-            "Manage Works",
-            AdminApprovalScreen(projects: dummyProjects),
-          ),
-          _drawerItem(
-            context,
-            Icons.report,
-            "Reports",
-            AdminReportsPage(projects: dummyProjectsReports),
-          ),
-
-          _drawerItem(
-            context,
-            Icons.contact_page,
-            "Contact Us",
-            AdminContactUsPage(),
-          ),
-
-          _drawerItem(
-            context,
-            Icons.notifications,
-            "View Notifications",
-            AdminViewNotificationScreen(),
-          ),
-          _drawerItem(context, Icons.logout, "Log out", LoginScreen()),
-        ],
-      ),
-    );
-  }
-
-  Widget _drawerItem(
-    BuildContext context,
-    IconData icon,
-    String title,
-    Widget page,
-  ) {
-    return ListTile(
-      leading: Icon(icon),
-      title: Text(title),
-      onTap: () {
-        Navigator.pop(context); // Close drawer
-        Navigator.push(context, MaterialPageRoute(builder: (_) => page));
+        );
       },
     );
   }
 
-  Widget _dashboardStats(BuildContext context) {
-    // Example dashboard stats
-    return Column(
+  // ---------------- DASHBOARD STATS ----------------
+  Widget _dashboardStats(BuildContext context, bool isWeb) {
+    int crossAxisCount = isWeb ? 4 : 2;
+    double childAspectRatio = isWeb ? 1.5 : 1.2;
+
+    return GridView.count(
+      crossAxisCount: crossAxisCount,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisSpacing: 20,
+      mainAxisSpacing: 20,
+      childAspectRatio: childAspectRatio,
       children: [
-        Row(
-          children: [
-            _dashboardCard(
-              "Pending KYC",
-              "12",
-              Colors.orange.shade400,
-              Icons.person_search,
-            ),
-            _dashboardCard(
-              "Pending Works",
-              "8",
-              Colors.purple.shade400,
-              Icons.work_outline,
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            _dashboardCard(
-              "Wallet Balance",
-              "\$15230",
-              Colors.green.shade400,
-              Icons.account_balance_wallet,
-            ),
-            _dashboardCard("Users", "120", AppColors.primary, Icons.people),
-          ],
-        ),
+        _dashboardCard("Users", "120", AppColors.primary, Icons.people, isWeb),
+        _dashboardCard("Active Projects", "25", Colors.indigo.shade400,
+            Icons.assignment_turned_in, isWeb),
+        _dashboardCard("Pending KYC", "12", Colors.orange.shade400,
+            Icons.person_search, isWeb),
+        _dashboardCard("Pending Works", "8", Colors.purple.shade400,
+            Icons.work_outline, isWeb),
+        _dashboardCard("Approved Works", "60", Colors.teal.shade400,
+            Icons.check_circle_outline, isWeb),
+        _dashboardCard("Rejected Works", "15", Colors.red.shade400,
+            Icons.cancel_outlined, isWeb),
+        _dashboardCard("KYC Verified", "75", Colors.blue.shade400,
+            Icons.verified, isWeb),
+        _dashboardCard("Wallet Balance", "\$15230", Colors.green.shade400,
+            Icons.account_balance_wallet, isWeb),
       ],
     );
   }
 
   Widget _dashboardCard(
-    String title,
-    String value,
-    Color color,
-    IconData icon,
-  ) {
-    return Expanded(
-      child: Container(
-        height: 120,
-        margin: const EdgeInsets.symmetric(horizontal: 8),
-        padding: const EdgeInsets.all(16),
+    String title, String value, Color color, IconData icon, bool isWeb) {
+  if (isWeb) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: () {
+          // Optional: handle card click for web
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: color.withOpacity(0.6), width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.08),
+                blurRadius: 12,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: Colors.white, size: 28),
+              ),
+              const Spacer(),
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[900],
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  } else {
+    // Mobile version stays same
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: color,
           borderRadius: BorderRadius.circular(16),
@@ -175,13 +202,13 @@ class AdminDashboardPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: Colors.white, size: 28),
+            Icon(icon, color: Colors.white, size: 30),
             const Spacer(),
             Text(
               value,
               style: const TextStyle(
                 color: Colors.white,
-                fontSize: 22,
+                fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -196,30 +223,4 @@ class AdminDashboardPage extends StatelessWidget {
   }
 }
 
-final List<ProjectModelReport> dummyProjectsReports = [
-  ProjectModelReport(
-    title: "Website Development",
-    category: "IT & Software",
-    budget: 50000,
-    paymentType: "Fixed",
-    paymentValue: 50000,
-    deadline: DateTime.now().add(Duration(days: 30)),
-    applicants: [
-      {"name": "Alice", "proposal": "I will build your website in Flutter"},
-      {"name": "Bob", "proposal": "I can do it with ReactJS"},
-    ],
-    assignedUser: "Alice",
-  ),
-  ProjectModelReport(
-    title: "Logo Design",
-    category: "Design",
-    budget: 5000,
-    paymentType: "Fixed",
-    paymentValue: 5000,
-    deadline: DateTime.now().add(Duration(days: 10)),
-    applicants: [
-      {"name": "Charlie", "proposal": "Professional logo design"},
-    ],
-    assignedUser: "Charlie",
-  ),
-];
+}

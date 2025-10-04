@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:jobshub/clients/client_otp_screen.dart';
+import 'package:jobshub/hr/view/hr_otp_screen.dart';
 import 'package:jobshub/utils/AppColor.dart';
 
-class ClientLoginPage extends StatefulWidget {
-  const ClientLoginPage({super.key});
+class HrLoginPage extends StatefulWidget {
+  const HrLoginPage({super.key});
 
   @override
-  State<ClientLoginPage> createState() => _ClientLoginPageState();
+  State<HrLoginPage> createState() => HrLoginPageState();
 }
 
-class _ClientLoginPageState extends State<ClientLoginPage> {
+class HrLoginPageState extends State<HrLoginPage> {
   final _mobileController = TextEditingController();
   String? _mobileError;
 
@@ -25,9 +25,8 @@ class _ClientLoginPageState extends State<ClientLoginPage> {
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
-            builder: (_) => ClientOtpScreen(mobile: mobile),
-          ),
-          (route) => false
+            builder: (_) => HrOtpScreen(mobile: mobile),
+          ),(route) => false
         );
       } else {
         _mobileError = "Enter a valid 10-digit mobile number";
@@ -50,7 +49,7 @@ class _ClientLoginPageState extends State<ClientLoginPage> {
                 Image.asset("assets/job_bgr.png", height: 100),
                 const SizedBox(height: 20),
                 Text(
-                  "Client Login",
+                  "HR Login",
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -117,7 +116,7 @@ class _ClientLoginPageState extends State<ClientLoginPage> {
                             child: loginContent,
                           ),
                         )
-                      : loginContent, // mobile stays same
+                      : loginContent,
                 ),
               ),
             );

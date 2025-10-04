@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:jobshub/admin/admin_create_notification_screen.dart';
+import 'package:jobshub/admin/admin_sidebar.dart';
 import 'package:jobshub/utils/AppColor.dart';
 
 class AdminViewNotificationScreen extends StatelessWidget {
@@ -7,7 +8,6 @@ class AdminViewNotificationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Dummy notifications
     final List<Map<String, String>> notifications = [
       {
         "title": "New Job Posted",
@@ -26,62 +26,81 @@ class AdminViewNotificationScreen extends StatelessWidget {
       },
     ];
 
+    bool isMobile = MediaQuery.of(context).size.width < 600;
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          "Notifications",
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-        ),
-        backgroundColor: AppColors.primary,
-        iconTheme: const IconThemeData(color: Colors.white),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => AdminCreateNotificationScreen(),
+      appBar: isMobile
+          ? AppBar(
+              title: const Text(
+                "Notifications",
+                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+              ),
+              backgroundColor: AppColors.primary,
+              iconTheme: const IconThemeData(color: Colors.white),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => AdminCreateNotificationScreen(),
+                      ),
+                    );
+                  },
+                  child: const Text(
+                    "Create",
+                    style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
                 ),
-              );
-            },
-            child: Text("Create",style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white),),
+              ],
+            )
+          : null,
+      drawer: isMobile ? const AdminSidebar(selectedPage: "View Notifications") : null,
+      body: Row(
+        children: [
+          if (!isMobile)
+            const SizedBox(
+              width: 260,
+              child: AdminSidebar(selectedPage: "View Notifications", isWeb: true),
+            ),
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: notifications.length,
+              itemBuilder: (context, index) {
+                final notif = notifications[index];
+                return Card(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  margin: const EdgeInsets.symmetric(vertical: 8),
+                  child: ListTile(
+                    leading: const Icon(
+                      Icons.notifications,
+                      color: AppColors.primary,
+                    ),
+                    title: Text(
+                      notif["title"]!,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(notif["message"]!),
+                        const SizedBox(height: 4),
+                        Text(
+                          notif["date"]!,
+                          style: const TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
         ],
-      ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: notifications.length,
-        itemBuilder: (context, index) {
-          final notif = notifications[index];
-          return Card(
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            margin: const EdgeInsets.symmetric(vertical: 8),
-            child: ListTile(
-              leading: const Icon(
-                Icons.notifications,
-                color: AppColors.primary,
-              ),
-              title: Text(
-                notif["title"]!,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(notif["message"]!),
-                  const SizedBox(height: 4),
-                  Text(
-                    notif["date"]!,
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
       ),
     );
   }

@@ -22,9 +22,10 @@ class OtpScreenState extends State<OtpScreen> {
         _otpError = "Enter valid 4-digit OTP";
         return;
       }
-      Navigator.pushReplacement(
+      Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (_) =>  DashBoardScreen()),
+        (route) => false
       );
     });
   }
