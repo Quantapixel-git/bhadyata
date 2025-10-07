@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:jobshub/clients/client_dashboard.dart';
+import 'package:jobshub/users/dashboard_screen.dart';
 import 'package:jobshub/utils/AppColor.dart';
 
 class KycStepperPage extends StatefulWidget {
@@ -41,7 +42,7 @@ class _KycStepperPageState extends State<KycStepperPage> {
       Future.delayed(const Duration(seconds: 1), () {
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) =>  ClientDashboardPage()),
+          MaterialPageRoute(builder: (context) =>  DashBoardScreen()),
           (route) => false,
         );
       });
@@ -79,7 +80,9 @@ class _KycStepperPageState extends State<KycStepperPage> {
                 file ?? title,
                 style: TextStyle(
                   color: file != null ? Colors.black87 : Colors.grey.shade600,
-                  fontWeight: file != null ? FontWeight.w500 : FontWeight.normal,
+                  fontWeight: file != null
+                      ? FontWeight.w500
+                      : FontWeight.normal,
                 ),
               ),
             ),
@@ -89,68 +92,94 @@ class _KycStepperPageState extends State<KycStepperPage> {
       ),
     );
   }
-Widget _formWrapper({required Widget child}) {
-  return LayoutBuilder(
-    builder: (context, constraints) {
-      bool isWeb = constraints.maxWidth > 800;
-      return Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: isWeb ? 520 : double.infinity),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              child,
-              const SizedBox(height: 24),
 
-              // 🔹 Show navigation buttons only on Web
-              if (isWeb)
-                Row(
-                  children: [
-                    if (_currentStep > 0)
-                      OutlinedButton.icon(
-                        onPressed: _previousStep,
-                        icon: const Icon(Icons.arrow_back),
-                        label: const Text("Back"),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: AppColors.primary,
-                          side: BorderSide(color: AppColors.primary),
+  Widget _formWrapper({required Widget child}) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        bool isWeb = constraints.maxWidth > 800;
+        return Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: isWeb ? 520 : double.infinity,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                child,
+                const SizedBox(height: 24),
+
+                // 🔹 Show navigation buttons only on Web
+                if (isWeb)
+                  Row(
+                    children: [
+                      if (_currentStep > 0)
+                        OutlinedButton.icon(
+                          onPressed: _previousStep,
+                          icon: const Icon(Icons.arrow_back),
+                          label: const Text("Back"),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.primary,
+                            side: BorderSide(color: AppColors.primary),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      const Spacer(),
+                      ElevatedButton.icon(
+                        onPressed: _nextStep,
+                        icon: Icon(
+                          _currentStep == 4
+                              ? Icons.check_circle
+                              : Icons.arrow_forward,
+                        ),
+                        label: Text(_currentStep == 4 ? "Submit" : "Next"),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
+                          elevation: 2,
                         ),
                       ),
-                    const Spacer(),
-                    ElevatedButton.icon(
-                      onPressed: _nextStep,
-                      icon: Icon(_currentStep == 4 ? Icons.check_circle : Icons.arrow_forward),
-                      label: Text(_currentStep == 4 ? "Submit" : "Next"),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 2,
-                      ),
-                    ),
-                  ],
-                ),
-            ],
+                    ],
+                  ),
+              ],
+            ),
           ),
-        ),
-      );
-    },
-  );
-}
-
+        );
+      },
+    );
+  }
 
   // 🔹 Sidebar-only steps (no content)
   List<Step> _getSidebarSteps() {
     return [
-      Step(title: const Text("Personal"), content: const SizedBox.shrink(), isActive: _currentStep >= 0),
-      Step(title: const Text("Documents"), content: const SizedBox.shrink(), isActive: _currentStep >= 1),
-      Step(title: const Text("Work"), content: const SizedBox.shrink(), isActive: _currentStep >= 2),
-      Step(title: const Text("Selfie"), content: const SizedBox.shrink(), isActive: _currentStep >= 3),
-      Step(title: const Text("Review"), content: const SizedBox.shrink(), isActive: _currentStep >= 4),
+      Step(
+        title: const Text("Personal"),
+        content: const SizedBox.shrink(),
+        isActive: _currentStep >= 0,
+      ),
+      Step(
+        title: const Text("Documents"),
+        content: const SizedBox.shrink(),
+        isActive: _currentStep >= 1,
+      ),
+      Step(
+        title: const Text("Work"),
+        content: const SizedBox.shrink(),
+        isActive: _currentStep >= 2,
+      ),
+      Step(
+        title: const Text("Selfie"),
+        content: const SizedBox.shrink(),
+        isActive: _currentStep >= 3,
+      ),
+      Step(
+        title: const Text("Review"),
+        content: const SizedBox.shrink(),
+        isActive: _currentStep >= 4,
+      ),
     ];
   }
 
@@ -164,7 +193,10 @@ Widget _formWrapper({required Widget child}) {
         content: _formWrapper(
           child: Column(
             children: [
-              TextField(controller: _nameController, decoration: const InputDecoration(labelText: "Full Name")),
+              TextField(
+                controller: _nameController,
+                decoration: const InputDecoration(labelText: "Full Name"),
+              ),
               TextField(
                 controller: _dobController,
                 readOnly: true,
@@ -177,20 +209,39 @@ Widget _formWrapper({required Widget child}) {
                     lastDate: DateTime.now(),
                   );
                   if (picked != null) {
-                    _dobController.text = "${picked.day}/${picked.month}/${picked.year}";
+                    _dobController.text =
+                        "${picked.day}/${picked.month}/${picked.year}";
                   }
                 },
               ),
               DropdownButtonFormField<String>(
                 value: _gender,
-                items: ["Male", "Female", "Other"].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                items: ["Male", "Female", "Other"]
+                    .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                    .toList(),
                 onChanged: (v) => setState(() => _gender = v),
                 decoration: const InputDecoration(labelText: "Gender"),
               ),
-              TextField(controller: _emailController, decoration: const InputDecoration(labelText: "Email")),
-              TextField(controller: _mobileController, decoration: const InputDecoration(labelText: "Mobile Number"), keyboardType: TextInputType.phone, maxLength: 10),
-              TextField(controller: _addressController, decoration: const InputDecoration(labelText: "Address")),
-              TextField(controller: _guardianController, decoration: const InputDecoration(labelText: "Father / Guardian Name (Optional)")),
+              TextField(
+                controller: _emailController,
+                decoration: const InputDecoration(labelText: "Email"),
+              ),
+              TextField(
+                controller: _mobileController,
+                decoration: const InputDecoration(labelText: "Mobile Number"),
+                keyboardType: TextInputType.phone,
+                maxLength: 10,
+              ),
+              TextField(
+                controller: _addressController,
+                decoration: const InputDecoration(labelText: "Address"),
+              ),
+              TextField(
+                controller: _guardianController,
+                decoration: const InputDecoration(
+                  labelText: "Father / Guardian Name (Optional)",
+                ),
+              ),
             ],
           ),
         ),
@@ -202,9 +253,21 @@ Widget _formWrapper({required Widget child}) {
         content: _formWrapper(
           child: Column(
             children: [
-              _uploadCard("Identity Proof (Aadhaar / PAN / Passport)", _identityProof, () => setState(() => _identityProof = "identity.pdf")),
-              _uploadCard("Address Proof (Driving License / Utility Bill / Passport)", _addressProof, () => setState(() => _addressProof = "address.pdf")),
-              _uploadCard("Educational Certificate (Optional)", _educationProof, () => setState(() => _educationProof = "education.pdf")),
+              _uploadCard(
+                "Identity Proof (Aadhaar / PAN / Passport)",
+                _identityProof,
+                () => setState(() => _identityProof = "identity.pdf"),
+              ),
+              _uploadCard(
+                "Address Proof (Driving License / Utility Bill / Passport)",
+                _addressProof,
+                () => setState(() => _addressProof = "address.pdf"),
+              ),
+              _uploadCard(
+                "Educational Certificate (Optional)",
+                _educationProof,
+                () => setState(() => _educationProof = "education.pdf"),
+              ),
             ],
           ),
         ),
@@ -216,9 +279,25 @@ Widget _formWrapper({required Widget child}) {
         content: _formWrapper(
           child: Column(
             children: [
-              TextField(controller: _jobTitleController, decoration: const InputDecoration(labelText: "Current Job Title (Optional)")),
-              TextField(controller: _experienceController, decoration: const InputDecoration(labelText: "Years of Experience"), keyboardType: TextInputType.number),
-              TextField(controller: _skillsController, decoration: const InputDecoration(labelText: "Skills / Expertise")),
+              TextField(
+                controller: _jobTitleController,
+                decoration: const InputDecoration(
+                  labelText: "Current Job Title (Optional)",
+                ),
+              ),
+              TextField(
+                controller: _experienceController,
+                decoration: const InputDecoration(
+                  labelText: "Years of Experience",
+                ),
+                keyboardType: TextInputType.number,
+              ),
+              TextField(
+                controller: _skillsController,
+                decoration: const InputDecoration(
+                  labelText: "Skills / Expertise",
+                ),
+              ),
             ],
           ),
         ),
@@ -230,9 +309,16 @@ Widget _formWrapper({required Widget child}) {
         content: _formWrapper(
           child: Column(
             children: [
-              _uploadCard("Take a Selfie", _selfie, () => setState(() => _selfie = "selfie.png")),
+              _uploadCard(
+                "Take a Selfie",
+                _selfie,
+                () => setState(() => _selfie = "selfie.png"),
+              ),
               const SizedBox(height: 8),
-              const Text("💡 Tip: Ensure good lighting and your face is clearly visible.", style: TextStyle(color: Colors.black54)),
+              const Text(
+                "💡 Tip: Ensure good lighting and your face is clearly visible.",
+                style: TextStyle(color: Colors.black54),
+              ),
             ],
           ),
         ),
@@ -245,7 +331,9 @@ Widget _formWrapper({required Widget child}) {
           child: Card(
             color: AppColors.primary,
             elevation: 0,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -285,7 +373,10 @@ Widget _formWrapper({required Widget child}) {
           appBar: AppBar(
             title: const Text(
               "KYC Verification",
-              style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
             centerTitle: true,
             backgroundColor: AppColors.primary,
@@ -302,8 +393,10 @@ Widget _formWrapper({required Widget child}) {
                       child: Stepper(
                         type: StepperType.vertical,
                         currentStep: _currentStep,
-                        onStepTapped: (step) => setState(() => _currentStep = step),
-                        controlsBuilder: (context, details) => const SizedBox.shrink(),
+                        onStepTapped: (step) =>
+                            setState(() => _currentStep = step),
+                        controlsBuilder: (context, details) =>
+                            const SizedBox.shrink(),
                         steps: _getSidebarSteps(),
                       ),
                     ),

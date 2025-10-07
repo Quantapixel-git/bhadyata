@@ -102,7 +102,7 @@ class _HrCandidateReviewScreenState extends State<HrCandidateReviewScreen> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (_) => HrNotificationScreen(),
+              builder: (_) => HrNotificationView(),
             ),
           );
           break;
@@ -190,7 +190,7 @@ class _HrCandidateReviewScreenState extends State<HrCandidateReviewScreen> {
       case "attendance":
         return HrAttendanceDashboardScreen();
       case "notifications":
-        return HrNotificationScreen();
+        return HrNotificationView();
       case "logout":
         return const LoginScreen();
       case "review":
@@ -281,7 +281,6 @@ class _HrCandidateReviewScreenState extends State<HrCandidateReviewScreen> {
       drawer: isWeb ? null : _buildSidebar(context, false),
       body: Row(
         children: [
-          if (isWeb) _buildSidebar(context, true), // Permanent sidebar
           Expanded(child: _buildPageContent()),
         ],
       ),

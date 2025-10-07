@@ -1,3 +1,4 @@
+// HrDrawer.dart (Web-specific adjustments)
 import 'package:flutter/material.dart';
 import 'package:jobshub/hr/view/hr_attendance_dashboard_screen.dart';
 import 'package:jobshub/hr/view/hr_candidate_review_screen.dart';
@@ -9,7 +10,8 @@ import 'package:jobshub/users/project_model.dart';
 import 'package:jobshub/utils/AppColor.dart';
 
 class HrDrawer extends StatelessWidget {
-  HrDrawer({super.key});
+  final Widget? content; // Web-specific content to display
+   HrDrawer({super.key, this.content});
 
   // Mock data
   final int totalWorks = 12;
@@ -59,10 +61,10 @@ class HrDrawer extends StatelessWidget {
             ),
           ),
           _drawerItem(context, Icons.dashboard, "Dashboard", HrDashboard()),
-          _drawerItem(context, Icons.work_outline, "Assign User Works", HrManageProjects(projects: [])),
+          _drawerItem(context, Icons.work_outline, "Assign User Works", HrManageProjects(projects: projects)),
           _drawerItem(context, Icons.calendar_today, "Manage Attendance", HrAttendanceDashboardScreen()),
           _drawerItem(context, Icons.rate_review, "Candidates Review", HrCandidateReviewScreen()),
-          _drawerItem(context, Icons.notifications_active, "View Notifications", HrNotificationScreen()),
+          _drawerItem(context, Icons.notifications_active, "View Notifications", HrNotificationView()),
           const Divider(),
           _drawerItem(context, Icons.logout, "Logout", const LoginScreen()),
         ],
@@ -70,108 +72,52 @@ class HrDrawer extends StatelessWidget {
     );
 
     if (isWeb) {
-      // Permanent sidebar layout for web
+      // Web layout with permanent sidebar and content area
       return Row(
         children: [
           sidebar,
           Expanded(
-            child: Scaffold(
-              appBar: AppBar(
-                title: const Text("HR Dashboard", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
-                backgroundColor: Colors.white,
-                elevation: 0,
-              ),
-              body: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _statCard("Total Works", totalWorks.toString(), AppColors.primary, Icons.work),
-                        _statCard("Pending Approval", pendingApproval.toString(), Colors.orange.shade400, Icons.pending_actions),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _statCard("Completed Works", completedWorks.toString(), Colors.green.shade400, Icons.check_circle_outline),
-                        _statCard("Wallet Balance", "\$${walletBalance.toStringAsFixed(2)}", Colors.purple.shade400, Icons.account_balance_wallet),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            child: content ?? Container(color: Colors.grey[100]), // Render content passed from page
           ),
         ],
       );
     } else {
-      // Mobile layout with drawer
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text("HR Dashboard", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-          backgroundColor: AppColors.primary,
-        ),
-        drawer: Drawer(child: sidebar),
-        body: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _statCard("Total Works", totalWorks.toString(), AppColors.primary, Icons.work),
-                  _statCard("Pending Approval", pendingApproval.toString(), Colors.orange.shade400, Icons.pending_actions),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _statCard("Completed Works", completedWorks.toString(), Colors.green.shade400, Icons.check_circle_outline),
-                  _statCard("Wallet Balance", "\$${walletBalance.toStringAsFixed(2)}", Colors.purple.shade400, Icons.account_balance_wallet),
-                ],
-              ),
-            ],
-          ),
-        ),
-      );
+      // Mobile layout unchanged
+      return Drawer(child: sidebar);
     }
   }
 
   Widget _drawerItem(BuildContext context, IconData icon, String title, Widget screen) {
+  final bool isWeb = MediaQuery.of(context).size.width >= 900;
+
+  if (isWeb) {
+    // On web, rebuild sidebar with new content instead of navigation
     return ListTile(
       leading: Icon(icon),
       title: Text(title),
       onTap: () {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => screen));
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (_) => Material(  // Add Material wrapper
+              child: HrDrawer(content: screen),
+            ),
+          ),
+        );
+      },
+    );
+  } else {
+    // Mobile: keep pushReplacement
+    return ListTile(
+      leading: Icon(icon),
+      title: Text(title),
+      onTap: () {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => screen),
+        );
       },
     );
   }
-
-  Widget _statCard(String title, String value, Color color, IconData icon) {
-    return Expanded(
-      child: Container(
-        height: 120,
-        margin: const EdgeInsets.symmetric(horizontal: 4),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: color.withOpacity(0.4), blurRadius: 8, offset: const Offset(0, 4))],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, color: Colors.white, size: 28),
-            const Spacer(),
-            Text(value, style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
-            Text(title, style: const TextStyle(color: Colors.white70, fontSize: 14)),
-          ],
-        ),
-      ),
-    );
-  }
+}
 }

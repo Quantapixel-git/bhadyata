@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:jobshub/hr/view/hr_drawer_screen.dart';
+import 'package:jobshub/hr/view/hr_attendance_dashboard_screen.dart';
+import 'package:jobshub/hr/view/hr_candidate_review_screen.dart';
+import 'package:jobshub/hr/view/hr_manage_projects.dart';
+import 'package:jobshub/hr/view/hr_notification_view.dart';
+import 'package:jobshub/users/login_screen.dart';
 import 'package:jobshub/users/project_model.dart';
 import 'package:jobshub/utils/AppColor.dart';
 
@@ -22,22 +26,8 @@ class HrDashboard extends StatelessWidget {
       status: 'In Progress',
       deadline: DateTime.now().add(const Duration(days: 7)),
       applicants: [
-        {'name': 'Alice Johnson', 'proposal': 'I can complete this in 3 days with high quality.'},
-        {'name': 'Bob Smith', 'proposal': 'I will deliver in 2 days with responsive design.'},
-      ],
-    ),
-    ProjectModel(
-      title: 'Sales Partner',
-      description: 'Earn commission per sale',
-      budget: 0,
-      category: 'Marketing',
-      paymentType: 'Commission',
-      paymentValue: 15,
-      status: 'In Progress',
-      deadline: DateTime.now().add(const Duration(days: 15)),
-      applicants: [
-        {'name': 'Charlie Brown', 'proposal': 'Experienced in sales, I’ll close deals in 4 days.'},
-        {'name': 'Daisy Miller', 'proposal': 'I have a wide network, can boost sales quickly.'},
+        {'name': 'Alice Johnson', 'proposal': 'I can complete this in 3 days.'},
+        {'name': 'Bob Smith', 'proposal': 'I’ll deliver responsive design fast.'},
       ],
     ),
   ];
@@ -52,9 +42,10 @@ class HrDashboard extends StatelessWidget {
           return Scaffold(
             body: Row(
               children: [
+                // Permanent Sidebar
                 SizedBox(
                   width: 250,
-                  child: HrDrawer(),
+                  child: _hrSidebar(context, isWeb: true),
                 ),
                 Expanded(
                   child: Scaffold(
@@ -71,7 +62,7 @@ class HrDashboard extends StatelessWidget {
                       elevation: 0,
                       automaticallyImplyLeading: false,
                     ),
-                    body: _buildDashboardContent(isWeb),
+                    body: _dashboardContent(isWeb),
                     backgroundColor: Colors.grey[100],
                   ),
                 ),
@@ -79,17 +70,17 @@ class HrDashboard extends StatelessWidget {
             ),
           );
         } else {
+          // Mobile layout with drawer
           return Scaffold(
             appBar: AppBar(
               title: const Text(
-                "Hr Dashboard",
+                "HR Dashboard",
                 style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
               ),
-              iconTheme: const IconThemeData(color: Colors.white),
               backgroundColor: AppColors.primary,
             ),
-            drawer: HrDrawer(),
-            body: _buildDashboardContent(isWeb),
+            drawer: Drawer(child: _hrSidebar(context)),
+            body: _dashboardContent(isWeb),
             backgroundColor: Colors.grey[50],
           );
         }
@@ -97,7 +88,52 @@ class HrDashboard extends StatelessWidget {
     );
   }
 
-  Widget _buildDashboardContent(bool isWeb) {
+  // ---------- Sidebar ----------
+  Widget _hrSidebar(BuildContext context, {bool isWeb = false}) {
+    return Container(
+      color: Colors.pink.shade50,
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          DrawerHeader(
+            decoration: BoxDecoration(color: AppColors.primary),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                CircleAvatar(
+                  radius: 35,
+                  backgroundImage: AssetImage("assets/job_bgr.png"),
+                ),
+                SizedBox(height: 10),
+                Text("Welcome, HR", style: TextStyle(color: Colors.white, fontSize: 18)),
+                Text("Mobile No: 9090909090", style: TextStyle(color: Colors.white70, fontSize: 14)),
+              ],
+            ),
+          ),
+          _drawerItem(context, Icons.dashboard, "Dashboard", HrDashboard()),
+          _drawerItem(context, Icons.work_outline, "Assign User Works", HrManageProjects(projects: [])),
+          _drawerItem(context, Icons.calendar_today, "Manage Attendance", HrAttendanceDashboardScreen()),
+          _drawerItem(context, Icons.rate_review, "Candidates Review", HrCandidateReviewScreen()),
+          _drawerItem(context, Icons.notifications_active, "View Notifications", HrNotificationView()),
+          const Divider(),
+          _drawerItem(context, Icons.logout, "Logout", const LoginScreen()),
+        ],
+      ),
+    );
+  }
+
+  Widget _drawerItem(BuildContext context, IconData icon, String title, Widget screen) {
+    return ListTile(
+      leading: Icon(icon),
+      title: Text(title),
+      onTap: () {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => screen));
+      },
+    );
+  }
+
+  // ---------- Dashboard Content ----------
+  Widget _dashboardContent(bool isWeb) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
       child: Center(
@@ -106,34 +142,32 @@ class HrDashboard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-             LayoutBuilder(
-  builder: (context, constraints) {
-    final double width = constraints.maxWidth;
-    final bool isWide = width > 900; // desktop
-    final crossAxisCount = isWide ? 4 : 2; // ✅ Always 2 on mobile/tablet
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final width = constraints.maxWidth;
+                  final crossAxisCount = width > 900 ? 4 : 2;
 
-    final stats = [
-      _statCard("Total Works", totalWorks.toString(), AppColors.primary, Icons.work, isWeb),
-      _statCard("Pending Approval", pendingApproval.toString(), Colors.orange.shade400, Icons.pending_actions, isWeb),
-      _statCard("Completed Works", completedWorks.toString(), Colors.green.shade400, Icons.check_circle_outline, isWeb),
-      _statCard("Wallet Balance", "\$${walletBalance.toStringAsFixed(2)}", Colors.purple.shade400, Icons.account_balance_wallet, isWeb),
-    ];
+                  final stats = [
+                    _statCard("Total Works", totalWorks.toString(), AppColors.primary, Icons.work, isWeb),
+                    _statCard("Pending Approval", pendingApproval.toString(), Colors.orange.shade400, Icons.pending_actions, isWeb),
+                    _statCard("Completed Works", completedWorks.toString(), Colors.green.shade400, Icons.check_circle_outline, isWeb),
+                    _statCard("Wallet Balance", "\$${walletBalance.toStringAsFixed(2)}", Colors.purple.shade400, Icons.account_balance_wallet, isWeb),
+                  ];
 
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: crossAxisCount,
-        crossAxisSpacing: isWide ? 24 : 16,
-        mainAxisSpacing: isWide ? 24 : 16,
-        childAspectRatio: isWide ? 1.9 : 1.5, // ✅ Equal height balance
-      ),
-      itemCount: stats.length,
-      itemBuilder: (context, index) => stats[index],
-    );
-  },
-),
-
+                  return GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossAxisCount,
+                      crossAxisSpacing: width > 900 ? 24 : 16,
+                      mainAxisSpacing: width > 900 ? 24 : 16,
+                      childAspectRatio: width > 900 ? 1.9 : 1.5,
+                    ),
+                    itemCount: stats.length,
+                    itemBuilder: (context, index) => stats[index],
+                  );
+                },
+              ),
             ],
           ),
         ),
@@ -142,55 +176,39 @@ class HrDashboard extends StatelessWidget {
   }
 
   // ---------- Stat Card ----------
- Widget _statCard(String title, String value, Color color, IconData icon, bool isWeb) {
-  final double iconSize = isWeb ? 38 : 30;
-  final double valueFont = isWeb ? 24 : 20;
-  final double titleFont = isWeb ? 16 : 14;
-  final double padding = isWeb ? 20 : 16;
+  Widget _statCard(String title, String value, Color color, IconData icon, bool isWeb) {
+    final double iconSize = isWeb ? 38 : 30;
+    final double valueFont = isWeb ? 24 : 20;
+    final double titleFont = isWeb ? 16 : 14;
+    final double padding = isWeb ? 20 : 16;
 
-  return Container(
-    padding: EdgeInsets.all(padding),
-    decoration: BoxDecoration(
-      color: color,
-      borderRadius: BorderRadius.circular(18),
-      boxShadow: [
-        BoxShadow(
-          color: color.withOpacity(0.25),
-          blurRadius: 10,
-          offset: const Offset(0, 4),
-        ),
-      ],
-    ),
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween, // ✅ Equal spacing
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Icon(icon, color: Colors.white, size: iconSize),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              value,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: valueFont,
-                fontWeight: FontWeight.bold,
+    return Container(
+      padding: EdgeInsets.all(padding),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(color: color.withOpacity(0.25), blurRadius: 10, offset: const Offset(0, 4)),
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: Colors.white, size: iconSize),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                value,
+                style: TextStyle(color: Colors.white, fontSize: valueFont, fontWeight: FontWeight.bold),
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              title,
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: titleFont,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ],
-    ),
-  );
-}
-
+              const SizedBox(height: 4),
+              Text(title, style: TextStyle(color: Colors.white70, fontSize: titleFont, fontWeight: FontWeight.w500)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 }
