@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:jobshub/clients/client_review_screen.dart';
-import 'package:jobshub/clients/client_view_notification.dart';
 import 'package:jobshub/hr/view/hr_attendance_dashboard_screen.dart';
-import 'package:jobshub/hr/view/hr_work_assign_screen.dart';
+import 'package:jobshub/hr/view/hr_candidate_review_screen.dart';
+import 'package:jobshub/hr/view/hr_dashboard.dart';
+import 'package:jobshub/hr/view/hr_manage_projects.dart';
+import 'package:jobshub/hr/view/hr_notification_view.dart';
 import 'package:jobshub/users/login_screen.dart';
 import 'package:jobshub/users/project_model.dart';
 import 'package:jobshub/utils/AppColor.dart';
@@ -26,202 +27,131 @@ class HrDrawer extends StatelessWidget {
       status: 'In Progress',
       deadline: DateTime.now().add(const Duration(days: 7)),
       applicants: [
-        {
-          'name': 'Alice Johnson',
-          'proposal': 'I can complete this in 3 days with high quality.',
-        },
-        {
-          'name': 'Bob Smith',
-          'proposal': 'I will deliver in 2 days with responsive design.',
-        },
-      ],
-    ),
-    ProjectModel(
-      title: 'Sales Partner',
-      description: 'Earn commission per sale',
-      budget: 0,
-      category: 'Marketing',
-      paymentType: 'Commission',
-      paymentValue: 15,
-      status: 'In Progress',
-      deadline: DateTime.now().add(const Duration(days: 15)),
-      applicants: [
-        {
-          'name': 'Charlie Brown',
-          'proposal': 'Experienced in sales, I’ll close deals in 4 days.',
-        },
-        {
-          'name': 'Daisy Miller',
-          'proposal': 'I have a wide network, can boost sales quickly.',
-        },
+        {'name': 'Alice Johnson', 'proposal': 'I can complete this in 3 days.'},
+        {'name': 'Bob Smith', 'proposal': 'I’ll deliver responsive design fast.'},
       ],
     ),
   ];
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("HR Dashboard",style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white),),
-        iconTheme: IconThemeData(color: Colors.white),
-        backgroundColor: AppColors.primary,
+    final bool isWeb = MediaQuery.of(context).size.width >= 900;
+
+    Widget sidebar = Container(
+      width: 250,
+      color: Colors.pink.shade50,
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          DrawerHeader(
+            decoration: BoxDecoration(color: AppColors.primary),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: const [
+                CircleAvatar(
+                  radius: 35,
+                  backgroundImage: AssetImage("assets/job_bgr.png"),
+                ),
+                SizedBox(height: 10),
+                Text("Welcome, HR", style: TextStyle(color: Colors.white, fontSize: 18)),
+                Text("Mobile No: 9090909090", style: TextStyle(color: Colors.white70, fontSize: 14)),
+              ],
+            ),
+          ),
+          _drawerItem(context, Icons.dashboard, "Dashboard", HrDashboard()),
+          _drawerItem(context, Icons.work_outline, "Assign User Works", HrManageProjects(projects: [])),
+          _drawerItem(context, Icons.calendar_today, "Manage Attendance", HrAttendanceDashboardScreen()),
+          _drawerItem(context, Icons.rate_review, "Candidates Review", HrCandidateReviewScreen()),
+          _drawerItem(context, Icons.notifications_active, "View Notifications", HrNotificationScreen()),
+          const Divider(),
+          _drawerItem(context, Icons.logout, "Logout", const LoginScreen()),
+        ],
       ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(color: AppColors.primary),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  CircleAvatar(
-                    radius: 50,
-                    backgroundImage: AssetImage("assets/job_bgr.png"),
-                  ),
-                  Text(
-                    "Welcome, Client",
-                    style: TextStyle(color: Colors.white, fontSize: 18),
-                  ),
-                  Text(
-                    "Mobile No: 9090909090",
-                    style: TextStyle(color: Colors.white70, fontSize: 14),
-                  ),
-                ],
+    );
+
+    if (isWeb) {
+      // Permanent sidebar layout for web
+      return Row(
+        children: [
+          sidebar,
+          Expanded(
+            child: Scaffold(
+              appBar: AppBar(
+                title: const Text("HR Dashboard", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87)),
+                backgroundColor: Colors.white,
+                elevation: 0,
+              ),
+              body: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _statCard("Total Works", totalWorks.toString(), AppColors.primary, Icons.work),
+                        _statCard("Pending Approval", pendingApproval.toString(), Colors.orange.shade400, Icons.pending_actions),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _statCard("Completed Works", completedWorks.toString(), Colors.green.shade400, Icons.check_circle_outline),
+                        _statCard("Wallet Balance", "\$${walletBalance.toStringAsFixed(2)}", Colors.purple.shade400, Icons.account_balance_wallet),
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
-            ListTile(
-              leading: const Icon(Icons.work_outline),
-              title: const Text("Dashboard"),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) =>
-                        HrDrawer(),
-                  ),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.work_outline),
-              title: const Text("Assign User Works"),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) =>
-                        HrAssignedWorkListScreen(),
-                  ),
-                );
-              },
-            ),
-             ListTile(
-              leading: const Icon(Icons.work_outline),
-              title: const Text("Manage attendance"),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) =>
-                        HrAttendanceDashboardScreen(),
-                  ),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.work_outline),
-              title: const Text("Candidates Review"),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) =>
-                        CandidateReviewsScreen(),
-                  ),
-                );
-              },
-            ),
+          ),
+        ],
+      );
+    } else {
+      // Mobile layout with drawer
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text("HR Dashboard", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+          backgroundColor: AppColors.primary,
+        ),
+        drawer: Drawer(child: sidebar),
+        body: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _statCard("Total Works", totalWorks.toString(), AppColors.primary, Icons.work),
+                  _statCard("Pending Approval", pendingApproval.toString(), Colors.orange.shade400, Icons.pending_actions),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _statCard("Completed Works", completedWorks.toString(), Colors.green.shade400, Icons.check_circle_outline),
+                  _statCard("Wallet Balance", "\$${walletBalance.toStringAsFixed(2)}", Colors.purple.shade400, Icons.account_balance_wallet),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+  }
 
-             ListTile(
-              leading: const Icon(Icons.notifications_active, ),
-              title: const Text("View Notifications"),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) =>
-                        ClientViewNotification(),
-                  ),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.logout),
-              title: const Text("Logout"),
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => LoginScreen(),
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _statCard(
-                  title: "Total Works",
-                  value: totalWorks.toString(),
-                  color: AppColors.primary,
-                  icon: Icons.work,
-                ),
-                _statCard(
-                  title: "Pending Approval",
-                  value: pendingApproval.toString(),
-                  color: Colors.orange.shade400,
-                  icon: Icons.pending_actions,
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _statCard(
-                  title: "Completed Works",
-                  value: completedWorks.toString(),
-                  color: Colors.green.shade400,
-                  icon: Icons.check_circle_outline,
-                ),
-                _statCard(
-                  title: "Wallet Balance",
-                  value: "\$${walletBalance.toStringAsFixed(2)}",
-                  color: Colors.purple.shade400,
-                  icon: Icons.account_balance_wallet,
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-          ],
-        ),
-      ),
+  Widget _drawerItem(BuildContext context, IconData icon, String title, Widget screen) {
+    return ListTile(
+      leading: Icon(icon),
+      title: Text(title),
+      onTap: () {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => screen));
+      },
     );
   }
 
-  Widget _statCard({
-    required String title,
-    required String value,
-    required Color color,
-    required IconData icon,
-  }) {
+  Widget _statCard(String title, String value, Color color, IconData icon) {
     return Expanded(
       child: Container(
         height: 120,
@@ -230,31 +160,15 @@ class HrDrawer extends StatelessWidget {
         decoration: BoxDecoration(
           color: color,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: color.withOpacity(0.4),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          boxShadow: [BoxShadow(color: color.withOpacity(0.4), blurRadius: 8, offset: const Offset(0, 4))],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Icon(icon, color: Colors.white, size: 28),
             const Spacer(),
-            Text(
-              value,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
-              title,
-              style: const TextStyle(color: Colors.white70, fontSize: 14),
-            ),
+            Text(value, style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
+            Text(title, style: const TextStyle(color: Colors.white70, fontSize: 14)),
           ],
         ),
       ),

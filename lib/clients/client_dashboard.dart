@@ -48,100 +48,173 @@ class ClientDashboardPage extends StatelessWidget {
       builder: (context, constraints) {
         final bool isWeb = constraints.maxWidth >= 900;
 
-       // Web layout
-if (isWeb) {
-  return Scaffold(
-    body: Row(
-      children: [
-        SizedBox(
-          width: 250,
-          child: ClientSidebar(projects: projects, isWeb: true),
-        ),
-        Expanded(
-          child: Scaffold(
+        if (isWeb) {
+          return Scaffold(
+            body: Row(
+              children: [
+                SizedBox(
+                  width: 250,
+                  child: ClientSidebar(projects: projects, isWeb: true),
+                ),
+                Expanded(
+                  child: Scaffold(
+                    appBar: AppBar(
+                      title: const Text(
+                        "Client Dashboard",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                          fontSize: 22,
+                        ),
+                      ),
+                      backgroundColor: Colors.white,
+                      elevation: 0,
+                      automaticallyImplyLeading: false,
+                    ),
+                    body: _buildDashboardContent(isWeb),
+                    backgroundColor: Colors.grey[100],
+                  ),
+                ),
+              ],
+            ),
+          );
+        } else {
+          return Scaffold(
             appBar: AppBar(
               title: const Text(
                 "Client Dashboard",
-                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
+                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
               ),
-              backgroundColor: Colors.white,
-              elevation: 0,
-              automaticallyImplyLeading: false,
+              iconTheme: const IconThemeData(color: Colors.white),
+              backgroundColor: AppColors.primary,
             ),
-            body: _buildDashboardContent(),
-            backgroundColor: Colors.grey[100],
-          ),
-        ),
-      ],
-    ),
-  );
-} else {
-  // Mobile Drawer
-  return Scaffold(
-    appBar: AppBar(
-      title: const Text(
-        "Client Dashboard",
-        style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-      ),
-      iconTheme: const IconThemeData(color: Colors.white),
-      backgroundColor: AppColors.primary,
-    ),
-    drawer: ClientSidebar(projects: projects),
-    body: _buildDashboardContent(),
-  );
-}
-
+            drawer: ClientSidebar(projects: projects),
+            body: _buildDashboardContent(isWeb),
+            backgroundColor: Colors.grey[50],
+          );
+        }
       },
     );
   }
 
-  // ---------- Dashboard Cards ----------
-  Widget _buildDashboardContent() {
-    return Padding(
-      padding: const EdgeInsets.all(16),
+  // ---------- Dashboard Content ----------
+Widget _buildDashboardContent(bool isWeb) {
+  return Container(
+    color: Colors.grey[100],
+    child: SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _statCard("Total Works", totalWorks.toString(), AppColors.primary, Icons.work),
-              _statCard("Pending Approval", pendingApproval.toString(), Colors.orange.shade400, Icons.pending_actions),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _statCard("Completed Works", completedWorks.toString(), Colors.green.shade400, Icons.check_circle_outline),
-              _statCard("Wallet Balance", "\$${walletBalance.toStringAsFixed(2)}", Colors.purple.shade400, Icons.account_balance_wallet),
-            ],
+          // 👋 Greeting Section (only for mobile)
+          if (!isWeb)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: const [
+                  Text(
+                    "Welcome Back ",
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  SizedBox(height: 5),
+                  Text(
+                    "Here’s an overview of your work and balance.",
+                    style: TextStyle(color: Colors.black54, fontSize: 14),
+                  ),
+                ],
+              ),
+            ),
+
+          // 🧮 Stats Grid
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final double width = constraints.maxWidth;
+              final bool isWide = width > 800;
+              final crossAxisCount = isWeb ? 4 : 2; // ✅ Always 2 per row on mobile
+
+
+              final stats = [
+                _statCard("Total Works", totalWorks.toString(),
+                    AppColors.primary, Icons.work, isWeb),
+                _statCard("Pending Approval", pendingApproval.toString(),
+                    Colors.orange.shade400, Icons.pending_actions, isWeb),
+                _statCard("Completed Works", completedWorks.toString(),
+                    Colors.green.shade400, Icons.check_circle_outline, isWeb),
+                _statCard("Wallet Balance", "\$${walletBalance.toStringAsFixed(2)}",
+                    Colors.purple.shade400, Icons.account_balance_wallet, isWeb),
+              ];
+
+              return GridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: crossAxisCount,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: isWeb ? 1.8 : 1.4,
+                children: stats,
+              );
+            },
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
-  Widget _statCard(String title, String value, Color color, IconData icon) {
-    return Expanded(
-      child: Container(
-        height: 120,
-        margin: const EdgeInsets.symmetric(horizontal: 4),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: color.withOpacity(0.4), blurRadius: 8, offset: const Offset(0, 4))],
+
+  // ---------- Stat Card ----------
+  Widget _statCard(String title, String value, Color color, IconData icon, bool isWeb) {
+  return GestureDetector(
+    onTap: () {},
+    child: AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      padding: EdgeInsets.all(isWeb ? 18 : 16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [color.withOpacity(0.9), color],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, color: Colors.white, size: 28),
-            const Spacer(),
-            Text(value, style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
-            Text(title, style: const TextStyle(color: Colors.white70, fontSize: 14)),
-          ],
-        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
-    );
-  }
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: Colors.white, size: isWeb ? 36 : 30),
+          const Spacer(),
+          Text(
+            value,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: isWeb ? 24 : 22,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            title,
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: isWeb ? 15 : 13,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
 }

@@ -1,19 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:jobshub/admin/admin_contact_us.dart';
-import 'package:jobshub/admin/admin_dashboard.dart';
-import 'package:jobshub/admin/admin_job_status.dart';
 import 'package:jobshub/admin/admin_report_page.dart';
-import 'package:jobshub/admin/admin_sidebar.dart';
-import 'package:jobshub/admin/admin_stats.dart';
-import 'package:jobshub/admin/admin_user.dart';
-import 'package:jobshub/admin/admin_view_notification_screen.dart';
-import 'package:jobshub/admin/manage_kyc.dart';
-import 'package:jobshub/clients/client_sidebar.dart';
-import 'package:jobshub/users/login_screen.dart';
-import 'package:jobshub/utils/AppColor.dart';
-import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:jobshub/admin/admin_sidebar.dart';
 import 'package:jobshub/utils/AppColor.dart';
 
@@ -288,32 +275,6 @@ class AdminAssignedWorkListScreen extends StatefulWidget {
 
 class _AdminAssignedWorkListScreenState
     extends State<AdminAssignedWorkListScreen> {
-  Widget _drawerItem(
-    BuildContext context,
-    IconData icon,
-    String title,
-    Widget page,
-    bool isWeb,
-  ) {
-    return MouseRegion(
-      cursor: SystemMouseCursors.click,
-      child: ListTile(
-        leading: Icon(icon, color: isWeb ? AppColors.primary : null),
-        title: Text(
-          title,
-          style: TextStyle(
-            color: isWeb ? Colors.black87 : null,
-            fontWeight: isWeb ? FontWeight.w500 : FontWeight.normal,
-          ),
-        ),
-        hoverColor: isWeb ? Colors.blue.shade50 : null,
-        onTap: () {
-          Navigator.pop(context);
-          Navigator.push(context, MaterialPageRoute(builder: (_) => page));
-        },
-      ),
-    );
-  }
 
   final List<AssignedWork> assignedWorks = [
     AssignedWork(

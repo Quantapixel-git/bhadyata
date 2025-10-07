@@ -26,113 +26,172 @@ class ClientViewNotification extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isWeb = MediaQuery.of(context).size.width > 800;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isWeb = constraints.maxWidth > 800;
 
-    Widget content = ListView.builder(
-      padding: const EdgeInsets.all(16),
-      itemCount: notifications.length,
-      itemBuilder: (context, index) {
-        final notif = notifications[index];
-        return Card(
-          elevation: 2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          margin: const EdgeInsets.symmetric(vertical: 8),
-          child: ListTile(
-            leading: const Icon(
-              Icons.notifications,
-              color: AppColors.primary,
+        Widget content;
+
+        if (isWeb) {
+          // ---- Web Layout with GridView ----
+          content = GridView.builder(
+            padding: const EdgeInsets.all(16),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3, // adjust number of columns as needed
+              mainAxisSpacing: 16,
+              crossAxisSpacing: 16,
+              childAspectRatio: 2, // width/height ratio for card
             ),
-            title: Text(
-              notif["title"]!,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(notif["message"]!),
-                const SizedBox(height: 4),
-                Text(
-                  notif["date"]!,
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+            itemCount: notifications.length,
+            itemBuilder: (context, index) {
+              final notif = notifications[index];
+              return Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-
-    if (isWeb) {
-      // ---- Web Layout with Permanent Sidebar ----
-      return Scaffold(
-        body: Row(
-          children: [
-            ClientSidebar(projects: []), // permanent sidebar
-            Expanded(
-              child: Column(
-                children: [
-                  AppBar(
-                    title: const Text(
-                      "Notifications",
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold, color: Colors.white),
-                    ),
-                    backgroundColor: AppColors.primary,
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => ClientCreateNotification()),
-                          );
-                        },
-                        child: const Text(
-                          "Create",
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, color: Colors.white),
-                        ),
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.notifications,
+                            color: AppColors.primary,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              notif["title"]!,
+                              style: const TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 16),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(notif["message"]!),
+                      const Spacer(),
+                      Text(
+                        notif["date"]!,
+                        style: const TextStyle(fontSize: 12, color: Colors.grey),
                       ),
                     ],
                   ),
-                  Expanded(child: content),
-                ],
-              ),
+                ),
+              );
+            },
+          );
+
+          return Scaffold(
+            body: Row(
+              children: [
+                ClientSidebar(projects: []), // permanent sidebar
+                Expanded(
+                  child: Column(
+                    children: [
+                      AppBar(
+                        title: const Text(
+                          "Notifications",
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, color: Colors.white),
+                        ),
+                        backgroundColor: AppColors.primary,
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => ClientCreateNotification()),
+                              );
+                            },
+                            child: const Text(
+                              "Create",
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white),
+                            ),
+                          ),
+                        ],
+                      ),
+                      Expanded(child: content),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-      );
-    } else {
-      // ---- Mobile Layout with Drawer ----
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text(
-            "Notifications",
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-          ),
-          backgroundColor: AppColors.primary,
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (_) => ClientCreateNotification()),
-                );
-              },
-              child: const Text(
-                "Create",
+          );
+        } else {
+          // ---- Mobile Layout with ListView ----
+          content = ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: notifications.length,
+            itemBuilder: (context, index) {
+              final notif = notifications[index];
+              return Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                margin: const EdgeInsets.symmetric(vertical: 8),
+                child: ListTile(
+                  leading: const Icon(
+                    Icons.notifications,
+                    color: AppColors.primary,
+                  ),
+                  title: Text(
+                    notif["title"]!,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(notif["message"]!),
+                      const SizedBox(height: 4),
+                      Text(
+                        notif["date"]!,
+                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text(
+                "Notifications",
                 style:
                     TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
               ),
+              backgroundColor: AppColors.primary,
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => ClientCreateNotification()),
+                    );
+                  },
+                  child: const Text(
+                    "Create",
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-        drawer: ClientSidebar(projects: []), // drawer for mobile
-        body: content,
-      );
-    }
+            drawer: ClientSidebar(projects: []), // drawer for mobile
+            body: content,
+          );
+        }
+      },
+    );
   }
 }

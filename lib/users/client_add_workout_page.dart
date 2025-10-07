@@ -71,7 +71,7 @@ class _AddWorkPageState extends State<AddWorkPage> {
                   TextFormField(
                     controller: _titleController,
                     decoration: const InputDecoration(
-                      labelText: "Work Title",
+                      labelText: "Work Title1",
                       prefixIcon: Icon(Icons.work),
                       border: OutlineInputBorder(),
                     ),

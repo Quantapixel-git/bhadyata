@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:jobshub/clients/client_assigned_work_list_screen.dart';
+import 'package:jobshub/clients/client_candi_review_screen.dart';
 import 'package:jobshub/clients/client_dashboard.dart';
 import 'package:jobshub/clients/client_project_screen.dart';
-import 'package:jobshub/clients/client_review_screen.dart';
-import 'package:jobshub/clients/client_assign_work.dart';
 import 'package:jobshub/clients/client_view_notification.dart';
+import 'package:jobshub/hr/view/hr_candidate_review_screen.dart';
 import 'package:jobshub/users/login_screen.dart';
 import 'package:jobshub/users/project_model.dart';
 import 'package:jobshub/utils/AppColor.dart';
@@ -51,13 +52,13 @@ class ClientSidebar extends StatelessWidget {
                 _sidebarItem(context, Icons.work_outline, "Assign User Works", () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => AssignedWorkListScreen()),
+                    MaterialPageRoute(builder: (_) => ClientAssignedWorkListScreen()),
                   );
                 }),
                 _sidebarItem(context, Icons.reviews, "Client Review", () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => CandidateReviewsScreen()),
+                    MaterialPageRoute(builder: (_) => ClientCandiReviewScreen()),
                   );
                 }),
                 _sidebarItem(context, Icons.notifications_active, "View Notifications", () {
