@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:jobshub/utils/AppColor.dart';
+import 'package:jobshub/common/utils/AppColor.dart';
 
 class HrCreateNotification extends StatefulWidget {
   const HrCreateNotification({super.key});

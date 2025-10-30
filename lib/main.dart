@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:jobshub/hr/view/hr_dashboard.dart';
-import 'package:jobshub/users/dashboard_screen.dart';
+import 'package:jobshub/common/views/splash_screen.dart';
+// import 'package:jobshub/users/view/auth/login_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'BADHYATA',
-      home: HrDashboard(),
+      home: SplashScreen(),
     );
   }
 }

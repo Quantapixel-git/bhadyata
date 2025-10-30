@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:jobshub/clients/client_create_project.dart';
+import 'package:jobshub/extra/views/clients/client_create_project.dart';
 import 'package:jobshub/hr/view/hr_create_notification.dart';
-import 'package:jobshub/hr/view/hr_drawer_screen.dart';
-import 'package:jobshub/users/project_model.dart';
-import 'package:jobshub/utils/AppColor.dart';
+import 'package:jobshub/hr/view/drawer_dashboard/hr_sidebar.dart';
+import 'package:jobshub/users/view/project_model.dart';
+import 'package:jobshub/common/utils/AppColor.dart';
 
 class HrManageProjects extends StatefulWidget {
   final List<ProjectModel> projects;
@@ -94,7 +94,7 @@ class _HrManageProjectsState extends State<HrManageProjects> {
       return Scaffold(
         body: Row(
           children: [
-             HrDrawer(),
+             HrSidebar(),
             Expanded(
               child: Scaffold(
                 appBar: AppBar(
@@ -159,7 +159,7 @@ class _HrManageProjectsState extends State<HrManageProjects> {
             ),
           ],
         ),
-        drawer:  HrDrawer(),
+        drawer:  HrSidebar(),
         body: Padding(
           padding: const EdgeInsets.all(12.0),
           child: content,

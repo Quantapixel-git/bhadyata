@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:jobshub/admin/admin_report_page.dart';
 import 'package:jobshub/admin/admin_sidebar.dart';
-import 'package:jobshub/utils/AppColor.dart';
+import 'package:jobshub/common/utils/AppColor.dart';
 
 class AdminAssignedWork extends StatefulWidget {
   const AdminAssignedWork({super.key});

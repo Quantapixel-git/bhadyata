@@ -9,8 +9,8 @@ import 'package:jobshub/admin/admin_stats.dart';
 import 'package:jobshub/admin/admin_user.dart';
 import 'package:jobshub/admin/admin_view_notification_screen.dart';
 import 'package:jobshub/admin/manage_kyc.dart';
-import 'package:jobshub/users/login_screen.dart';
-import 'package:jobshub/utils/AppColor.dart';
+import 'package:jobshub/users/view/auth/login_screen.dart';
+import 'package:jobshub/common/utils/AppColor.dart';
 
 // ---------------- HR Work Assign Screen ----------------
 class HrWorkAssignScreen extends StatefulWidget {

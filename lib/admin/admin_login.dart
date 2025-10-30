@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:jobshub/admin/admin_otp_screen.dart';
-import 'package:jobshub/utils/AppColor.dart';
+import 'package:jobshub/admin/admin_dashboard.dart';
+import 'package:jobshub/common/utils/AppColor.dart';
 
 class AdminLoginPage extends StatefulWidget {
   const AdminLoginPage({super.key});
@@ -10,116 +10,238 @@ class AdminLoginPage extends StatefulWidget {
 }
 
 class _AdminLoginPageState extends State<AdminLoginPage> {
-  final _mobileController = TextEditingController();
-  String? _mobileError;
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  String? _emailError;
+  String? _passwordError;
 
-  bool _isValidMobile(String mobile) {
-    return RegExp(r'^[0-9]{10}$').hasMatch(mobile);
+  bool _isPasswordVisible = false;
+
+  void _login() {
+    setState(() {
+      _emailError = null;
+      _passwordError = null;
+
+      // Add your validation if needed
+      // if (!_emailController.text.contains("@")) {
+      //   _emailError = "Enter a valid email";
+      //   return;
+      // }
+      // if (_passwordController.text.length < 6) {
+      //   _passwordError = "Password must be at least 6 characters";
+      //   return;
+      // }
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => AdminDashboardPage()),
+      );
+    });
   }
 
-  void _sendOtp() {
-    final mobile = _mobileController.text.trim();
-    setState(() {
-      _mobileError = null;
-      if (_isValidMobile(mobile)) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => AdminOtpPage(mobile: mobile),
+  Widget _buildLoginContent(bool isWeb, double width) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const SizedBox(height: 20),
+
+        // 🔹 Logo
+        Image.asset("assets/job_bgr.png", height: isWeb ? 120 : 100),
+        const SizedBox(height: 20),
+        Text(
+          "Admin Login",
+          style: TextStyle(
+            fontSize: isWeb ? 30 : 26,
+            fontWeight: FontWeight.bold,
+            color: AppColors.primary,
           ),
-        );
-      } else {
-        _mobileError = "Enter a valid 10-digit mobile number";
-      }
-    });
+        ),
+        const SizedBox(height: 8),
+        Text(
+          "Sign in to access the admin dashboard",
+          style: TextStyle(fontSize: isWeb ? 18 : 14, color: Colors.black54),
+        ),
+        const SizedBox(height: 40),
+
+        // 🔹 Email Field
+        SizedBox(
+          width: isWeb ? width * 0.9 : double.infinity,
+          child: TextField(
+            controller: _emailController,
+            decoration: InputDecoration(
+              labelText: "Email",
+              prefixIcon: Icon(Icons.email_outlined, color: AppColors.primary),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: AppColors.primary, width: 2),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              errorText: _emailError,
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
+
+        // 🔹 Password Field
+        SizedBox(
+          width: isWeb ? width * 0.9 : double.infinity,
+          child: TextField(
+            controller: _passwordController,
+            obscureText: !_isPasswordVisible,
+            decoration: InputDecoration(
+              labelText: "Password",
+              prefixIcon: Icon(Icons.lock_outline, color: AppColors.primary),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
+                  color: Colors.grey,
+                ),
+                onPressed: () =>
+                    setState(() => _isPasswordVisible = !_isPasswordVisible),
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: AppColors.primary, width: 2),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              errorText: _passwordError,
+            ),
+          ),
+        ),
+        const SizedBox(height: 35),
+
+        // 🔹 Login Button
+        SizedBox(
+          width: isWeb ? width * 0.9 : double.infinity,
+          height: 50,
+          child: ElevatedButton(
+            onPressed: _login,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              elevation: 3,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+            child: const Text(
+              "Login",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xfff8f9fb),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
             bool isWeb = constraints.maxWidth > 800;
 
-            // 🔹 Shared content (works for both web & mobile)
-            Widget loginContent = Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Image.asset("assets/job_bgr.png", height: 100),
-                const SizedBox(height: 20),
-                Text(
-                  "Admin Login",
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
+            if (isWeb) {
+              // 💻 Web/Desktop Layout
+              return Center(
+                child: Container(
+                  margin: const EdgeInsets.symmetric(vertical: 50),
+                  constraints: const BoxConstraints(
+                    maxWidth: 800,
+                    maxHeight: 700,
                   ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  "Enter your mobile number to login",
-                  style: TextStyle(fontSize: 14, color: Colors.black54),
-                ),
-                const SizedBox(height: 40),
-
-                TextField(
-                  controller: _mobileController,
-                  decoration: InputDecoration(
-                    labelText: "Mobile Number",
-                    prefixIcon: const Icon(Icons.phone),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    errorText: _mobileError,
-                  ),
-                  keyboardType: TextInputType.phone,
-                  maxLength: 10,
-                ),
-                const SizedBox(height: 30),
-
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: _sendOtp,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  padding: const EdgeInsets.all(40),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(18),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black12,
+                        blurRadius: 12,
+                        offset: const Offset(0, 6),
                       ),
-                    ),
-                    child: const Text(
-                      "Send OTP",
-                      style: TextStyle(fontSize: 16, color: Colors.white),
-                    ),
+                    ],
                   ),
-                ),
-              ],
-            );
+                  child: Row(
+                    children: [
+                      // Left side (branding)
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(right: 30),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.admin_panel_settings,
+                                size: 90,
+                                color: AppColors.primary,
+                              ),
+                              const SizedBox(height: 25),
+                              Text(
+                                "Welcome, Admin!",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              const Text(
+                                "Manage users, jobs, and system operations all from one place.",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
 
-            return Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 60),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth: isWeb ? 450 : double.infinity,
-                  ),
-                  child: isWeb
-                      ? Card(
-                          elevation: 8,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
+                      // Divider
+                      Container(
+                        width: 1,
+                        height: 400,
+                        color: Colors.grey.shade300,
+                      ),
+
+                      // Right side (form)
+                      Expanded(
+                        child: SingleChildScrollView(
                           child: Padding(
-                            padding: const EdgeInsets.all(32.0),
-                            child: loginContent,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 30.0,
+                            ),
+                            child: _buildLoginContent(true, 300),
                           ),
-                        )
-                      : loginContent,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            );
+              );
+            } else {
+              // 📱 Mobile Layout
+              return Center(
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(30, 10, 30, 40),
+                    child: _buildLoginContent(false, double.infinity),
+                  ),
+                ),
+              );
+            }
           },
         ),
       ),

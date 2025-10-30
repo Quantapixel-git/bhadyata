@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:jobshub/admin/admin_sidebar.dart';
-import 'package:jobshub/utils/AppColor.dart';
+import 'package:jobshub/common/utils/AppColor.dart';
 
 class AdminUser extends StatefulWidget {
   const AdminUser({super.key});

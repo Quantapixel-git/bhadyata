@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:jobshub/utils/AppColor.dart';
+import 'package:jobshub/common/utils/AppColor.dart';
 import 'admin_dashboard.dart';
 
 class AdminOtpPage extends StatefulWidget {

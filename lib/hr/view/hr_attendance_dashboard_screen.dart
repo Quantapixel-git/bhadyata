@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:jobshub/utils/AppColor.dart';
+import 'package:jobshub/common/utils/AppColor.dart';
 import 'package:table_calendar/table_calendar.dart';
-import 'package:jobshub/hr/view/hr_drawer_screen.dart';
+import 'package:jobshub/hr/view/drawer_dashboard/hr_sidebar.dart';
 
 class LeaveRequest {
   final String employeeName;
@@ -252,7 +252,7 @@ class _HrAttendanceDashboardScreenState
                   backgroundColor: AppColors.primary,
 
         ),
-        drawer:  HrDrawer(),
+        drawer:  HrSidebar(),
         body: mainContent,
       );
     }
