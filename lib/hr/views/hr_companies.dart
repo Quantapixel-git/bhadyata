@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
 import 'package:jobshub/hr/views/hr_comapy_detail.dart';
 import 'package:jobshub/hr/views/drawer_dashboard/hr_sidebar.dart';
-// import 'package:jobshub/utils/app_colors.dart'; // ✅ ensure AppColors is imported
 
 class HrCompanies extends StatelessWidget {
   HrCompanies({super.key});
@@ -33,69 +32,92 @@ class HrCompanies extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return HrDashboardWrapper(
-      child: Scaffold(
-        backgroundColor: Colors.grey.shade100,
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: const Text(
-            "Companies",
-            style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
-          ),
-          backgroundColor: AppColors.primary,
-          elevation: 2,
-        ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isWeb = constraints.maxWidth >= 900;
 
-        body: ListView.builder(
-          padding: const EdgeInsets.all(10),
-          itemCount: companies.length,
-          itemBuilder: (context, index) {
-            final company = companies[index];
-            return Card(
-              elevation: 3,
-              margin: const EdgeInsets.symmetric(vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: AppColors.primary.withOpacity(0.15),
-                  child: Icon(Icons.business, color: AppColors.primary),
-                ),
-                title: Text(
-                  company['name'] ?? '',
-                  style: const TextStyle(
+        return HrDashboardWrapper(
+          child: Column(
+            children: [
+              // ✅ AppBar matches AdminDashboard style
+              AppBar(
+                iconTheme: const IconThemeData(color: Colors.white),
+                automaticallyImplyLeading: !isWeb,
+                title: const Text(
+                  "Companies",
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                    color: Colors.white,
                   ),
                 ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("Industry: ${company['industry']}"),
-                    Text("Location: ${company['location']}"),
-                  ],
-                ),
-                trailing: IconButton(
-                  icon: Icon(
-                    Icons.remove_red_eye_outlined,
-                    color: AppColors.primary, // ✅ consistent theme color
+                backgroundColor: AppColors.primary,
+              ),
+
+              // ✅ Main Content
+              Expanded(
+                child: Container(
+                  color: Colors.grey.shade100,
+                  padding: const EdgeInsets.all(10),
+                  child: ListView.builder(
+                    itemCount: companies.length,
+                    itemBuilder: (context, index) {
+                      final company = companies[index];
+                      return Card(
+                        elevation: 3,
+                        margin: const EdgeInsets.symmetric(vertical: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: AppColors.primary.withOpacity(
+                              0.15,
+                            ),
+                            child: Icon(
+                              Icons.business,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                          title: Text(
+                            company['name'] ?? '',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text("Industry: ${company['industry']}"),
+                              Text("Location: ${company['location']}"),
+                            ],
+                          ),
+                          trailing: IconButton(
+                            icon: Icon(
+                              Icons.remove_red_eye_outlined,
+                              color: AppColors.primary,
+                            ),
+                            tooltip: 'View Details',
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      HrCompanyDetail(company: company),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                  tooltip: 'View Details',
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => HrCompanyDetail(company: company),
-                      ),
-                    );
-                  },
                 ),
               ),
-            );
-          },
-        ),
-      ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

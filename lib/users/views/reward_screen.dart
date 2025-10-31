@@ -24,23 +24,47 @@ class _RewardScreenState extends State<RewardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isWide = MediaQuery.of(context).size.width > 900;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isWeb = constraints.maxWidth > 900;
 
-    return Scaffold(
-      backgroundColor: Colors.grey.shade100,
-    
-      drawer: !kIsWeb ? AppDrawer() : null,
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1100),
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: SingleChildScrollView(
-              child: isWide ? _buildWebLayout() : _buildMobileLayout(),
+        return Scaffold(
+          backgroundColor: Colors.grey.shade100,
+          appBar: isWeb
+              ? null
+              : AppBar(
+                  backgroundColor: AppColors.primary,
+                  elevation: 0,
+                  centerTitle: true,
+                  title: const Text(
+                    "Rewards & Wallet",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  leading: Builder(
+                    builder: (context) => IconButton(
+                      iconSize: 40,
+                      icon: const Icon(Icons.menu, color: Colors.white),
+                      onPressed: () => Scaffold.of(context).openDrawer(),
+                    ),
+                  ),
+                ),
+          drawer: !isWeb ? AppDrawer() : null,
+          body: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1100),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: SingleChildScrollView(
+                  child: isWeb ? _buildWebLayout() : _buildMobileLayout(),
+                ),
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -302,7 +326,7 @@ class _RewardScreenState extends State<RewardScreen> {
     );
   }
 
-  /// ---------- 🧱 REUSABLE SECTION CONTAINER ----------
+  /// ---------- 🧱 SECTION CONTAINER ----------
   Widget _sectionContainer({
     required Widget child,
     Color? color,

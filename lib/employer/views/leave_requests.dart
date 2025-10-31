@@ -1,49 +1,56 @@
 import 'package:flutter/material.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
 import 'package:jobshub/employer/views/drawer_dashboard/employer_side_bar.dart';
-// import 'package:jobshub/employer/view/drawer_dashboard/employer_dashboard_wrapper.dart';
 
 class LeaveRequestsPage extends StatelessWidget {
   const LeaveRequestsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return EmployerDashboardWrapper(
-      child: DefaultTabController(
-        length: 3,
-        child: Scaffold(
-          backgroundColor: Colors.grey.shade100,
-          appBar: AppBar(
-            automaticallyImplyLeading: false,
-            title: const Text(
-              "Leave Requests",
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isWeb = constraints.maxWidth >= 900;
+
+        return EmployerDashboardWrapper(
+          child: DefaultTabController(
+            length: 3,
+            child: Scaffold(
+              backgroundColor: Colors.grey.shade100,
+              appBar: AppBar(
+                automaticallyImplyLeading:
+                    !isWeb, // ✅ show drawer icon on mobile, hide on web
+                iconTheme: const IconThemeData(color: Colors.white),
+                title: const Text(
+                  "Leave Requests",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                backgroundColor: AppColors.primary,
+                elevation: 2,
+                bottom: const TabBar(
+                  indicatorColor: Colors.white,
+                  labelStyle: TextStyle(fontWeight: FontWeight.w600),
+                  tabs: [
+                    Tab(text: "Pending"),
+                    Tab(text: "Approved"),
+                    Tab(text: "Rejected"),
+                  ],
+                ),
+              ),
+              drawer: EmployerSidebar(),
+              body: const TabBarView(
+                children: [
+                  LeaveListTab(status: "Pending"),
+                  LeaveListTab(status: "Approved"),
+                  LeaveListTab(status: "Rejected"),
+                ],
               ),
             ),
-            backgroundColor: AppColors.primary,
-            elevation: 2,
-            bottom: const TabBar(
-              indicatorColor: Colors.white,
-              labelStyle: TextStyle(fontWeight: FontWeight.w600),
-              tabs: [
-                Tab(text: "Pending"),
-                Tab(text: "Approved"),
-                Tab(text: "Rejected"),
-              ],
-            ),
           ),
-          drawer: EmployerSidebar(),
-          body: const TabBarView(
-            children: [
-              LeaveListTab(status: "Pending"),
-              LeaveListTab(status: "Approved"),
-              LeaveListTab(status: "Rejected"),
-            ],
-          ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
@@ -54,7 +61,7 @@ class LeaveListTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Dummy leave data (replace with API data later)
+    // Dummy leave data (replace with API later)
     final List<Map<String, String>> leaves = [
       {"name": "John Doe", "date": "20-22 Oct", "reason": "Medical Leave"},
       {"name": "Priya Sharma", "date": "25 Oct", "reason": "Personal Work"},

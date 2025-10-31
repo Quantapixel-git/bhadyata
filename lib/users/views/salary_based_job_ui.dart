@@ -87,25 +87,9 @@ class _SalaryAllJobsPageState extends State<SalaryAllJobsPage> {
     }).toList();
 
     return Scaffold(
-      // backgroundColor: Colors.grey.shade100,
-      // appBar: AppBar(
-      //   elevation: 3,
-      //   flexibleSpace: Container(
-      //     decoration: BoxDecoration(
-      //     ),
-      //   ),
-      //   title: const Text(
-      //     "Salary-Based Jobs",
-      //     style: TextStyle(
-      //       fontWeight: FontWeight.bold,
-      //       // color: Colors.white,
-      //       letterSpacing: 0.5,
-      //     ),
-      //   ),
-      //   centerTitle: true,
-      // ),
-       appBar: AppBar(
-        elevation: 3,
+      backgroundColor: Colors.grey.shade100,
+      appBar: AppBar(
+        elevation: 2,
         backgroundColor: AppColors.primary,
         title: const Text(
           "Salary-Based Jobs",
@@ -121,76 +105,70 @@ class _SalaryAllJobsPageState extends State<SalaryAllJobsPage> {
       body: ListView(
         padding: EdgeInsets.zero,
         children: [
-          // 🔍 Search + Filters Section
-          // 🔍 Indeed-Style Search Section
+          // 🔍 Filter Section
           Container(
-            padding: const EdgeInsets.all(16.0),
-            decoration: const BoxDecoration(
+            margin: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
               color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black12,
                   blurRadius: 8,
-                  offset: Offset(0, 2),
+                  offset: const Offset(0, 3),
                 ),
               ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 🧠 Search Row (Job + Location fields)
-                Column(
+                // Search Bar Section
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // What Field
-                    TextField(
-                      controller: searchController,
-                      onChanged: (_) => setState(() {}),
-                      decoration: InputDecoration(
-                        hintText: "What (Job title, keywords, or company)",
-                        prefixIcon: const Icon(
-                          Icons.work_outline,
-                          color: Colors.grey,
-                        ),
-                        filled: true,
-                        fillColor: Colors.grey.shade100,
-                        contentPadding: const EdgeInsets.symmetric(
-                          vertical: 12,
-                          horizontal: 10,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                          borderSide: BorderSide.none,
+                    Expanded(
+                      flex: isWeb ? 2 : 1,
+                      child: TextField(
+                        controller: searchController,
+                        onChanged: (_) => setState(() {}),
+                        decoration: InputDecoration(
+                          hintText: "What (Job title, keywords, or company)",
+                          prefixIcon: const Icon(Icons.work_outline),
+                          filled: true,
+                          fillColor: Colors.grey.shade100,
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 12,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 10),
-
-                    // Where Field
-                    GestureDetector(
-                      onTap: () {
-                        _showLocationPicker(context);
-                      },
-                      child: AbsorbPointer(
-                        child: TextField(
-                          decoration: InputDecoration(
-                            hintText: selectedLocation == "All"
-                                ? "Where (Location)"
-                                : selectedLocation,
-                            prefixIcon: const Icon(
-                              Icons.location_on_outlined,
-                              color: Colors.grey,
+                    const SizedBox(width: 10),
+                    Expanded(
+                      flex: isWeb ? 1 : 1,
+                      child: GestureDetector(
+                        onTap: () => _showLocationPicker(context),
+                        child: AbsorbPointer(
+                          child: TextField(
+                            decoration: InputDecoration(
+                              hintText: selectedLocation == "All"
+                                  ? "Where (Location)"
+                                  : selectedLocation,
+                              prefixIcon: const Icon(
+                                Icons.location_on_outlined,
+                              ),
+                              suffixIcon: const Icon(Icons.keyboard_arrow_down),
+                              filled: true,
+                              fillColor: Colors.grey.shade100,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                borderSide: BorderSide.none,
+                              ),
                             ),
-                            filled: true,
-                            fillColor: Colors.grey.shade100,
-                            contentPadding: const EdgeInsets.symmetric(
-                              vertical: 12,
-                              horizontal: 10,
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(14),
-                              borderSide: BorderSide.none,
-                            ),
-                            suffixIcon: const Icon(Icons.keyboard_arrow_down),
                           ),
                         ),
                       ),
@@ -198,58 +176,50 @@ class _SalaryAllJobsPageState extends State<SalaryAllJobsPage> {
                   ],
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 20),
 
-                // Category filter chips
+                // Category Chips
                 const Text(
                   "Categories",
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 8),
-
-                SizedBox(
-                  height: 40,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    separatorBuilder: (_, __) => const SizedBox(width: 8),
-                    itemCount: categories.length,
-                    itemBuilder: (context, index) {
-                      final category = categories[index];
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: categories.map((category) {
                       final isSelected = selectedCategory == category;
-                      return ChoiceChip(
-                        label: Text(category),
-                        selected: isSelected,
-                        elevation: 1,
-                        selectedColor: AppColors.primary,
-                        backgroundColor: Colors.grey.shade200,
-                        labelStyle: TextStyle(
-                          color: isSelected ? Colors.white : Colors.black,
-                          fontWeight: isSelected
-                              ? FontWeight.bold
-                              : FontWeight.w500,
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: ChoiceChip(
+                          label: Text(category),
+                          selected: isSelected,
+                          selectedColor: AppColors.primary,
+                          backgroundColor: Colors.grey.shade200,
+                          labelStyle: TextStyle(
+                            color: isSelected ? Colors.white : Colors.black87,
+                            fontWeight: isSelected
+                                ? FontWeight.bold
+                                : FontWeight.w500,
+                          ),
+                          onSelected: (_) =>
+                              setState(() => selectedCategory = category),
                         ),
-                        onSelected: (_) {
-                          setState(() {
-                            selectedCategory = category;
-                          });
-                        },
                       );
-                    },
+                    }).toList(),
                   ),
                 ),
               ],
             ),
           ),
 
-          const SizedBox(height: 10),
-
-          // 🧾 Job Cards Grid
+          // 🧾 Job Cards
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             child: filteredJobs.isEmpty
-                ? const Center(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 50),
+                ? const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 60),
+                    child: Center(
                       child: Text(
                         "No matching jobs found",
                         style: TextStyle(
@@ -262,25 +232,30 @@ class _SalaryAllJobsPageState extends State<SalaryAllJobsPage> {
                   )
                 : LayoutBuilder(
                     builder: (context, constraints) {
-                      final isWeb = constraints.maxWidth > 800;
+                      int crossAxisCount = 1;
+                      if (constraints.maxWidth > 1200) {
+                        crossAxisCount = 3;
+                      } else if (constraints.maxWidth > 700) {
+                        crossAxisCount = 2;
+                      }
+
                       return GridView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
+                        itemCount: filteredJobs.length,
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: isWeb ? 3 : 1,
+                          crossAxisCount: crossAxisCount,
                           crossAxisSpacing: 20,
                           mainAxisSpacing: 20,
-                          childAspectRatio: isWeb ? 1.2 : 1.5,
+                          childAspectRatio: isWeb ? 1.2 : 1.4,
                         ),
-                        itemCount: filteredJobs.length,
-                        itemBuilder: (context, index) {
-                          final job = filteredJobs[index];
-                          return _JobCard(job: job);
-                        },
+                        itemBuilder: (_, index) =>
+                            _JobCard(job: filteredJobs[index]),
                       );
                     },
                   ),
           ),
+          const SizedBox(height: 20),
         ],
       ),
     );
@@ -293,42 +268,38 @@ class _SalaryAllJobsPageState extends State<SalaryAllJobsPage> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (_) {
-        return Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                "Select Location",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: locations.map((loc) {
-                  final isSelected = selectedLocation == loc;
-                  return ChoiceChip(
-                    label: Text(loc),
-                    selected: isSelected,
-                    selectedColor: AppColors.primary,
-                    labelStyle: TextStyle(
-                      color: isSelected ? Colors.white : Colors.black,
-                    ),
-                    onSelected: (_) {
-                      setState(() => selectedLocation = loc);
-                      Navigator.pop(context);
-                    },
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 20),
-            ],
-          ),
-        );
-      },
+      builder: (_) => Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Wrap(
+          children: [
+            const Text(
+              "Select Location",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: locations.map((loc) {
+                final isSelected = selectedLocation == loc;
+                return ChoiceChip(
+                  label: Text(loc),
+                  selected: isSelected,
+                  selectedColor: AppColors.primary,
+                  labelStyle: TextStyle(
+                    color: isSelected ? Colors.white : Colors.black,
+                  ),
+                  onSelected: (_) {
+                    setState(() => selectedLocation = loc);
+                    Navigator.pop(context);
+                  },
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -355,7 +326,7 @@ class _JobCardState extends State<_JobCard> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         transform: hovering
-            ? (Matrix4.identity()..scale(1.03))
+            ? (Matrix4.identity()..scale(1.02))
             : Matrix4.identity(),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -363,18 +334,17 @@ class _JobCardState extends State<_JobCard> {
           boxShadow: [
             BoxShadow(
               color: hovering
-                  ? AppColors.primary.withOpacity(0.3)
+                  ? AppColors.primary.withOpacity(0.25)
                   : Colors.black12,
               blurRadius: 10,
               offset: const Offset(0, 5),
             ),
           ],
         ),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Job Title
             Text(
               job["title"],
               style: TextStyle(
@@ -384,8 +354,6 @@ class _JobCardState extends State<_JobCard> {
               ),
             ),
             const SizedBox(height: 6),
-
-            // Company
             Text(
               job["company"],
               style: const TextStyle(
@@ -394,10 +362,7 @@ class _JobCardState extends State<_JobCard> {
                 color: Colors.black87,
               ),
             ),
-
             const SizedBox(height: 8),
-
-            // Location Row
             Row(
               children: [
                 const Icon(Icons.location_on, size: 16, color: Colors.grey),
@@ -408,10 +373,7 @@ class _JobCardState extends State<_JobCard> {
                 ),
               ],
             ),
-
             const Spacer(),
-
-            // Salary
             Text(
               job["salary"],
               style: const TextStyle(
@@ -420,10 +382,7 @@ class _JobCardState extends State<_JobCard> {
                 fontSize: 15,
               ),
             ),
-
             const SizedBox(height: 12),
-
-            // Apply Button
             ElevatedButton.icon(
               onPressed: applied
                   ? null

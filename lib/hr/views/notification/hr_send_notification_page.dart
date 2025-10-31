@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
 import 'package:jobshub/hr/views/drawer_dashboard/hr_sidebar.dart';
-// import 'package:jobshub/hr/view/drawer_dashboard/hr_dashboard_wrapper.dart';
 
 class HrSendNotificationPage extends StatefulWidget {
   const HrSendNotificationPage({super.key});
@@ -83,121 +82,142 @@ class _HrSendNotificationPageState extends State<HrSendNotificationPage> {
 
   @override
   Widget build(BuildContext context) {
-    return HrDashboardWrapper(
-      child: Scaffold(
-        backgroundColor: Colors.grey.shade100,
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: const Text(
-            "Send Notification",
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-          ),
-          backgroundColor: AppColors.primary,
-          centerTitle: true,
-          elevation: 2,
-        ),
-        drawer: HrSidebar(),
-        body: Padding(
-          padding: const EdgeInsets.all(16),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isWeb = constraints.maxWidth >= 900;
+
+        return HrDashboardWrapper(
           child: Column(
             children: [
-              TextField(
-                controller: _titleController,
-                decoration: InputDecoration(
-                  labelText: "Notification Title",
-                  labelStyle: TextStyle(color: AppColors.primary),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: AppColors.primary,
-                      width: 1.5,
-                    ),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
+              // ✅ Consistent AppBar like AdminDashboard
+              AppBar(
+                iconTheme: const IconThemeData(color: Colors.white),
+                automaticallyImplyLeading: !isWeb, // hide drawer icon on web
+                title: const Text(
+                  "Send Notification",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
+                backgroundColor: AppColors.primary,
+                elevation: 2,
+                centerTitle: true,
               ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _messageController,
-                maxLines: 3,
-                decoration: InputDecoration(
-                  labelText: "Notification Message",
-                  labelStyle: TextStyle(color: AppColors.primary),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: AppColors.primary,
-                      width: 1.5,
-                    ),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  "Select Users",
-                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-                ),
-              ),
-              const SizedBox(height: 8),
+
+              // ✅ Main Content
               Expanded(
-                child: ListView.builder(
-                  itemCount: users.length,
-                  itemBuilder: (context, index) {
-                    final user = users[index];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(vertical: 4),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: CheckboxListTile(
-                        value: user["selected"],
-                        activeColor: AppColors.primary,
-                        onChanged: (val) {
-                          setState(() {
-                            user["selected"] = val!;
-                          });
-                        },
-                        title: Text(
-                          user["name"],
-                          style: const TextStyle(fontWeight: FontWeight.w500),
+                child: Container(
+                  color: Colors.grey.shade100,
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      TextField(
+                        controller: _titleController,
+                        decoration: InputDecoration(
+                          labelText: "Notification Title",
+                          labelStyle: TextStyle(color: AppColors.primary),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: AppColors.primary,
+                              width: 1.5,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
                         ),
-                        subtitle: Text(user["email"]),
                       ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 10),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  icon: const Icon(Icons.send),
-                  label: const Text("Send Notification"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    textStyle: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                    ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: _messageController,
+                        maxLines: 3,
+                        decoration: InputDecoration(
+                          labelText: "Notification Message",
+                          labelStyle: TextStyle(color: AppColors.primary),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: AppColors.primary,
+                              width: 1.5,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          "Select Users",
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: users.length,
+                          itemBuilder: (context, index) {
+                            final user = users[index];
+                            return Card(
+                              margin: const EdgeInsets.symmetric(vertical: 4),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: CheckboxListTile(
+                                value: user["selected"],
+                                activeColor: AppColors.primary,
+                                onChanged: (val) {
+                                  setState(() {
+                                    user["selected"] = val!;
+                                  });
+                                },
+                                title: Text(
+                                  user["name"],
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                subtitle: Text(user["email"]),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          icon: const Icon(Icons.send),
+                          label: const Text("Send Notification"),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            textStyle: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
+                          ),
+                          onPressed: _sendNotification,
+                        ),
+                      ),
+                    ],
                   ),
-                  onPressed: _sendNotification,
                 ),
               ),
             ],
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

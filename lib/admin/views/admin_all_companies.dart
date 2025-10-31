@@ -1,25 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:jobshub/admin/views/dashboard_drawer/admin_sidebar.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
-import 'package:jobshub/users/views/project_model.dart'; // for wrapper
+// import 'package:jobshub/users/views/project_model.dart'; // wrapper
 
 class CompaniesPage extends StatelessWidget {
   CompaniesPage({super.key});
 
-  // Demo data for each tab
   final List<String> approved = ["ABC Ltd", "XYZ Corp"];
   final List<String> rejected = ["OldTech", "NextGen"];
   final List<String> pending = ["Future Solutions", "Innovate Ltd"];
 
   @override
   Widget build(BuildContext context) {
+    final double width = MediaQuery.of(context).size.width;
+    final bool isWeb = width >= 900;
+
     return AdminDashboardWrapper(
       child: DefaultTabController(
-        length: 3, // ✅ Placed here so both TabBar & TabBarView share it
+        length: 3,
         child: Scaffold(
-          backgroundColor: Colors.grey[50],
+          backgroundColor: Colors.grey[100],
           appBar: AppBar(
-            automaticallyImplyLeading: false,
+            automaticallyImplyLeading: !isWeb,
             title: const Text(
               "Companies",
               style: TextStyle(
@@ -39,12 +41,19 @@ class CompaniesPage extends StatelessWidget {
               ],
             ),
           ),
-          drawer: AdminSidebar(),
-          body: TabBarView(
+
+          // ✅ Give TabBarView bounded height using Expanded
+          body: Column(
             children: [
-              buildCompanyList(approved, Colors.green),
-              buildCompanyList(rejected, Colors.red),
-              buildCompanyList(pending, Colors.orange),
+              Expanded(
+                child: TabBarView(
+                  children: [
+                    _buildCompanyList(approved, Colors.green),
+                    _buildCompanyList(rejected, Colors.red),
+                    _buildCompanyList(pending, Colors.orange),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
@@ -52,37 +61,35 @@ class CompaniesPage extends StatelessWidget {
     );
   }
 
-  Widget buildCompanyList(List<String> companies, Color iconColor) {
-    return Container(
-      color: Colors.grey[100],
+  Widget _buildCompanyList(List<String> companies, Color color) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
       child: ListView.builder(
-        padding: const EdgeInsets.all(16),
         itemCount: companies.length,
         itemBuilder: (context, index) {
           final company = companies[index];
-          return Card(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            elevation: 3,
-            shadowColor: iconColor.withOpacity(0.2),
+          return Container(
             margin: const EdgeInsets.symmetric(vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: color.withOpacity(0.3)),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 6,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
             child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 10,
-              ),
               leading: CircleAvatar(
-                backgroundColor: iconColor.withOpacity(0.1),
-                child: Icon(Icons.business, color: iconColor),
+                backgroundColor: color.withOpacity(0.1),
+                child: Icon(Icons.business, color: color),
               ),
               title: Text(
                 company,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
-                  color: Colors.black87,
-                ),
+                style: const TextStyle(fontWeight: FontWeight.w600),
               ),
             ),
           );

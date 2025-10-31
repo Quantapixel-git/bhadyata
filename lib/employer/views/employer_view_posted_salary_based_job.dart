@@ -7,42 +7,51 @@ class ViewPostedJobsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return EmployerDashboardWrapper(
-      child: DefaultTabController(
-        // ✅ FIXED: Added back TabController
-        length: 3,
-        child: Scaffold(
-          backgroundColor: Colors.grey.shade100,
-          appBar: AppBar(
-            automaticallyImplyLeading: false,
-            title: const Text(
-              "View Posted Jobs",
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isWeb = constraints.maxWidth >= 900;
+
+        return EmployerDashboardWrapper(
+          child: DefaultTabController(
+            length: 3,
+            child: Scaffold(
+              backgroundColor: Colors.grey.shade100,
+              appBar: AppBar(
+                iconTheme: const IconThemeData(
+                  color: Colors.white, // ✅ White menu icon for mobile
+                ),
+                automaticallyImplyLeading:
+                    !isWeb, // ✅ Drawer icon visible only on mobile
+                title: const Text(
+                  "View Posted Jobs",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                backgroundColor: AppColors.primary,
+                elevation: 2,
+                bottom: const TabBar(
+                  indicatorColor: Colors.white,
+                  labelStyle: TextStyle(fontWeight: FontWeight.w600),
+                  tabs: [
+                    Tab(text: "Pending"),
+                    Tab(text: "Rejected"),
+                    Tab(text: "Approved"),
+                  ],
+                ),
+              ),
+              body: const TabBarView(
+                children: [
+                  JobsList(status: "Pending"),
+                  JobsList(status: "Rejected"),
+                  JobsList(status: "Approved"),
+                ],
               ),
             ),
-            backgroundColor: AppColors.primary,
-            elevation: 2,
-            bottom: const TabBar(
-              indicatorColor: Colors.white,
-              labelStyle: TextStyle(fontWeight: FontWeight.w600),
-              tabs: [
-                Tab(text: "Pending"),
-                Tab(text: "Rejected"),
-                Tab(text: "Approved"),
-              ],
-            ),
           ),
-          body: const TabBarView(
-            children: [
-              JobsList(status: "Pending"),
-              JobsList(status: "Rejected"),
-              JobsList(status: "Approved"),
-            ],
-          ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

@@ -31,82 +31,102 @@ class AllNotificationsPage extends StatelessWidget {
       },
     ];
 
-    return EmployerDashboardWrapper(
-      child: Scaffold(
-        backgroundColor: Colors.grey.shade100,
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: const Text(
-            "All Notifications",
-            style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
-          ),
-          backgroundColor: AppColors.primary,
-          elevation: 2,
-        ),
-        body: notifications.isEmpty
-            ? const Center(
-                child: Text(
-                  "No notifications found.",
-                  style: TextStyle(fontSize: 15, color: Colors.grey),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isWeb = constraints.maxWidth >= 900;
+
+        return EmployerDashboardWrapper(
+          child: Column(
+            children: [
+              // ✅ Responsive AppBar
+              AppBar(
+                iconTheme: const IconThemeData(color: Colors.white),
+                automaticallyImplyLeading: !isWeb,
+                title: const Text(
+                  "All Notifications",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
                 ),
-              )
-            : ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: notifications.length,
-                itemBuilder: (context, index) {
-                  final item = notifications[index];
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 14),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.shade200,
-                          blurRadius: 6,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: AppColors.primary.withOpacity(0.15),
-                        child: Icon(
-                          Icons.notifications_active,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                      title: Text(
-                        item["title"]!,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 15.5,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      subtitle: Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Text(
-                          item["message"]!,
-                          style: const TextStyle(
-                            color: Colors.black87,
-                            fontSize: 14,
-                            height: 1.3,
-                          ),
-                        ),
-                      ),
-                      trailing: Text(
-                        item["date"]!,
-                        style: TextStyle(
-                          color: Colors.grey.shade600,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  );
-                },
+                backgroundColor: AppColors.primary,
+                elevation: 2,
               ),
-      ),
+
+              // ✅ Main Body
+              Expanded(
+                child: Container(
+                  color: Colors.grey.shade100,
+                  child: notifications.isEmpty
+                      ? const Center(
+                          child: Text(
+                            "No notifications found.",
+                            style: TextStyle(fontSize: 15, color: Colors.grey),
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: notifications.length,
+                          itemBuilder: (context, index) {
+                            final item = notifications[index];
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 14),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.grey.shade200,
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 3),
+                                  ),
+                                ],
+                              ),
+                              child: ListTile(
+                                leading: CircleAvatar(
+                                  backgroundColor: AppColors.primary
+                                      .withOpacity(0.15),
+                                  child: Icon(
+                                    Icons.notifications_active,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                                title: Text(
+                                  item["title"]!,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 15.5,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                subtitle: Padding(
+                                  padding: const EdgeInsets.only(top: 4),
+                                  child: Text(
+                                    item["message"]!,
+                                    style: const TextStyle(
+                                      color: Colors.black87,
+                                      fontSize: 14,
+                                      height: 1.3,
+                                    ),
+                                  ),
+                                ),
+                                trailing: Text(
+                                  item["date"]!,
+                                  style: TextStyle(
+                                    color: Colors.grey.shade600,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

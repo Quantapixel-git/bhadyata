@@ -80,42 +80,50 @@ class _JobApprovalPageState extends State<JobApprovalPage>
 
   @override
   Widget build(BuildContext context) {
-    return HrDashboardWrapper(
-      child: Scaffold(
-        backgroundColor: Colors.grey.shade100,
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: Text(
-            widget.title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isWeb = constraints.maxWidth >= 900;
+
+        return HrDashboardWrapper(
+          child: Scaffold(
+            backgroundColor: Colors.grey.shade100,
+            appBar: AppBar(
+              iconTheme: IconThemeData(color: Colors.white),
+              automaticallyImplyLeading:
+                  !isWeb, // ✅ shows back icon on mobile only
+              title: Text(
+                widget.title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              backgroundColor: AppColors.primary,
+              centerTitle: true,
+              elevation: 2,
+              bottom: TabBar(
+                controller: _tabController,
+                indicatorColor: Colors.white,
+                labelColor: Colors.white,
+                unselectedLabelColor: Colors.white70,
+                tabs: const [
+                  Tab(text: "Pending"),
+                  Tab(text: "Approved"),
+                  Tab(text: "Rejected"),
+                ],
+              ),
+            ),
+            body: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildJobList(pendingJobs),
+                _buildJobList(approvedJobs),
+                _buildJobList(rejectedJobs),
+              ],
             ),
           ),
-          backgroundColor: AppColors.primary,
-          centerTitle: true,
-          elevation: 2,
-          bottom: TabBar(
-            controller: _tabController,
-            indicatorColor: Colors.white,
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.white70,
-            tabs: const [
-              Tab(text: "Pending"),
-              Tab(text: "Approved"),
-              Tab(text: "Rejected"),
-            ],
-          ),
-        ),
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            _buildJobList(pendingJobs),
-            _buildJobList(approvedJobs),
-            _buildJobList(rejectedJobs),
-          ],
-        ),
-      ),
+        );
+      },
     );
   }
 }

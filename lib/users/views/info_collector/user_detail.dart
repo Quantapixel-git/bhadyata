@@ -41,11 +41,11 @@ class _JobProfileDetailsPageState extends State<JobProfileDetailsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xfff8f9fb),
+      // backgroundColor: const Color(0xfff8f9fb),
       appBar: AppBar(
         automaticallyImplyLeading: true,
         elevation: 0,
-        backgroundColor: Colors.white,
+        // backgroundColor: Colors.white,
         iconTheme: const IconThemeData(color: Colors.black),
       ),
       body: SafeArea(
@@ -56,7 +56,7 @@ class _JobProfileDetailsPageState extends State<JobProfileDetailsPage> {
             Widget formContent = Form(
               key: _formKey,
               child: Padding(
-                padding: const EdgeInsets.all(28.0),
+                padding: const EdgeInsets.all(10.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,

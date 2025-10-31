@@ -7,31 +7,43 @@ class WalletDepositWorkingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return EmployerDashboardWrapper(
-      child: Scaffold(
-        backgroundColor: Colors.grey.shade100,
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: const Text(
-            "Wallet & Deposit Working",
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w700,
-            ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isWeb = constraints.maxWidth >= 900;
+
+        return EmployerDashboardWrapper(
+          child: Column(
+            children: [
+              // ✅ Consistent AppBar like AdminDashboard
+              AppBar(
+                iconTheme: const IconThemeData(color: Colors.white),
+                automaticallyImplyLeading: !isWeb, // hide drawer icon on web
+                title: const Text(
+                  "Wallet & Deposit Working",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                backgroundColor: AppColors.primary,
+                elevation: 2,
+              ),
+
+              // ✅ Page content
+              Expanded(
+                child: Container(
+                  color: Colors.grey.shade100,
+                  child: _buildContent(isWeb),
+                ),
+              ),
+            ],
           ),
-          backgroundColor: AppColors.primary,
-          elevation: 2,
-        ),
-        body: LayoutBuilder(
-          builder: (context, constraints) {
-            final bool isWeb = constraints.maxWidth >= 900;
-            return _buildContent(isWeb);
-          },
-        ),
-      ),
+        );
+      },
     );
   }
 
+  // ---------- MAIN CONTENT ----------
   Widget _buildContent(bool isWeb) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
@@ -52,10 +64,15 @@ class WalletDepositWorkingPage extends StatelessWidget {
               const SizedBox(height: 12),
               const Text(
                 "The Wallet & Deposit System enables employers to manage and release salary payments securely for employees hired under the Salary-Based Recruitment model. It ensures transparency, timely payments, and easy financial tracking.",
-                style: TextStyle(fontSize: 15, color: Colors.black87, height: 1.5),
+                style: TextStyle(
+                  fontSize: 15,
+                  color: Colors.black87,
+                  height: 1.5,
+                ),
               ),
               const SizedBox(height: 20),
 
+              // ✅ Steps
               _buildStep(
                 step: "1",
                 title: "Deposit Money into Wallet",
@@ -107,6 +124,7 @@ class WalletDepositWorkingPage extends StatelessWidget {
     );
   }
 
+  // ---------- STEP CARD ----------
   Widget _buildStep({
     required String step,
     required String title,

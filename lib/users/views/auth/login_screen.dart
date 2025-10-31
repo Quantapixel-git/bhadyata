@@ -192,7 +192,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
         // 🔹 Swipeable roles with arrow button
         SizedBox(
-          height: isWeb ? 100 : 130,
+          height: isWeb ? 100 : 290,
           child: Stack(
             children: [
               // PageView

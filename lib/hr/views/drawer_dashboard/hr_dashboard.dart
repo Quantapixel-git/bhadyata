@@ -11,8 +11,8 @@ class HrDashboard extends StatelessWidget {
   final int pendingApproval = 5;
   final int completedWorks = 7;
   final double walletBalance = 12500.50;
-  final double totalRevenue = 50000.00; // Added for HR
-  final int totalEmployees = 25; // Added for HR
+  final double totalRevenue = 50000.00;
+  final int totalEmployees = 25;
 
   final List<ProjectModel> projects = [
     ProjectModel(
@@ -32,30 +32,39 @@ class HrDashboard extends StatelessWidget {
         },
       ],
     ),
-    // Add more projects if needed
   ];
 
   @override
   Widget build(BuildContext context) {
-    return HrDashboardWrapper(
-      child: Scaffold(
-        backgroundColor: Colors.grey[50],
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: const Text(
-            "HR Dashboard",
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isWeb = constraints.maxWidth >= 900;
+
+        return HrDashboardWrapper(
+          child: Column(
+            children: [
+              // ✅ Clean AppBar (no Scaffold)
+              AppBar(
+                iconTheme: const IconThemeData(
+                  color: Colors.white, // ✅ white icons on mobile
+                ),
+                automaticallyImplyLeading: !isWeb, // ✅ Hide drawer icon on web
+                title: const Text(
+                  "HR Dashboard",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                backgroundColor: AppColors.primary,
+              ),
+
+              // ✅ Main dashboard content
+              Expanded(child: _buildDashboardContent(isWeb)),
+            ],
           ),
-          iconTheme: const IconThemeData(color: Colors.white),
-          backgroundColor: AppColors.primary,
-        ),
-        body: LayoutBuilder(
-          builder: (context, constraints) {
-            final bool isWeb = constraints.maxWidth >= 900;
-            return _buildDashboardContent(isWeb);
-          },
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -107,7 +116,7 @@ class HrDashboard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 👋 Greeting Section (Mobile Only)
+            // 👋 Greeting Section (Mobile only)
             if (!isWeb)
               Padding(
                 padding: const EdgeInsets.only(bottom: 20),
@@ -124,7 +133,7 @@ class HrDashboard extends StatelessWidget {
                     ),
                     SizedBox(height: 5),
                     Text(
-                      "Here’s an overview of your work and balance.",
+                      "Here’s an overview of your HR dashboard.",
                       style: TextStyle(color: Colors.black54, fontSize: 14),
                     ),
                   ],

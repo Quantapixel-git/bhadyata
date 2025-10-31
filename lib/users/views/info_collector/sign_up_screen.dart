@@ -40,11 +40,11 @@ class _SignUpPageState extends State<SignUpPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xfff8f9fb),
+      // backgroundColor: const Color(0xfff8f9fb),
       appBar: AppBar(
         automaticallyImplyLeading: true,
         elevation: 0,
-        backgroundColor: Colors.white,
+        // backgroundColor: Colors.white,
         iconTheme: const IconThemeData(color: Colors.black),
       ),
       body: SafeArea(
@@ -195,7 +195,7 @@ class _SignUpPageState extends State<SignUpPage> {
                             color: AppColors.primary.withOpacity(0.08),
                             borderRadius: BorderRadius.circular(20),
                             image: const DecorationImage(
-                              image: AssetImage('assets/profile_bg.png'),
+                              image: AssetImage('assets/job_bgr.png'),
                               fit: BoxFit.cover,
                               opacity: 0.15,
                             ),

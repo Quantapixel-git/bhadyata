@@ -39,25 +39,33 @@ class AdminDashboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AdminDashboardWrapper(
-      child: Scaffold(
-        backgroundColor: Colors.grey[50],
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: const Text(
-            "Admin Dashboard",
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isWeb = constraints.maxWidth >= 900;
+
+        return AdminDashboardWrapper(
+          child: Column(
+            children: [
+              AppBar(
+                iconTheme: const IconThemeData(
+                  color: Colors.white, // ✅ white icon for mobile
+                ),
+                automaticallyImplyLeading: !isWeb, // ✅ hide drawer icon on web
+                title: const Text(
+                  "Admin Dashboard",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                backgroundColor: AppColors.primary,
+              ),
+
+              Expanded(child: _buildDashboardContent(isWeb)),
+            ],
           ),
-          iconTheme: const IconThemeData(color: Colors.white),
-          backgroundColor: AppColors.primary,
-        ),
-        body: LayoutBuilder(
-          builder: (context, constraints) {
-            final bool isWeb = constraints.maxWidth >= 900;
-            return _buildDashboardContent(isWeb);
-          },
-        ),
-      ),
+        );
+      },
     );
   }
 

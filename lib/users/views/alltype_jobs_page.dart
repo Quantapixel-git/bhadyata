@@ -25,7 +25,7 @@ class AllJobsPage extends StatelessWidget {
       },
       {
         "title": "Commission-Based Leads",
-        "subtitle": "Earn money for every lead or sale you generate.",
+        "subtitle": "Earn money for every lead or sale.",
         "gradient": [Colors.green.shade400, Colors.teal.shade700],
         "icon": Icons.trending_up_rounded,
         "page": const CommissionAllJobsPage(),
@@ -53,126 +53,162 @@ class AllJobsPage extends StatelessWidget {
       "assets/job_bgr.png",
     ];
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F6FA),
-      drawer: !kIsWeb ? AppDrawer() : null,
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1100),
-          child: SingleChildScrollView(
-            padding: EdgeInsets.symmetric(
-              horizontal: isWeb ? 50 : 20,
-              vertical: isWeb ? 40 : 20,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                // 🌟 Header
-                if (isWeb)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 30),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: const [
-                        Text(
-                          "Explore Opportunities",
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isWeb = constraints.maxWidth > 900;
+        return Scaffold(
+          backgroundColor: const Color(0xFFF5F6FA),
+
+          // ✅ Drawer only for mobile
+          drawer: isWeb ? null : AppDrawer(),
+
+          // ✅ AppBar only for mobile
+          appBar: isWeb
+              ? null
+              : AppBar(
+                  backgroundColor: AppColors.primary,
+                  elevation: 0,
+                  centerTitle: true,
+                  title: const Text(
+                    "All Jobs",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
                   ),
-
-                // 🌟 Carousel Section
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: CarouselSlider(
-                    options: CarouselOptions(
-                      height: isWeb ? 320 : 150,
-                      autoPlay: true,
-                      enlargeCenterPage: true,
-                      viewportFraction: isWeb ? 0.8 : 0.9,
-                      autoPlayInterval: const Duration(seconds: 4),
-                      autoPlayAnimationDuration: const Duration(
-                        milliseconds: 900,
-                      ),
+                  leading: Builder(
+                    builder: (context) => IconButton(
+                      iconSize: 34,
+                      icon: const Icon(Icons.menu, color: Colors.white),
+                      onPressed: () {
+                        Scaffold.of(context).openDrawer();
+                      },
                     ),
-                    items: carouselImages.map((imageUrl) {
-                      return Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          Image.asset(imageUrl, fit: BoxFit.contain),
-                          Container(
-                            decoration: const BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [Colors.black54, Colors.transparent],
-                                begin: Alignment.bottomCenter,
-                                end: Alignment.topCenter,
+                  ),
+                ),
+
+          body: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1100),
+              child: SingleChildScrollView(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isWeb ? 50 : 20,
+                  vertical: isWeb ? 40 : 20,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // 🌟 Header (only on web)
+                    if (isWeb)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 30),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: const [
+                            Text(
+                              "Explore Opportunities",
+                              style: TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.black87,
                               ),
                             ),
-                          ),
-                        ],
-                      );
-                    }).toList(),
-                  ),
-                ),
-
-                const SizedBox(height: 50),
-
-                const Text(
-                  "Choose Your Job Type",
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.black87,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  "Find opportunities that match your skills and goals.",
-                  style: TextStyle(fontSize: 16, color: Colors.black54),
-                  textAlign: TextAlign.center,
-                ),
-
-                const SizedBox(height: 35),
-
-                // 🌈 Job Type Grid
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  padding: const EdgeInsets.only(bottom: 30),
-                  itemCount: jobCategories.length,
-                  gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                    maxCrossAxisExtent: isWeb ? 480 : 600,
-                    crossAxisSpacing: 25,
-                    mainAxisSpacing: 25,
-                    childAspectRatio: isWeb ? 1.4 : 1.8,
-                  ),
-                  itemBuilder: (context, index) {
-                    final job = jobCategories[index];
-                    return _JobTypeCard(
-                      title: job["title"] as String,
-                      subtitle: job["subtitle"] as String,
-                      gradient: job["gradient"] as List<Color>,
-                      icon: job["icon"] as IconData,
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => job["page"] as Widget,
+                          ],
                         ),
                       ),
-                    );
-                  },
+
+                    // 🌟 Carousel Section
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: CarouselSlider(
+                        options: CarouselOptions(
+                          height: isWeb ? 320 : 160,
+                          autoPlay: true,
+                          enlargeCenterPage: true,
+                          viewportFraction: isWeb ? 0.8 : 0.9,
+                          autoPlayInterval: const Duration(seconds: 4),
+                          autoPlayAnimationDuration: const Duration(
+                            milliseconds: 900,
+                          ),
+                        ),
+                        items: carouselImages.map((imageUrl) {
+                          return Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              Image.asset(imageUrl, fit: BoxFit.contain),
+                              Container(
+                                decoration: const BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      Colors.black54,
+                                      Colors.transparent,
+                                    ],
+                                    begin: Alignment.bottomCenter,
+                                    end: Alignment.topCenter,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        }).toList(),
+                      ),
+                    ),
+
+                    const SizedBox(height: 40),
+
+                    const Text(
+                      "Choose Your Job Type",
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.black87,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      "Find opportunities that match your skills and goals.",
+                      style: TextStyle(fontSize: 16, color: Colors.black54),
+                      textAlign: TextAlign.center,
+                    ),
+
+                    const SizedBox(height: 35),
+
+                    // 🌈 Job Type Grid
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      padding: const EdgeInsets.only(bottom: 30),
+                      itemCount: jobCategories.length,
+                      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                        maxCrossAxisExtent: isWeb ? 480 : 600,
+                        crossAxisSpacing: 25,
+                        mainAxisSpacing: 25,
+                        childAspectRatio: isWeb ? 1.4 : 1.8,
+                      ),
+                      itemBuilder: (context, index) {
+                        final job = jobCategories[index];
+                        return _JobTypeCard(
+                          title: job["title"] as String,
+                          subtitle: job["subtitle"] as String,
+                          gradient: job["gradient"] as List<Color>,
+                          icon: job["icon"] as IconData,
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => job["page"] as Widget,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

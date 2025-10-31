@@ -34,7 +34,7 @@ class SearchPage extends StatelessWidget {
                   elevation: 0,
                   centerTitle: true,
                   title: const Text(
-                    "Jobs",
+                    "Search",
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Colors.white,

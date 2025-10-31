@@ -30,68 +30,107 @@ class HrEmployers extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return HrDashboardWrapper(
-      child: Scaffold(
-        backgroundColor: Colors.grey.shade100,
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: const Text(
-            "Employers",
-            style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
-          ),
-          backgroundColor: AppColors.primary,
-          elevation: 2,
-        ),
-        body: ListView.builder(
-          padding: const EdgeInsets.all(10),
-          itemCount: employers.length,
-          itemBuilder: (context, index) {
-            final emp = employers[index];
-            return Card(
-              elevation: 3,
-              margin: const EdgeInsets.symmetric(vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: AppColors.primary.withOpacity(0.15),
-                  child: Icon(Icons.business_center, color: AppColors.primary),
-                ),
-                title: Text(
-                  emp['name'] ?? '',
-                  style: const TextStyle(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isWeb = constraints.maxWidth >= 900;
+
+        return HrDashboardWrapper(
+          child: Column(
+            children: [
+              // ✅ AppBar (same as AdminDashboard)
+              AppBar(
+                iconTheme: const IconThemeData(color: Colors.white),
+                automaticallyImplyLeading:
+                    !isWeb, // ✅ hide drawer icon on wide layout
+                title: const Text(
+                  "Employers",
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                    color: Colors.white,
                   ),
                 ),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("Company: ${emp['company']}"),
-                    Text(emp['email'] ?? ''),
-                  ],
-                ),
-                trailing: IconButton(
-                  icon: Icon(
-                    Icons.remove_red_eye_outlined,
-                    color: AppColors.primary,
+                backgroundColor: AppColors.primary,
+                elevation: 2,
+              ),
+
+              // ✅ Main body
+              Expanded(
+                child: Container(
+                  color: Colors.grey.shade100,
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(12),
+                    itemCount: employers.length,
+                    itemBuilder: (context, index) {
+                      final emp = employers[index];
+                      return Card(
+                        elevation: 3,
+                        margin: const EdgeInsets.symmetric(vertical: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
+                          ),
+                          leading: CircleAvatar(
+                            radius: 25,
+                            backgroundColor: AppColors.primary.withOpacity(0.1),
+                            child: Icon(
+                              Icons.business_center,
+                              color: AppColors.primary,
+                              size: 26,
+                            ),
+                          ),
+                          title: Text(
+                            emp['name'] ?? '',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          subtitle: Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Company: ${emp['company']}",
+                                  style: const TextStyle(fontSize: 13),
+                                ),
+                                Text(
+                                  emp['email'] ?? '',
+                                  style: const TextStyle(fontSize: 13),
+                                ),
+                              ],
+                            ),
+                          ),
+                          trailing: IconButton(
+                            icon: Icon(
+                              Icons.remove_red_eye_outlined,
+                              color: AppColors.primary,
+                            ),
+                            tooltip: 'View Details',
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      HrEmployerDetail(employer: emp),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                  tooltip: 'View Details',
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => HrEmployerDetail(employer: emp),
-                      ),
-                    );
-                  },
                 ),
               ),
-            );
-          },
-        ),
-      ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

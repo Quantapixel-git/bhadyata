@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
 import 'package:jobshub/employer/views/drawer_dashboard/employer_side_bar.dart';
-// import 'package:jobshub/employer/view/drawer_dashboard/employer_dashboard_wrapper.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class SalaryBasedAttendancePage extends StatefulWidget {
@@ -35,10 +34,7 @@ class _SalaryBasedAttendancePageState extends State<SalaryBasedAttendancePage> {
   ];
 
   void _markAttendance(int index, bool isPresent) {
-    setState(() {
-      employees[index]["isPresent"] = isPresent;
-    });
-
+    setState(() => employees[index]["isPresent"] = isPresent);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -61,7 +57,6 @@ class _SalaryBasedAttendancePageState extends State<SalaryBasedAttendancePage> {
   void _submitAttendance() {
     final presentCount = employees.where((e) => e["isPresent"] == true).length;
     final absentCount = employees.length - presentCount;
-
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
@@ -76,181 +71,212 @@ class _SalaryBasedAttendancePageState extends State<SalaryBasedAttendancePage> {
   Widget build(BuildContext context) {
     final today = DateTime.now();
 
-    return EmployerDashboardWrapper(
-      child: Scaffold(
-        backgroundColor: Colors.grey.shade100,
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: const Text(
-            "Salary-Based Employees Attendance",
-            style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
-          ),
-          backgroundColor: AppColors.primary,
-          elevation: 2,
-        ),
-        drawer: EmployerSidebar(),
-        body: Padding(
-          padding: const EdgeInsets.all(16),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isWeb = constraints.maxWidth >= 900;
+
+        return EmployerDashboardWrapper(
           child: Column(
             children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(12),
+              // ✅ AppBar inside Column, not Scaffold
+              AppBar(
+                iconTheme: const IconThemeData(color: Colors.white),
+                automaticallyImplyLeading: !isWeb,
+                title: const Text(
+                  "Salary-Based Employees Attendance",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.calendar_month, color: Colors.black54),
-                        const SizedBox(width: 8),
-                        Text(
-                          "Today: ${today.day}-${today.month}-${today.year}",
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ],
-                    ),
-                    ElevatedButton.icon(
-                      onPressed: _submitAttendance,
-                      icon: const Icon(Icons.send, size: 18),
-                      label: const Text("Submit"),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 10,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                backgroundColor: AppColors.primary,
+                elevation: 2,
               ),
-              const SizedBox(height: 16),
+
               Expanded(
-                child: ListView.builder(
-                  itemCount: employees.length,
-                  itemBuilder: (context, index) {
-                    final emp = employees[index];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(vertical: 8),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      elevation: 2,
-                      child: Padding(
-                        padding: const EdgeInsets.all(14),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      // 📅 Date Header + Submit Button
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.08),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Row(
                               children: [
-                                const CircleAvatar(
-                                  radius: 26,
-                                  backgroundImage: AssetImage(
-                                    "assets/job_bgr.png",
-                                  ),
+                                const Icon(
+                                  Icons.calendar_month,
+                                  color: Colors.black54,
                                 ),
-                                const SizedBox(width: 15),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        emp["name"],
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        "Joining Date: ${emp['joiningDate']}",
-                                        style: const TextStyle(
-                                          fontSize: 13,
-                                          color: Colors.black54,
-                                        ),
-                                      ),
-                                      Text(
-                                        "Job: ${emp['jobTitle']}",
-                                        style: const TextStyle(
-                                          fontSize: 13,
-                                          color: Colors.black54,
-                                        ),
-                                      ),
-                                    ],
+                                const SizedBox(width: 8),
+                                Text(
+                                  "Today: ${today.day}-${today.month}-${today.year}",
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 15,
                                   ),
-                                ),
-                                IconButton(
-                                  onPressed: () => _viewHistory(emp["name"]),
-                                  icon: const Icon(Icons.history),
-                                  color: AppColors.primary,
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 10),
-                            Row(
-                              children: [
-                                ElevatedButton.icon(
-                                  onPressed: () => _markAttendance(index, true),
-                                  icon: const Icon(
-                                    Icons.check_circle,
-                                    size: 18,
-                                  ),
-                                  label: const Text("Present"),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: emp["isPresent"]
-                                        ? Colors.green
-                                        : Colors.grey.shade300,
-                                    foregroundColor: emp["isPresent"]
-                                        ? Colors.white
-                                        : Colors.black,
-                                  ),
+                            ElevatedButton.icon(
+                              onPressed: _submitAttendance,
+                              icon: const Icon(Icons.send, size: 18),
+                              label: const Text("Submit"),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 10,
                                 ),
-                                const SizedBox(width: 8),
-                                ElevatedButton.icon(
-                                  onPressed: () =>
-                                      _markAttendance(index, false),
-                                  icon: const Icon(Icons.cancel, size: 18),
-                                  label: const Text("Absent"),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: !emp["isPresent"]
-                                        ? Colors.redAccent
-                                        : Colors.grey.shade300,
-                                    foregroundColor: !emp["isPresent"]
-                                        ? Colors.white
-                                        : Colors.black,
-                                  ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
-                              ],
+                              ),
                             ),
                           ],
                         ),
                       ),
-                    );
-                  },
+                      const SizedBox(height: 16),
+
+                      // 👥 Employee List
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: employees.length,
+                          itemBuilder: (context, index) {
+                            final emp = employees[index];
+                            return Card(
+                              margin: const EdgeInsets.symmetric(vertical: 8),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              elevation: 2,
+                              child: Padding(
+                                padding: const EdgeInsets.all(14),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        const CircleAvatar(
+                                          radius: 26,
+                                          backgroundImage: AssetImage(
+                                            "assets/job_bgr.png",
+                                          ),
+                                        ),
+                                        const SizedBox(width: 15),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                emp["name"],
+                                                style: const TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                "Joining Date: ${emp['joiningDate']}",
+                                                style: const TextStyle(
+                                                  fontSize: 13,
+                                                  color: Colors.black54,
+                                                ),
+                                              ),
+                                              Text(
+                                                "Job: ${emp['jobTitle']}",
+                                                style: const TextStyle(
+                                                  fontSize: 13,
+                                                  color: Colors.black54,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        IconButton(
+                                          onPressed: () =>
+                                              _viewHistory(emp["name"]),
+                                          icon: const Icon(Icons.history),
+                                          color: AppColors.primary,
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Row(
+                                      children: [
+                                        ElevatedButton.icon(
+                                          onPressed: () =>
+                                              _markAttendance(index, true),
+                                          icon: const Icon(
+                                            Icons.check_circle,
+                                            size: 18,
+                                          ),
+                                          label: const Text("Present"),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: emp["isPresent"]
+                                                ? Colors.green
+                                                : Colors.grey.shade300,
+                                            foregroundColor: emp["isPresent"]
+                                                ? Colors.white
+                                                : Colors.black,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        ElevatedButton.icon(
+                                          onPressed: () =>
+                                              _markAttendance(index, false),
+                                          icon: const Icon(
+                                            Icons.cancel,
+                                            size: 18,
+                                          ),
+                                          label: const Text("Absent"),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: !emp["isPresent"]
+                                                ? Colors.redAccent
+                                                : Colors.grey.shade300,
+                                            foregroundColor: !emp["isPresent"]
+                                                ? Colors.white
+                                                : Colors.black,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
+// import 'package:flutter/material.dart';
+// import 'package:jobshub/common/utils/AppColor.dart';
+// import 'package:table_calendar/table_calendar.dart';
+// import 'package:jobshub/employer/views/drawer_dashboard/employer_side_bar.dart';
+// import 'package:flutter/material.dart';
+// import 'package:jobshub/common/utils/AppColor.dart';
+// import 'package:table_calendar/table_calendar.dart';
 
 class AttendanceHistoryPage extends StatefulWidget {
   final String employeeName;
-
   const AttendanceHistoryPage({super.key, required this.employeeName});
 
   @override
@@ -265,8 +291,6 @@ class _AttendanceHistoryPageState extends State<AttendanceHistoryPage> {
   @override
   void initState() {
     super.initState();
-
-    // Dummy attendance data (replace with API later)
     attendanceData = {
       DateTime(2025, 10, 17): "Present",
       DateTime(2025, 10, 16): "Absent",
@@ -278,90 +302,99 @@ class _AttendanceHistoryPageState extends State<AttendanceHistoryPage> {
 
   @override
   Widget build(BuildContext context) {
-    return EmployerDashboardWrapper(
-      child: Scaffold(
-        backgroundColor: Colors.grey.shade100,
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: Text(
-            "${widget.employeeName} - Attendance",
-            style: const TextStyle(color: Colors.white),
-          ),
-          backgroundColor: AppColors.primary,
-          elevation: 2,
-        ),
-        drawer: EmployerSidebar(),
-        body: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              TableCalendar(
-                firstDay: DateTime.utc(2024, 1, 1),
-                lastDay: DateTime.utc(2026, 12, 31),
-                focusedDay: focusedDay,
-                selectedDayPredicate: (day) => isSameDay(selectedDay, day),
-                onDaySelected: (selected, focused) {
-                  setState(() {
-                    selectedDay = selected;
-                    focusedDay = focused;
-                  });
-                },
-                calendarStyle: CalendarStyle(
-                  todayDecoration: BoxDecoration(
-                    color: Colors.blue.shade100,
-                    shape: BoxShape.circle,
-                  ),
-                  selectedDecoration: BoxDecoration(
-                    color: AppColors.primary,
-                    shape: BoxShape.circle,
-                  ),
-                  outsideDaysVisible: false,
-                ),
-                headerStyle: HeaderStyle(
-                  formatButtonVisible: false,
-                  titleCentered: true,
-                  titleTextStyle: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-                calendarBuilders: CalendarBuilders(
-                  defaultBuilder: (context, day, _) {
-                    final status =
-                        attendanceData[DateTime(day.year, day.month, day.day)];
-                    Color? bgColor;
-                    if (status == "Present")
-                      bgColor = Colors.green.shade100;
-                    else if (status == "Absent")
-                      bgColor = Colors.red.shade100;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isWeb = constraints.maxWidth >= 900;
 
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: bgColor,
-                        shape: BoxShape.circle,
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        "${day.day}",
-                        style: TextStyle(
-                          color: status == "Absent"
-                              ? Colors.redAccent
-                              : Colors.black87,
-                          fontWeight: status != null
-                              ? FontWeight.bold
-                              : FontWeight.normal,
-                        ),
-                      ),
-                    );
-                  },
-                ),
+        return Scaffold(
+          backgroundColor: Colors.grey.shade100,
+          appBar: AppBar(
+            iconTheme: const IconThemeData(color: Colors.white),
+            automaticallyImplyLeading: true, // ✅ hide menu on web
+            title: Text(
+              "${widget.employeeName} - Attendance",
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
               ),
-              const SizedBox(height: 20),
-              if (selectedDay != null) _buildSelectedDayInfo(selectedDay!),
-            ],
+            ),
+            backgroundColor: AppColors.primary,
+            elevation: 2,
           ),
-        ),
-      ),
+
+          body: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                TableCalendar(
+                  firstDay: DateTime.utc(2024, 1, 1),
+                  lastDay: DateTime.utc(2026, 12, 31),
+                  focusedDay: focusedDay,
+                  selectedDayPredicate: (day) => isSameDay(selectedDay, day),
+                  onDaySelected: (selected, focused) {
+                    setState(() {
+                      selectedDay = selected;
+                      focusedDay = focused;
+                    });
+                  },
+                  calendarStyle: CalendarStyle(
+                    todayDecoration: BoxDecoration(
+                      color: Colors.blue.shade100,
+                      shape: BoxShape.circle,
+                    ),
+                    selectedDecoration: BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
+                    ),
+                    outsideDaysVisible: false,
+                  ),
+                  headerStyle: const HeaderStyle(
+                    formatButtonVisible: false,
+                    titleCentered: true,
+                    titleTextStyle: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  calendarBuilders: CalendarBuilders(
+                    defaultBuilder: (context, day, _) {
+                      final status = attendanceData[
+                          DateTime(day.year, day.month, day.day)];
+                      Color? bgColor;
+                      if (status == "Present") {
+                        bgColor = Colors.green.shade100;
+                      } else if (status == "Absent") {
+                        bgColor = Colors.red.shade100;
+                      }
+
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: bgColor,
+                          shape: BoxShape.circle,
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          "${day.day}",
+                          style: TextStyle(
+                            color: status == "Absent"
+                                ? Colors.redAccent
+                                : Colors.black87,
+                            fontWeight: status != null
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 20),
+                if (selectedDay != null) _buildSelectedDayInfo(selectedDay!),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -387,8 +420,8 @@ class _AttendanceHistoryPageState extends State<AttendanceHistoryPage> {
               color: status == "Present"
                   ? Colors.green
                   : status == "Absent"
-                  ? Colors.redAccent
-                  : Colors.grey,
+                      ? Colors.redAccent
+                      : Colors.grey,
               fontWeight: FontWeight.bold,
             ),
           ),

@@ -80,7 +80,7 @@ class _AllProjectsPageState extends State<AllProjectsPage> {
       ),
       body: Row(
         children: [
-          if (isWeb) const AppDrawer(),
+          // if (isWeb) const AppDrawer(),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(10),

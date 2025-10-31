@@ -21,28 +21,43 @@ class SalaryBasedEmployeesPage extends StatelessWidget {
       },
     ];
 
-    return EmployerDashboardWrapper(
-      child: Scaffold(
-        backgroundColor: Colors.grey.shade100,
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: const Text(
-            "Salary-Based Employees",
-            style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isWeb = constraints.maxWidth >= 900;
+
+        return EmployerDashboardWrapper(
+          child: Column(
+            children: [
+              // ✅ Responsive AppBar (no Scaffold)
+              AppBar(
+                iconTheme: const IconThemeData(color: Colors.white),
+                automaticallyImplyLeading: !isWeb, // ✅ hide drawer icon on web
+                title: const Text(
+                  "Salary-Based Employees",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                backgroundColor: AppColors.primary,
+                elevation: 2,
+              ),
+
+              // ✅ Main body
+              Expanded(
+                child: Container(
+                  color: Colors.grey.shade100,
+                  child: _buildEmployeeContent(isWeb, employees),
+                ),
+              ),
+            ],
           ),
-          backgroundColor: AppColors.primary,
-          elevation: 2,
-        ),
-        body: LayoutBuilder(
-          builder: (context, constraints) {
-            final bool isWeb = constraints.maxWidth >= 900;
-            return _buildEmployeeContent(isWeb, employees);
-          },
-        ),
-      ),
+        );
+      },
     );
   }
 
+  // ---------- EMPLOYEE CONTENT ----------
   Widget _buildEmployeeContent(
     bool isWeb,
     List<Map<String, String>> employees,

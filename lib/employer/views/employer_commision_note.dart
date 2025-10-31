@@ -7,25 +7,39 @@ class CommissionBasedRecruitmentPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return EmployerDashboardWrapper(
-      child: Scaffold(
-        backgroundColor: Colors.grey.shade100,
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: const Text(
-            "Commission-Based Recruitment",
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isWeb = constraints.maxWidth >= 900;
+
+        return EmployerDashboardWrapper(
+          child: Column(
+            children: [
+              // ✅ AppBar same logic as AdminDashboard
+              AppBar(
+                iconTheme: const IconThemeData(color: Colors.white),
+                automaticallyImplyLeading: !isWeb, // hide drawer icon on web
+                title: const Text(
+                  "Commission-Based Recruitment",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                backgroundColor: AppColors.primary,
+                elevation: 2,
+              ),
+
+              // ✅ Main Content
+              Expanded(
+                child: Container(
+                  color: Colors.grey.shade100,
+                  child: _buildContent(isWeb),
+                ),
+              ),
+            ],
           ),
-          backgroundColor: AppColors.primary,
-          elevation: 2,
-        ),
-        body: LayoutBuilder(
-          builder: (context, constraints) {
-            final bool isWeb = constraints.maxWidth >= 900;
-            return _buildContent(isWeb);
-          },
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -57,6 +71,7 @@ class CommissionBasedRecruitmentPage extends StatelessWidget {
               ),
               const SizedBox(height: 20),
 
+              // Steps
               _buildStep(
                 step: "1",
                 title: "Post a Commission-Based Job",
@@ -108,6 +123,7 @@ class CommissionBasedRecruitmentPage extends StatelessWidget {
     );
   }
 
+  // ---------- STEP CARD ----------
   Widget _buildStep({
     required String step,
     required String title,

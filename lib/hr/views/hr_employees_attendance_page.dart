@@ -29,64 +29,91 @@ class EmployeesAttendancePage extends StatelessWidget {
       },
     ];
 
-    return HrDashboardWrapper(
-      child: Scaffold(
-        backgroundColor: Colors.grey.shade100,
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: const Text(
-            "Employees Attendance",
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-          ),
-          backgroundColor: AppColors.primary,
-          centerTitle: true,
-          elevation: 2,
-        ),
-        drawer: HrSidebar(),
-        body: ListView.builder(
-          padding: const EdgeInsets.all(10),
-          itemCount: employees.length,
-          itemBuilder: (context, index) {
-            final employee = employees[index];
-            return Card(
-              elevation: 3,
-              margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: AppColors.primary.withOpacity(0.15),
-                  child: Icon(Icons.person, color: AppColors.primary),
-                ),
-                title: Text(
-                  employee["name"],
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isWeb = constraints.maxWidth >= 900;
+
+        return HrDashboardWrapper(
+          child: Column(
+            children: [
+              // ✅ AppBar (no Scaffold)
+              AppBar(
+                iconTheme: const IconThemeData(color: Colors.white),
+                automaticallyImplyLeading: !isWeb, // ✅ Hide drawer icon on web
+                title: const Text(
+                  "Employees Attendance",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                subtitle: Text(employee["designation"]),
-                trailing: IconButton(
-                  icon: Icon(Icons.remove_red_eye, color: AppColors.primary),
-                  tooltip: 'View Attendance',
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => EmployeeAttendanceDetailPage(
-                          employeeName: employee["name"],
-                          joiningDate: employee["joiningDate"],
+                backgroundColor: AppColors.primary,
+                centerTitle: true,
+                elevation: 2,
+              ),
+
+              // ✅ Main Body
+              Expanded(
+                child: Container(
+                  color: Colors.grey.shade100,
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(10),
+                    itemCount: employees.length,
+                    itemBuilder: (context, index) {
+                      final employee = employees[index];
+                      return Card(
+                        elevation: 3,
+                        margin: const EdgeInsets.symmetric(
+                          vertical: 8,
+                          horizontal: 8,
                         ),
-                      ),
-                    );
-                  },
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: AppColors.primary.withOpacity(
+                              0.15,
+                            ),
+                            child: Icon(Icons.person, color: AppColors.primary),
+                          ),
+                          title: Text(
+                            employee["name"],
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          subtitle: Text(employee["designation"]),
+                          trailing: IconButton(
+                            icon: Icon(
+                              Icons.remove_red_eye,
+                              color: AppColors.primary,
+                            ),
+                            tooltip: 'View Attendance',
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      EmployeeAttendanceDetailPage(
+                                        employeeName: employee["name"],
+                                        joiningDate: employee["joiningDate"],
+                                      ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
-            );
-          },
-        ),
-      ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

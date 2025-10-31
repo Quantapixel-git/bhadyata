@@ -15,7 +15,7 @@ class _JobApplicantsPageState extends State<JobApplicantsPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  // Demo data for each tab (replace later with API calls)
+  // Demo data (replace with API later)
   final List<Map<String, String>> pendingApplicants = [
     {"name": "John Doe", "job": "Flutter Developer"},
     {"name": "Emily Smith", "job": "Sales Associate"},
@@ -81,42 +81,50 @@ class _JobApplicantsPageState extends State<JobApplicantsPage>
 
   @override
   Widget build(BuildContext context) {
-    return HrDashboardWrapper(
-      child: Scaffold(
-        backgroundColor: Colors.grey.shade100,
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: Text(
-            widget.title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isWeb = constraints.maxWidth >= 900;
+
+        return HrDashboardWrapper(
+          child: Scaffold(
+            backgroundColor: Colors.grey.shade100,
+            appBar: AppBar(
+              iconTheme: IconThemeData(color: Colors.white),
+              automaticallyImplyLeading:
+                  !isWeb, // ✅ true for mobile, false for desktop
+              title: Text(
+                widget.title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              backgroundColor: AppColors.primary,
+              centerTitle: true,
+              elevation: 2,
+              bottom: TabBar(
+                controller: _tabController,
+                indicatorColor: Colors.white,
+                labelColor: Colors.white,
+                unselectedLabelColor: Colors.white70,
+                tabs: const [
+                  Tab(text: "Pending"),
+                  Tab(text: "Approved"),
+                  Tab(text: "Rejected"),
+                ],
+              ),
+            ),
+            body: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildApplicantList(pendingApplicants),
+                _buildApplicantList(approvedApplicants),
+                _buildApplicantList(rejectedApplicants),
+              ],
             ),
           ),
-          backgroundColor: AppColors.primary,
-          centerTitle: true,
-          elevation: 2,
-          bottom: TabBar(
-            controller: _tabController,
-            indicatorColor: Colors.white,
-            labelColor: Colors.white,
-            unselectedLabelColor: Colors.white70,
-            tabs: const [
-              Tab(text: "Pending"),
-              Tab(text: "Approved"),
-              Tab(text: "Rejected"),
-            ],
-          ),
-        ),
-        body: TabBarView(
-          controller: _tabController,
-          children: [
-            _buildApplicantList(pendingApplicants),
-            _buildApplicantList(approvedApplicants),
-            _buildApplicantList(rejectedApplicants),
-          ],
-        ),
-      ),
+        );
+      },
     );
   }
 }

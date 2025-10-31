@@ -96,25 +96,39 @@ class _SendNotificationPageState extends State<SendNotificationPage> {
 
   @override
   Widget build(BuildContext context) {
-    return EmployerDashboardWrapper(
-      child: Scaffold(
-        backgroundColor: Colors.grey.shade100,
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: const Text(
-            "Send Notification",
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isWeb = constraints.maxWidth >= 900;
+
+        return EmployerDashboardWrapper(
+          child: Column(
+            children: [
+              // ✅ Top AppBar - Same structure as AdminDashboard
+              AppBar(
+                iconTheme: const IconThemeData(color: Colors.white),
+                automaticallyImplyLeading: !isWeb, // hide drawer icon on web
+                title: const Text(
+                  "Send Notification",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                backgroundColor: AppColors.primary,
+                elevation: 2,
+              ),
+
+              // ✅ Main content
+              Expanded(
+                child: Container(
+                  color: Colors.grey.shade100,
+                  child: _buildNotificationContent(isWeb),
+                ),
+              ),
+            ],
           ),
-          backgroundColor: AppColors.primary,
-          elevation: 2,
-        ),
-        body: LayoutBuilder(
-          builder: (context, constraints) {
-            final bool isWeb = constraints.maxWidth >= 900;
-            return _buildNotificationContent(isWeb);
-          },
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -137,7 +151,8 @@ class _SendNotificationPageState extends State<SendNotificationPage> {
               ),
               const SizedBox(height: 12),
               const Text(
-                "Use this feature to send personalized notifications to selected users. You can notify them about updates, offers, or important messages directly.",
+                "Use this feature to send personalized notifications to selected users. "
+                "You can notify them about updates, offers, or important messages directly.",
                 style: TextStyle(
                   fontSize: 15,
                   color: Colors.black87,

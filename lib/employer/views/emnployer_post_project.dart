@@ -35,102 +35,124 @@ class _PostProjectPageState extends State<PostProjectPage> {
 
   @override
   Widget build(BuildContext context) {
-    return EmployerDashboardWrapper(
-      child: Scaffold(
-        backgroundColor: Colors.grey.shade100,
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: const Text(
-            "Post Project",
-            style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
-          ),
-          backgroundColor: AppColors.primary,
-          elevation: 2,
-        ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 700),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  children: [
-                    // Project Title
-                    TextFormField(
-                      controller: _projectTitleController,
-                      decoration: const InputDecoration(
-                        labelText: "Project Title",
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (val) => val == null || val.isEmpty
-                          ? "Enter project title"
-                          : null,
-                    ),
-                    const SizedBox(height: 12),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isWeb = constraints.maxWidth >= 900;
 
-                    // Project Description
-                    TextFormField(
-                      controller: _projectDescriptionController,
-                      maxLines: 4,
-                      decoration: const InputDecoration(
-                        labelText: "Project Description",
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (val) => val == null || val.isEmpty
-                          ? "Enter project description"
-                          : null,
-                    ),
-                    const SizedBox(height: 12),
+        return EmployerDashboardWrapper(
+          child: Column(
+            children: [
+              // ✅ Consistent AppBar (same as AdminDashboard)
+              AppBar(
+                iconTheme: const IconThemeData(color: Colors.white),
+                automaticallyImplyLeading: !isWeb, // hide drawer icon on web
+                title: const Text(
+                  "Post Project",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                backgroundColor: AppColors.primary,
+                elevation: 2,
+              ),
 
-                    // Deadline
-                    TextFormField(
-                      controller: _deadlineController,
-                      decoration: const InputDecoration(
-                        labelText: "Deadline (e.g., 25 Oct 2025)",
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (val) => val == null || val.isEmpty
-                          ? "Enter project deadline"
-                          : null,
-                    ),
-                    const SizedBox(height: 12),
+              // ✅ Main content
+              Expanded(
+                child: Container(
+                  color: Colors.grey.shade100,
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(16),
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 700),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            children: [
+                              // Project Title
+                              TextFormField(
+                                controller: _projectTitleController,
+                                decoration: const InputDecoration(
+                                  labelText: "Project Title",
+                                  border: OutlineInputBorder(),
+                                ),
+                                validator: (val) => val == null || val.isEmpty
+                                    ? "Enter project title"
+                                    : null,
+                              ),
+                              const SizedBox(height: 12),
 
-                    // Assigned To
-                    TextFormField(
-                      controller: _assignedToController,
-                      decoration: const InputDecoration(
-                        labelText: "Assign To (Employee Name)",
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (val) =>
-                          val == null || val.isEmpty ? "Enter assignee" : null,
-                    ),
-                    const SizedBox(height: 24),
+                              // Project Description
+                              TextFormField(
+                                controller: _projectDescriptionController,
+                                maxLines: 4,
+                                decoration: const InputDecoration(
+                                  labelText: "Project Description",
+                                  border: OutlineInputBorder(),
+                                ),
+                                validator: (val) => val == null || val.isEmpty
+                                    ? "Enter project description"
+                                    : null,
+                              ),
+                              const SizedBox(height: 12),
 
-                    // Post Button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        icon: const Icon(Icons.post_add),
-                        label: const Text("Post Project"),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                              // Deadline
+                              TextFormField(
+                                controller: _deadlineController,
+                                decoration: const InputDecoration(
+                                  labelText: "Deadline (e.g., 25 Oct 2025)",
+                                  border: OutlineInputBorder(),
+                                ),
+                                validator: (val) => val == null || val.isEmpty
+                                    ? "Enter project deadline"
+                                    : null,
+                              ),
+                              const SizedBox(height: 12),
+
+                              // Assigned To
+                              TextFormField(
+                                controller: _assignedToController,
+                                decoration: const InputDecoration(
+                                  labelText: "Assign To (Employee Name)",
+                                  border: OutlineInputBorder(),
+                                ),
+                                validator: (val) => val == null || val.isEmpty
+                                    ? "Enter assignee"
+                                    : null,
+                              ),
+                              const SizedBox(height: 24),
+
+                              // Post Button
+                              SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton.icon(
+                                  icon: const Icon(Icons.post_add),
+                                  label: const Text("Post Project"),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: AppColors.primary,
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 14,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                  onPressed: _postProject,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        onPressed: _postProject,
                       ),
                     ),
-                  ],
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

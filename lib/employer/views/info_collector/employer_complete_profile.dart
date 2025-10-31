@@ -184,7 +184,7 @@ class _EmployerCompteleProfileState extends State<EmployerCompteleProfile> {
                             color: AppColors.primary.withOpacity(0.08),
                             borderRadius: BorderRadius.circular(20),
                             image: const DecorationImage(
-                              image: AssetImage('assets/profile_bg.png'),
+                              image: AssetImage('assets/job_bgr.png'),
                               fit: BoxFit.cover,
                               opacity: 0.15,
                             ),

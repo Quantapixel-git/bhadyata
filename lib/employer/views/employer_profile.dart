@@ -7,28 +7,39 @@ class EmployerProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return EmployerDashboardWrapper(
-      child: Scaffold(
-        backgroundColor: Colors.grey.shade100,
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: const Text(
-            "My Profile",
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isWeb = constraints.maxWidth >= 900;
+
+        return EmployerDashboardWrapper(
+          child: Column(
+            children: [
+              // ✅ AppBar same pattern as AdminDashboard
+              AppBar(
+                iconTheme: const IconThemeData(color: Colors.white),
+                automaticallyImplyLeading: !isWeb,
+                title: const Text(
+                  "My Profile",
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+                backgroundColor: AppColors.primary,
+                elevation: 2,
+              ),
+
+              // ✅ Body Section
+              Expanded(
+                child: Container(
+                  color: Colors.grey.shade100,
+                  child: _buildProfileContent(isWeb),
+                ),
+              ),
+            ],
           ),
-          backgroundColor: AppColors.primary,
-          elevation: 2,
-        ),
-        body: LayoutBuilder(
-          builder: (context, constraints) {
-            final bool isWeb = constraints.maxWidth >= 900;
-            return _buildProfileContent(isWeb);
-          },
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -87,7 +98,7 @@ class EmployerProfilePage extends StatelessWidget {
               ),
               Text(
                 "Employer | ABC Pvt. Ltd.",
-                style: TextStyle(fontSize: 14, color: Colors.grey),
+                style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
               ),
               const SizedBox(height: 24),
 

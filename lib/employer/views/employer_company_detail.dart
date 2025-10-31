@@ -7,113 +7,142 @@ class CompanyDetailsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return EmployerDashboardWrapper(
-      child: Scaffold(
-        backgroundColor: Colors.grey.shade100,
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: const Text(
-            "Company Details",
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-          ),
-          backgroundColor: AppColors.primary,
-          elevation: 2,
-        ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 600),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // 🏢 Company Logo
-                  const CircleAvatar(
-                    radius: 55,
-                    backgroundImage: AssetImage('assets/job_bgr.png'),
-                  ),
-                  const SizedBox(height: 16),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isWeb = constraints.maxWidth >= 900;
 
-                  // 🧾 Company Name
-                  const Text(
-                    "ABC Pvt. Ltd.",
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+        return EmployerDashboardWrapper(
+          child: Column(
+            children: [
+              // ✅ Consistent AppBar like AdminDashboard
+              AppBar(
+                iconTheme: const IconThemeData(color: Colors.white),
+                automaticallyImplyLeading:
+                    !isWeb, // ✅ hide drawer icon on web
+                title: const Text(
+                  "Company Details",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
                   ),
-                  const SizedBox(height: 24),
+                ),
+                backgroundColor: AppColors.primary,
+                elevation: 2,
+              ),
 
-                  // 🗂️ Company Info Card
-                  Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.shade200,
-                          blurRadius: 6,
-                          offset: const Offset(0, 3),
-                        ),
-                      ],
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
+              // ✅ Main body content
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 600),
                       child: Column(
-                        children: const [
-                          InfoRow(
-                            title: "Company Name",
-                            value: "ABC Pvt. Ltd.",
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          // 🏢 Company Logo
+                          const CircleAvatar(
+                            radius: 55,
+                            backgroundImage: AssetImage('assets/job_bgr.png'),
                           ),
-                          Divider(),
-                          InfoRow(title: "Industry", value: "IT & Software"),
-                          Divider(),
-                          InfoRow(
-                            title: "Company Size",
-                            value: "50–100 Employees",
+                          const SizedBox(height: 16),
+
+                          // 🧾 Company Name
+                          const Text(
+                            "ABC Pvt. Ltd.",
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
-                          Divider(),
-                          InfoRow(title: "Established", value: "2018"),
-                          Divider(),
-                          InfoRow(title: "Email", value: "info@abc.com"),
-                          Divider(),
-                          InfoRow(title: "Phone", value: "+91 9812345678"),
-                          Divider(),
-                          InfoRow(
-                            title: "Address",
-                            value: "123 Business Avenue, Gurugram, Haryana",
+                          const SizedBox(height: 24),
+
+                          // 🗂️ Company Info Card
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(14),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.grey.shade200,
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: const Padding(
+                              padding: EdgeInsets.all(16),
+                              child: Column(
+                                children: [
+                                  InfoRow(
+                                    title: "Company Name",
+                                    value: "ABC Pvt. Ltd.",
+                                  ),
+                                  Divider(),
+                                  InfoRow(
+                                      title: "Industry",
+                                      value: "IT & Software"),
+                                  Divider(),
+                                  InfoRow(
+                                    title: "Company Size",
+                                    value: "50–100 Employees",
+                                  ),
+                                  Divider(),
+                                  InfoRow(
+                                      title: "Established", value: "2018"),
+                                  Divider(),
+                                  InfoRow(
+                                      title: "Email", value: "info@abc.com"),
+                                  Divider(),
+                                  InfoRow(
+                                      title: "Phone", value: "+91 9812345678"),
+                                  Divider(),
+                                  InfoRow(
+                                    title: "Address",
+                                    value:
+                                        "123 Business Avenue, Gurugram, Haryana",
+                                  ),
+                                  Divider(),
+                                  InfoRow(
+                                      title: "Website", value: "www.abc.com"),
+                                ],
+                              ),
+                            ),
                           ),
-                          Divider(),
-                          InfoRow(title: "Website", value: "www.abc.com"),
+                          const SizedBox(height: 30),
+
+                          // ✏️ Edit Button
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              icon: const Icon(Icons.edit),
+                              label:
+                                  const Text("Edit Company Details"),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                foregroundColor: Colors.white,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                elevation: 2,
+                              ),
+                              onPressed: () {
+                                // TODO: Navigate to edit company details
+                              },
+                            ),
+                          ),
                         ],
                       ),
                     ),
                   ),
-                  const SizedBox(height: 30),
-
-                  // ✏️ Edit Button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      icon: const Icon(Icons.edit),
-                      label: const Text("Edit Company Details"),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 2,
-                      ),
-                      onPressed: () {
-                        // TODO: Navigate to edit company details
-                      },
-                    ),
-                  ),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
@@ -146,7 +175,10 @@ class InfoRow extends StatelessWidget {
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(color: Colors.black87, fontSize: 15),
+              style: const TextStyle(
+                color: Colors.black87,
+                fontSize: 15,
+              ),
             ),
           ),
         ],

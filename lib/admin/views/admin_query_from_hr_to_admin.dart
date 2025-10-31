@@ -50,135 +50,153 @@ class _AdminHRtoAdminQueryPageState extends State<AdminHRtoAdminQueryPage> {
 
   @override
   Widget build(BuildContext context) {
-    return AdminDashboardWrapper(
-      child: Scaffold(
-        backgroundColor: Colors.grey[50],
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: const Text(
-            "HR → Admin Queries",
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-          ),
-          iconTheme: const IconThemeData(color: Colors.white),
-          backgroundColor: AppColors.primary,
-        ),
-        drawer: AdminSidebar(),
-        body: Container(
-          color: Colors.grey[100],
-          padding: const EdgeInsets.all(16),
-          child: ListView.builder(
-            itemCount: queries.length,
-            itemBuilder: (context, index) {
-              final query = queries[index];
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isWeb = constraints.maxWidth >= 900;
 
-              if (!_controllers.containsKey(index)) {
-                _controllers[index] = TextEditingController();
-              }
-
-              return Card(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                elevation: 3,
-                shadowColor: AppColors.primary.withOpacity(0.2),
-                margin: const EdgeInsets.symmetric(vertical: 8),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 14,
+        return AdminDashboardWrapper(
+          child: Column(
+            children: [
+              // ✅ Responsive AppBar (no Scaffold)
+              AppBar(
+                iconTheme: const IconThemeData(color: Colors.white),
+                automaticallyImplyLeading: !isWeb, // ✅ hide drawer icon on web
+                title: const Text(
+                  "HR → Admin Queries",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          CircleAvatar(
-                            backgroundColor: AppColors.primary.withOpacity(0.1),
-                            child: const Icon(
-                              Icons.question_answer,
-                              color: Colors.deepPurple,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              query["query"],
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 15,
-                                color: Colors.black87,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
+                ),
+                backgroundColor: AppColors.primary,
+              ),
 
-                      // Reply Section
-                      query["reply"].toString().isNotEmpty
-                          ? Container(
-                              padding: const EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                color: Colors.green.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+              // ✅ Main body
+              Expanded(
+                child: Container(
+                  color: Colors.grey[100],
+                  padding: const EdgeInsets.all(16),
+                  child: ListView.builder(
+                    itemCount: queries.length,
+                    itemBuilder: (context, index) {
+                      final query = queries[index];
+                      _controllers.putIfAbsent(
+                        index,
+                        () => TextEditingController(),
+                      );
+
+                      return Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        elevation: 3,
+                        shadowColor: AppColors.primary.withOpacity(0.2),
+                        margin: const EdgeInsets.symmetric(vertical: 8),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 14,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
                                 children: [
-                                  const Icon(
-                                    Icons.check_circle,
-                                    color: Colors.green,
-                                    size: 18,
+                                  CircleAvatar(
+                                    backgroundColor: AppColors.primary
+                                        .withOpacity(0.1),
+                                    child: const Icon(
+                                      Icons.question_answer,
+                                      color: Colors.deepPurple,
+                                    ),
                                   ),
-                                  const SizedBox(width: 6),
+                                  const SizedBox(width: 12),
                                   Expanded(
                                     child: Text(
-                                      query["reply"],
+                                      query["query"],
                                       style: const TextStyle(
-                                        color: Colors.green,
-                                        fontWeight: FontWeight.w500,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 15,
+                                        color: Colors.black87,
                                       ),
                                     ),
                                   ),
                                 ],
                               ),
-                            )
-                          : TextField(
-                              controller: _controllers[index],
-                              decoration: InputDecoration(
-                                hintText: "Write your reply...",
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                suffixIcon: IconButton(
-                                  icon: Icon(
-                                    Icons.send,
-                                    color: AppColors.primary,
+                              const SizedBox(height: 10),
+
+                              // ✅ Reply Section
+                              query["reply"].toString().isNotEmpty
+                                  ? Container(
+                                      padding: const EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        color: Colors.green.withOpacity(0.1),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const Icon(
+                                            Icons.check_circle,
+                                            color: Colors.green,
+                                            size: 18,
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Expanded(
+                                            child: Text(
+                                              query["reply"],
+                                              style: const TextStyle(
+                                                color: Colors.green,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    )
+                                  : TextField(
+                                      controller: _controllers[index],
+                                      decoration: InputDecoration(
+                                        hintText: "Write your reply...",
+                                        border: OutlineInputBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                        suffixIcon: IconButton(
+                                          icon: Icon(
+                                            Icons.send,
+                                            color: AppColors.primary,
+                                          ),
+                                          onPressed: () => _sendReply(index),
+                                        ),
+                                      ),
+                                    ),
+
+                              const SizedBox(height: 8),
+                              Align(
+                                alignment: Alignment.bottomRight,
+                                child: Text(
+                                  "Date: ${query["date"]}",
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
                                   ),
-                                  onPressed: () => _sendReply(index),
                                 ),
                               ),
-                            ),
-
-                      const SizedBox(height: 8),
-                      Align(
-                        alignment: Alignment.bottomRight,
-                        child: Text(
-                          "Date: ${query["date"]}",
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey,
+                            ],
                           ),
                         ),
-                      ),
-                    ],
+                      );
+                    },
                   ),
                 ),
-              );
-            },
+              ),
+            ],
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

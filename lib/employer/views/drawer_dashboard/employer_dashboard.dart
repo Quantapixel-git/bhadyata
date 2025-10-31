@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
 import 'package:jobshub/employer/views/drawer_dashboard/employer_side_bar.dart';
 import 'package:jobshub/users/views/project_model.dart';
-//
+
 class EmployerDashboardPage extends StatelessWidget {
   EmployerDashboardPage({super.key});
 
@@ -46,25 +46,33 @@ class EmployerDashboardPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return EmployerDashboardWrapper(
-      child: Scaffold(
-        backgroundColor: Colors.grey[50],
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: const Text(
-            "Employer Dashboard",
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isWeb = constraints.maxWidth >= 900;
+
+        return EmployerDashboardWrapper(
+          child: Column(
+            children: [
+              // ✅ AppBar (same as AdminDashboard)
+              AppBar(
+                iconTheme: const IconThemeData(color: Colors.white),
+                automaticallyImplyLeading: !isWeb, // hide drawer icon on web
+                title: const Text(
+                  "Employer Dashboard",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                backgroundColor: AppColors.primary,
+              ),
+
+              // ✅ Dashboard Content
+              Expanded(child: _buildDashboardContent(isWeb)),
+            ],
           ),
-          iconTheme: const IconThemeData(color: Colors.white),
-          backgroundColor: AppColors.primary,
-        ),
-        body: LayoutBuilder(
-          builder: (context, constraints) {
-            final bool isWeb = constraints.maxWidth >= 900;
-            return _buildDashboardContent(isWeb);
-          },
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -116,7 +124,7 @@ class EmployerDashboardPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 👋 Greeting Section (Mobile Only)
+            // 👋 Greeting (Mobile only)
             if (!isWeb)
               Padding(
                 padding: const EdgeInsets.only(bottom: 20),
@@ -170,7 +178,7 @@ class EmployerDashboardPage extends StatelessWidget {
 
             const SizedBox(height: 30),
 
-            // 💼 Projects Section (Shown only on Web)
+            // 💼 Projects Section (shown only on web)
             if (isWeb) _buildProjectsSection(),
           ],
         ),

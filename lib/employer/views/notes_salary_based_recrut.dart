@@ -7,28 +7,39 @@ class SalaryBasedRecruitmentPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return EmployerDashboardWrapper(
-      child: Scaffold(
-        backgroundColor: Colors.grey.shade100,
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: const Text(
-            "Salary Based Recruitment",
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isWeb = constraints.maxWidth >= 900;
+
+        return EmployerDashboardWrapper(
+          child: Column(
+            children: [
+              // ✅ AppBar (same logic as AdminDashboard)
+              AppBar(
+                iconTheme: const IconThemeData(color: Colors.white),
+                automaticallyImplyLeading:
+                    !isWeb, // Hide drawer icon in web view
+                title: const Text(
+                  "Salary Based Recruitment",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                backgroundColor: AppColors.primary,
+                elevation: 2,
+              ),
+
+              // ✅ Main Content
+              Expanded(child: _buildContent(isWeb)),
+            ],
           ),
-          backgroundColor: AppColors.primary,
-          elevation: 2,
-        ),
-        body: LayoutBuilder(
-          builder: (context, constraints) {
-            final bool isWeb = constraints.maxWidth >= 900;
-            return _buildContent(isWeb);
-          },
-        ),
-      ),
+        );
+      },
     );
   }
 
+  // ---------- PAGE CONTENT ----------
   Widget _buildContent(bool isWeb) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
@@ -57,7 +68,7 @@ class SalaryBasedRecruitmentPage extends StatelessWidget {
               ),
               const SizedBox(height: 20),
 
-              // Step list
+              // Steps Section
               _buildStep(
                 step: "1",
                 title: "Post a Job",
@@ -121,6 +132,7 @@ class SalaryBasedRecruitmentPage extends StatelessWidget {
     );
   }
 
+  // ---------- STEP CARD ----------
   Widget _buildStep({
     required String step,
     required String title,

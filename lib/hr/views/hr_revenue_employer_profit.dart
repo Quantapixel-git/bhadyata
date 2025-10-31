@@ -14,55 +14,79 @@ class HrRevenueEmployerProfit extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return HrDashboardWrapper(
-      child: Scaffold(
-        backgroundColor: Colors.grey.shade100,
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: const Text(
-            "Revenue from Employers (Profit Only)",
-            style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isWeb = constraints.maxWidth >= 900;
+
+        return HrDashboardWrapper(
+          child: Column(
+            children: [
+              // ✅ AppBar matching AdminDashboard style
+              AppBar(
+                iconTheme: const IconThemeData(color: Colors.white),
+                automaticallyImplyLeading: !isWeb, // ✅ hide drawer icon on web
+                title: const Text(
+                  "Revenue from Employers (Profit Only)",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                backgroundColor: AppColors.primary,
+                elevation: 2,
+              ),
+
+              // ✅ Main body (scrollable, no Scaffold)
+              Expanded(
+                child: Container(
+                  color: Colors.grey.shade100,
+                  padding: const EdgeInsets.all(16),
+                  child: ListView.builder(
+                    itemCount: employers.length,
+                    itemBuilder: (context, index) {
+                      final emp = employers[index];
+                      return Card(
+                        elevation: 3,
+                        margin: const EdgeInsets.symmetric(vertical: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: AppColors.primary.withOpacity(
+                              0.15,
+                            ),
+                            child: Icon(
+                              Icons.business_center,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                          title: Text(
+                            emp['company'],
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          subtitle: Text("Employer: ${emp['name']}"),
+                          trailing: Text(
+                            "₹${emp['profit']}",
+                            style: const TextStyle(
+                              color: Colors.green,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ],
           ),
-          backgroundColor: AppColors.primary,
-          elevation: 2,
-        ),
-        body: ListView.builder(
-          padding: const EdgeInsets.all(10),
-          itemCount: employers.length,
-          itemBuilder: (context, index) {
-            final emp = employers[index];
-            return Card(
-              elevation: 3,
-              margin: const EdgeInsets.symmetric(vertical: 8),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: AppColors.primary.withOpacity(0.15),
-                  child: Icon(Icons.business_center, color: AppColors.primary),
-                ),
-                title: Text(
-                  emp['company'],
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
-                ),
-                subtitle: Text("Employer: ${emp['name']}"),
-                trailing: Text(
-                  "₹${emp['profit']}",
-                  style: const TextStyle(
-                    color: Colors.green,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
-      ),
+        );
+      },
     );
   }
 }

@@ -1,7 +1,7 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:jobshub/common/utils/AppColor.dart';
 import 'package:jobshub/admin/views/dashboard_drawer/admin_sidebar.dart';
+import 'package:jobshub/common/utils/AppColor.dart';
 
 class AdminStats extends StatefulWidget {
   const AdminStats({super.key});
@@ -54,41 +54,44 @@ class _AdminStatsState extends State<AdminStats> {
 
   @override
   Widget build(BuildContext context) {
+    final double width = MediaQuery.of(context).size.width;
+    final bool isWeb = width >= 900;
+    final bool isMobile = width < 800;
+
     return AdminDashboardWrapper(
-      child: Scaffold(
-        backgroundColor: Colors.grey[50],
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: const Text(
-            "Admin Stats",
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+      child: Column(
+        children: [
+          // ✅ Responsive AppBar
+          AppBar(
+            iconTheme: const IconThemeData(color: Colors.white),
+            automaticallyImplyLeading: !isWeb, // hide drawer icon on web
+            title: const Text(
+              "Admin Stats",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            backgroundColor: AppColors.primary,
           ),
-          iconTheme: const IconThemeData(color: Colors.white),
-          backgroundColor: AppColors.primary,
-        ),
-        body: LayoutBuilder(
-          builder: (context, constraints) {
-            bool isWeb = constraints.maxWidth >= 900;
-            bool isMobile = constraints.maxWidth < 800;
-            int crossAxisCount = isMobile
-                ? 2
-                : (constraints.maxWidth < 1200 ? 3 : 4);
-            return _buildDashboardContent(isMobile, isWeb, crossAxisCount);
-          },
-        ),
+
+          // ✅ Main Content
+          Expanded(child: _buildDashboardContent(isMobile, isWeb)),
+        ],
       ),
     );
   }
 
-  Widget _buildDashboardContent(bool isMobile, bool isWeb, int crossAxisCount) {
+  // ---------- CONTENT ----------
+  Widget _buildDashboardContent(bool isMobile, bool isWeb) {
+    // 💻 Web layout
     if (!isMobile) {
-      // ---------- WEB LAYOUT ----------
-      return Padding(
+      return SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ---------- Left: Summary Cards ----------
+            // Summary Cards Grid
             Expanded(
               flex: 2,
               child: GridView.builder(
@@ -103,40 +106,42 @@ class _AdminStatsState extends State<AdminStats> {
                 ),
                 itemBuilder: (context, index) {
                   final data = summaryData[index];
-                  return _summaryCard(data);
+                  return _summaryCard(data, isMobile: false);
                 },
               ),
             ),
-
             const SizedBox(width: 40),
 
-            // ---------- Right: Pie Chart ----------
-            Expanded(flex: 1, child: _buildPieChart()),
+            // Pie Chart
+            Expanded(
+              flex: 1,
+              child: SizedBox(height: 350, child: _buildPieChart()),
+            ),
           ],
         ),
       );
     }
 
-    // ---------- MOBILE LAYOUT ----------
+    // 📱 Mobile layout
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       child: Column(
         children: [
-          SizedBox(height: 300, child: _buildPieChart()),
-          const SizedBox(height: 24),
+          SizedBox(height: 280, child: _buildPieChart()),
+          const SizedBox(height: 20),
           GridView.builder(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: summaryData.length,
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: crossAxisCount,
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
-              childAspectRatio: 2.5,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: 10,
+              crossAxisSpacing: 10,
+              childAspectRatio: 2.0,
             ),
             itemBuilder: (context, index) {
               final data = summaryData[index];
-              return _summaryCard(data);
+              return _summaryCard(data, isMobile: true);
             },
           ),
         ],
@@ -145,55 +150,62 @@ class _AdminStatsState extends State<AdminStats> {
   }
 
   // ---------- SUMMARY CARD ----------
-  Widget _summaryCard(Map<String, dynamic> data) {
+  Widget _summaryCard(Map<String, dynamic> data, {required bool isMobile}) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 200),
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(isMobile ? 10 : 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: data['color'].withOpacity(0.5), width: 2),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: data['color'].withOpacity(0.5), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 6,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: EdgeInsets.all(isMobile ? 6 : 10),
             decoration: BoxDecoration(
               color: data['color'],
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(data['icon'], color: Colors.white, size: 26),
+            child: Icon(
+              data['icon'],
+              color: Colors.white,
+              size: isMobile ? 22 : 26,
+            ),
           ),
-          const SizedBox(width: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                data['title'],
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+          const SizedBox(width: 10),
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  data['title'],
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: isMobile ? 13 : 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                '${data['value']}',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: data['color'],
+                const SizedBox(height: 3),
+                Text(
+                  '${data['value']}',
+                  style: TextStyle(
+                    fontSize: isMobile ? 17 : 20,
+                    fontWeight: FontWeight.bold,
+                    color: data['color'],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ],
       ),

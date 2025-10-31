@@ -233,7 +233,7 @@ class _OtpScreenState extends State<OtpScreen> {
             appBar: AppBar(
               elevation: 0,
               iconTheme: const IconThemeData(color: Colors.black),
-              backgroundColor: Colors.white,
+              // backgroundColor: Colors.white,
             ),
             body: SafeArea(
               child: SingleChildScrollView(

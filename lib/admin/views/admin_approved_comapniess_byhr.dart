@@ -14,24 +14,29 @@ class ApprovedCompaniesPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double width = MediaQuery.of(context).size.width;
+    final bool isWeb = width >= 900;
+
     return AdminDashboardWrapper(
-      child: Scaffold(
-        backgroundColor: Colors.grey[50],
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          title: const Text(
-            "Approved Companies",
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+      child: Column(
+        children: [
+          // ✅ Responsive AppBar
+          AppBar(
+            automaticallyImplyLeading: !isWeb, // hide drawer icon on web
+            title: const Text(
+              "Approved Companies",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            iconTheme: const IconThemeData(color: Colors.white),
+            backgroundColor: AppColors.primary,
           ),
-          iconTheme: const IconThemeData(color: Colors.white),
-          backgroundColor: AppColors.primary,
-        ),
-        body: LayoutBuilder(
-          builder: (context, constraints) {
-            final bool isWeb = constraints.maxWidth >= 900;
-            return _buildContent(isWeb);
-          },
-        ),
+
+          // ✅ Responsive Content
+          Expanded(child: _buildContent(isWeb)),
+        ],
       ),
     );
   }
@@ -46,6 +51,7 @@ class ApprovedCompaniesPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Mobile Header
               if (!isWeb)
                 const Padding(
                   padding: EdgeInsets.only(bottom: 16),
@@ -58,6 +64,8 @@ class ApprovedCompaniesPage extends StatelessWidget {
                     ),
                   ),
                 ),
+
+              // ✅ Scrollable list with safe layout
               Expanded(
                 child: ListView.builder(
                   itemCount: approvedCompanies.length,
