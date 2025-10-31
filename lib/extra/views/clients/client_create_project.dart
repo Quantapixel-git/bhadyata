@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:jobshub/users/view/project_model.dart';
+import 'package:jobshub/users/views/project_model.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
 
 class ClientCreateProject extends StatefulWidget {
