@@ -1,11 +1,18 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:jobshub/hr/views/info_collector/hr_complete_profile.dart';
+import 'package:http/http.dart' as http;
+import 'package:jobshub/common/constants/constants.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
+import 'package:jobshub/common/utils/session_manager.dart';
+import 'package:jobshub/hr/views/drawer_dashboard/hr_dashboard.dart';
+import 'package:jobshub/hr/views/info_collector/hr_complete_profile.dart';
 
 class HROtpScreen extends StatefulWidget {
   final String mobile;
-  const HROtpScreen({super.key, required this.mobile});
+  final String? otp; // 👈 optional OTP for dev/test
+
+  const HROtpScreen({super.key, required this.mobile, this.otp});
 
   @override
   State<HROtpScreen> createState() => _HROtpScreenState();
@@ -13,7 +20,7 @@ class HROtpScreen extends StatefulWidget {
 
 class _HROtpScreenState extends State<HROtpScreen> {
   final List<TextEditingController> _controllers = List.generate(
-    4,
+    6,
     (_) => TextEditingController(),
   );
 
@@ -26,6 +33,19 @@ class _HROtpScreenState extends State<HROtpScreen> {
   void initState() {
     super.initState();
     _startTimer();
+
+    // Autofill for test/demo OTP
+    if (widget.otp != null && widget.otp!.isNotEmpty) {
+      Future.delayed(const Duration(milliseconds: 300), () {
+        for (
+          int i = 0;
+          i < _controllers.length && i < widget.otp!.length;
+          i++
+        ) {
+          _controllers[i].text = widget.otp![i];
+        }
+      });
+    }
   }
 
   void _startTimer() {
@@ -42,11 +62,109 @@ class _HROtpScreenState extends State<HROtpScreen> {
     });
   }
 
-  void _verifyOtp() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const HrCompleteProfile()),
-    );
+  // 🔹 Verify OTP API
+  void _verifyOtp() async {
+    String otp = _controllers.map((c) => c.text).join();
+
+    if (otp.length != 6) {
+      setState(() => _otpError = "Please enter the complete 6-digit OTP.");
+      return;
+    }
+    setState(() => _otpError = null);
+
+    final url = Uri.parse("${ApiConstants.baseUrl}verifyOtp");
+    final body = {
+      "mobile": widget.mobile,
+      "otp_code": otp,
+      "role": "3",
+    }; // HR role
+
+    try {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const Center(child: CircularProgressIndicator()),
+      );
+
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(body),
+      );
+
+      Navigator.pop(context); // close loader
+
+      print("\n═══════════════════════════════════════════");
+      print("🔹 API Endpoint: $url");
+      print("🔹 Status Code: ${response.statusCode}");
+      print("🔹 Request Body: ${jsonEncode(body)}");
+      print("🔹 Response Body:");
+      try {
+        const encoder = JsonEncoder.withIndent('  ');
+        final pretty = encoder.convert(jsonDecode(response.body));
+        print(pretty);
+      } catch (_) {
+        print(response.body);
+      }
+      print("═══════════════════════════════════════════\n");
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 &&
+          (data['success'] == true || data['status'] == true)) {
+        final userData = data['data'];
+        final userId = userData?['id'];
+        final isNewUser = data['is_new_user'] ?? false;
+
+        // final prefs = await SharedPreferences.getInstance();
+        // await prefs.setInt('hr_id', userId ?? 0);
+        // await prefs.setBool('is_new_hr', isNewUser);
+        await SessionManager.setValue('hr_id', userId?.toString() ?? '0');
+        await SessionManager.setValue('is_new_hr', isNewUser.toString());
+        await SessionManager.setValue('mobile', widget.mobile);
+
+        print(
+          "✅ Saved to SessionManager → hr_id: $userId | is_new_hr: $isNewUser",
+        );
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("OTP Verified Successfully ✅"),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        if (isNewUser) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => HrCompleteProfile(mobile: widget.mobile),
+            ),
+          );
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => HrDashboard()),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data['message'] ?? "Invalid OTP, please try again."),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    } catch (e) {
+      Navigator.pop(context);
+      print("❌ Exception: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Something went wrong: $e"),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
   }
 
   @override
@@ -82,7 +200,7 @@ class _HROtpScreenState extends State<HROtpScreen> {
             ),
             const SizedBox(height: 12),
             Text(
-              "Enter the 4-digit code sent to",
+              "Enter the 6-digit code sent to",
               style: TextStyle(
                 color: Colors.grey[700],
                 fontSize: isWeb ? 16 : 14,
@@ -99,16 +217,18 @@ class _HROtpScreenState extends State<HROtpScreen> {
             ),
             const SizedBox(height: 35),
 
-            /// 🔹 OTP Fields
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: List.generate(4, (index) {
+            // 🔹 OTP Fields
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              alignment: WrapAlignment.center,
+              children: List.generate(6, (index) {
                 return SizedBox(
-                  width: isWeb ? 70 : 60,
+                  width: isWeb ? 60 : 50,
                   child: TextField(
                     controller: _controllers[index],
                     onChanged: (value) {
-                      if (value.isNotEmpty && index < 3) {
+                      if (value.isNotEmpty && index < 5) {
                         FocusScope.of(context).nextFocus();
                       } else if (value.isEmpty && index > 0) {
                         FocusScope.of(context).previousFocus();
@@ -153,7 +273,7 @@ class _HROtpScreenState extends State<HROtpScreen> {
 
             const SizedBox(height: 35),
 
-            /// 🔹 Verify OTP Button
+            // 🔹 Verify Button
             SizedBox(
               width: double.infinity,
               height: 50,
@@ -175,10 +295,12 @@ class _HROtpScreenState extends State<HROtpScreen> {
 
             const SizedBox(height: 25),
 
-            /// 🔹 Resend OTP
+            // 🔹 Resend OTP
             _canResend
                 ? TextButton(
-                    onPressed: _startTimer,
+                    onPressed: () {
+                      Navigator.pop(context); // Go back to HR login
+                    },
                     child: const Text(
                       "Resend OTP",
                       style: TextStyle(
@@ -194,58 +316,35 @@ class _HROtpScreenState extends State<HROtpScreen> {
           ],
         );
 
-        // 🔹 Responsive Layout
-        if (isWeb) {
-          return Scaffold(
-            backgroundColor: Colors.grey[50],
-            appBar: AppBar(
-              backgroundColor: Colors.white,
-              elevation: 0.5,
-              iconTheme: const IconThemeData(color: Colors.black87),
-            ),
-            body: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 32,
-                  vertical: 60,
-                ),
-                child: Container(
-                  constraints: const BoxConstraints(maxWidth: 420),
-                  padding: const EdgeInsets.all(40),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black12.withOpacity(0.1),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: otpContent,
-                ),
-              ),
-            ),
-          );
-        } else {
-          return Scaffold(
-            appBar: AppBar(
-              elevation: 0,
-              iconTheme: const IconThemeData(color: Colors.black),
-              // backgroundColor: Colors.white,
-            ),
-            body: SafeArea(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 30,
-                  vertical: 40,
-                ),
+        return Scaffold(
+          appBar: AppBar(
+            elevation: 0.5,
+            iconTheme: const IconThemeData(color: Colors.black87),
+          ),
+          body: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 40),
+              child: Container(
+                constraints: isWeb ? const BoxConstraints(maxWidth: 520) : null,
+                padding: const EdgeInsets.all(30),
+                decoration: isWeb
+                    ? BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black12.withOpacity(0.1),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      )
+                    : null,
                 child: otpContent,
               ),
             ),
-          );
-        }
+          ),
+        );
       },
     );
   }

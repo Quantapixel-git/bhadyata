@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/hr/views/employee_salary_management.dart';
 import 'package:jobshub/hr/views/employee_to_employer_ratings_page.dart';
 import 'package:jobshub/hr/views/hr_admin_query_page.dart';
@@ -16,8 +17,10 @@ import 'package:jobshub/hr/views/hr_revenue_employer_total.dart';
 import 'package:jobshub/hr/views/hr_salary_management.dart';
 import 'package:jobshub/hr/views/notification/hr_send_notification_page.dart';
 import 'package:jobshub/hr/views/notification/hr_view_notifications_page.dart';
+import 'package:jobshub/hr/views/upload_kyc_hr.dart';
 import 'package:jobshub/users/views/auth/login_screen.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// ✅ MAIN WRAPPER that decides which sidebar to show
 class HrSidebar extends StatelessWidget {
@@ -74,6 +77,14 @@ class HrSidebarMobile extends StatelessWidget {
                       );
                     },
                   ),
+                      _sidebarItem(context, Icons.approval, "KYC", () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const HrKycUploadPage(),
+                      ),
+                    );
+                  }),
                   _sidebarItem(context, Icons.business, "Companies", () {
                     Navigator.push(
                       context,
@@ -418,10 +429,23 @@ class HrSidebarMobile extends StatelessWidget {
                     ],
                   ),
 
-                  _sidebarItem(context, Icons.logout, "Logout", () {
-                    Navigator.pushReplacement(
+                  _sidebarItem(context, Icons.logout, "Logout", () async {
+                    // final prefs = await SharedPreferences.getInstance();
+                    await SessionManager.clearAll();
+                    // await prefs.clear();
+                    debugPrint("✅ SharedPreferences cleared successfully!");
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Logged out successfully."),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+
+                    Navigator.pushAndRemoveUntil(
                       context,
-                      MaterialPageRoute(builder: (_) => LoginScreen()),
+                      MaterialPageRoute(builder: (_) => const LoginScreen()),
+                      (route) => false,
                     );
                   }),
                 ],
@@ -546,6 +570,14 @@ class HrSidebarWeb extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => HrDashboard()),
+                    );
+                  }),
+                     _menuItem(context, Icons.approval, "KYC", () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const HrKycUploadPage(),
+                      ),
                     );
                   }),
                   _menuItem(context, Icons.business, "Companies", () {
@@ -792,10 +824,23 @@ class HrSidebarWeb extends StatelessWidget {
                       );
                     }),
                   ]),
-                  _menuItem(context, Icons.logout, "Logout", () {
-                    Navigator.pushReplacement(
+                  _menuItem(context, Icons.logout, "Logout", () async {
+                    // final prefs = await SharedPreferences.getInstance();
+                    await SessionManager.clearAll();
+                    // await prefs.clear();
+                    debugPrint("✅ SharedPreferences cleared successfully!");
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Logged out successfully."),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+
+                    Navigator.pushAndRemoveUntil(
                       context,
-                      MaterialPageRoute(builder: (_) => LoginScreen()),
+                      MaterialPageRoute(builder: (_) => const LoginScreen()),
+                      (route) => false,
                     );
                   }),
                   const SizedBox(height: 20),

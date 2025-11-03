@@ -1,11 +1,19 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:jobshub/common/constants/constants.dart';
+import 'package:jobshub/common/utils/session_manager.dart';
+import 'package:jobshub/users/views/bottomnav_drawer_dashboard/bottom_nav.dart';
 import 'package:jobshub/users/views/info_collector/sign_up_screen.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OtpScreen extends StatefulWidget {
   final String mobile;
-  const OtpScreen({super.key, required this.mobile});
+  final String? otp; // 👈 optional dev OTP display
+
+  const OtpScreen({super.key, required this.mobile, this.otp});
 
   @override
   State<OtpScreen> createState() => _OtpScreenState();
@@ -13,7 +21,7 @@ class OtpScreen extends StatefulWidget {
 
 class _OtpScreenState extends State<OtpScreen> {
   final List<TextEditingController> _controllers = List.generate(
-    4,
+    6,
     (_) => TextEditingController(),
   );
 
@@ -26,6 +34,19 @@ class _OtpScreenState extends State<OtpScreen> {
   void initState() {
     super.initState();
     _startTimer();
+
+    // 🔹 Autofill the OTP if provided (for dev/testing)
+    if (widget.otp != null && widget.otp!.isNotEmpty) {
+      Future.delayed(const Duration(milliseconds: 300), () {
+        for (
+          int i = 0;
+          i < _controllers.length && i < widget.otp!.length;
+          i++
+        ) {
+          _controllers[i].text = widget.otp![i];
+        }
+      });
+    }
   }
 
   void _startTimer() {
@@ -42,11 +63,117 @@ class _OtpScreenState extends State<OtpScreen> {
     });
   }
 
-  void _verifyOtp() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const SignUpPage()),
-    );
+  // 🔹 Verify OTP API Call
+  void _verifyOtp() async {
+    String otp = _controllers.map((c) => c.text).join();
+
+    if (otp.length != 6) {
+      setState(() {
+        _otpError = "Please enter the complete 6-digit OTP.";
+      });
+      return;
+    }
+
+    setState(() => _otpError = null);
+
+    final url = Uri.parse("${ApiConstants.baseUrl}verifyOtp");
+    final body = {"mobile": widget.mobile, "otp_code": otp, "role": "1"};
+
+    try {
+      // 🔹 Show loader
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const Center(child: CircularProgressIndicator()),
+      );
+
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(body),
+      );
+
+      Navigator.pop(context); // close loader
+
+      print("\n═══════════════════════════════════════════");
+      print("🔹 API Endpoint: $url");
+      print("🔹 Status Code: ${response.statusCode}");
+      print("🔹 Request Body: ${jsonEncode(body)}");
+      print("🔹 Response Body:");
+      try {
+        const encoder = JsonEncoder.withIndent('  ');
+        final pretty = encoder.convert(jsonDecode(response.body));
+        print(pretty);
+      } catch (_) {
+        print(response.body);
+      }
+      print("═══════════════════════════════════════════\n");
+
+      final data = jsonDecode(response.body);
+
+      // ✅ OTP verified successfully
+      if (response.statusCode == 200 &&
+          (data['success'] == true || data['status'] == true)) {
+        final userData = data['data'];
+        final userId = userData?['id'];
+        final isNewUser = data['is_new_user'] ?? false;
+
+        // final prefs = await SharedPreferences.getInstance();
+        // await prefs.setInt('user_id', userId ?? 0);
+        // await prefs.setBool('is_new_user', isNewUser);
+        await SessionManager.setValue('user_id', userId?.toString() ?? '');
+        await SessionManager.setValue('is_new_user', isNewUser.toString());
+
+        print(
+          "✅ Saved to SharedPrefs → user_id: $userId | is_new_user: $isNewUser",
+        );
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("OTP Verified Successfully ✅"),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // 🚀 Navigate based on user type
+        if (isNewUser) {
+          // ✅ Save mobile also to SharedPreferences for later use
+          // await prefs.setString('mobile', widget.mobile);
+          await SessionManager.setValue('mobile', widget.mobile);
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) =>
+                  SignUpPage(mobile: widget.mobile), // 👈 send to next page
+            ),
+          );
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const DashBoardScreen()),
+          );
+        }
+      } else {
+        // ❌ Invalid or expired OTP
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data['message'] ?? "Invalid OTP, please try again."),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+        // Stay on same page (do nothing)
+      }
+    } catch (e) {
+      Navigator.pop(context);
+      print("❌ Exception while calling verifyOtp: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Something went wrong: $e"),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
   }
 
   @override
@@ -82,7 +209,7 @@ class _OtpScreenState extends State<OtpScreen> {
             ),
             const SizedBox(height: 12),
             Text(
-              "Enter the 4-digit code sent to",
+              "Enter the 6-digit code sent to",
               style: TextStyle(
                 color: Colors.grey[700],
                 fontSize: isWeb ? 16 : 14,
@@ -99,16 +226,18 @@ class _OtpScreenState extends State<OtpScreen> {
             ),
             const SizedBox(height: 35),
 
-            /// 🔹 OTP Fields
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: List.generate(4, (index) {
+            // 🔹 OTP Input Fields
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              alignment: WrapAlignment.center,
+              children: List.generate(6, (index) {
                 return SizedBox(
-                  width: isWeb ? 70 : 60,
+                  width: isWeb ? 60 : 50,
                   child: TextField(
                     controller: _controllers[index],
                     onChanged: (value) {
-                      if (value.isNotEmpty && index < 3) {
+                      if (value.isNotEmpty && index < 5) {
                         FocusScope.of(context).nextFocus();
                       } else if (value.isEmpty && index > 0) {
                         FocusScope.of(context).previousFocus();
@@ -153,7 +282,7 @@ class _OtpScreenState extends State<OtpScreen> {
 
             const SizedBox(height: 35),
 
-            /// 🔹 Verify OTP Button
+            // 🔹 Verify OTP Button
             SizedBox(
               width: double.infinity,
               height: 50,
@@ -175,10 +304,12 @@ class _OtpScreenState extends State<OtpScreen> {
 
             const SizedBox(height: 25),
 
-            /// 🔹 Resend OTP
+            // 🔹 Resend OTP
             _canResend
                 ? TextButton(
-                    onPressed: _startTimer,
+                    onPressed: () {
+                      Navigator.pop(context); // 👈 Go back to previous page
+                    },
                     child: const Text(
                       "Resend OTP",
                       style: TextStyle(
@@ -195,57 +326,35 @@ class _OtpScreenState extends State<OtpScreen> {
         );
 
         // 🔹 Responsive Layout
-        if (isWeb) {
-          return Scaffold(
-            backgroundColor: Colors.grey[50],
-            appBar: AppBar(
-              backgroundColor: Colors.white,
-              elevation: 0.5,
-              iconTheme: const IconThemeData(color: Colors.black87),
-            ),
-            body: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 32,
-                  vertical: 60,
-                ),
-                child: Container(
-                  constraints: const BoxConstraints(maxWidth: 420),
-                  padding: const EdgeInsets.all(40),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black12.withOpacity(0.1),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: otpContent,
-                ),
-              ),
-            ),
-          );
-        } else {
-          return Scaffold(
-            appBar: AppBar(
-              elevation: 0,
-              iconTheme: const IconThemeData(color: Colors.black),
-              // backgroundColor: Colors.white,
-            ),
-            body: SafeArea(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 30,
-                  vertical: 40,
-                ),
+        return Scaffold(
+          appBar: AppBar(
+            elevation: 0.5,
+            iconTheme: const IconThemeData(color: Colors.black87),
+          ),
+          body: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 40),
+              child: Container(
+                constraints: isWeb ? const BoxConstraints(maxWidth: 520) : null,
+                padding: const EdgeInsets.all(30),
+                decoration: isWeb
+                    ? BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black12.withOpacity(0.1),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      )
+                    : null,
                 child: otpContent,
               ),
             ),
-          );
-        }
+          ),
+        );
       },
     );
   }

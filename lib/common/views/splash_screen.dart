@@ -1,5 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:jobshub/admin/views/dashboard_drawer/admin_dashboard.dart';
+import 'package:jobshub/employer/views/drawer_dashboard/employer_dashboard.dart';
+import 'package:jobshub/hr/views/drawer_dashboard/hr_dashboard.dart';
+import 'package:jobshub/users/views/bottomnav_drawer_dashboard/bottom_nav.dart';
+// import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/users/views/auth/login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -34,27 +41,45 @@ class _SplashScreenState extends State<SplashScreen>
       end: 1.0,
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
 
-    // ⏳ Navigate after 5 seconds
-    Future.delayed(const Duration(seconds: 5), () {
-      if (mounted) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => const LoginScreen()),
-          (route) => false,
-        );
-      }
+    // ⏳ Navigate after animation delay
+    Future.delayed(const Duration(seconds: 4), () {
+      _checkLoginStatus();
     });
+  }
+
+  Future<void> _checkLoginStatus() async {
+    final adminLogin = await SessionManager.getValue('admin_login');
+    final userId = await SessionManager.getValue('user_id');
+    final employerId = await SessionManager.getValue('employer_id');
+    final hrId = await SessionManager.getValue('hr_id');
+
+    Widget nextScreen = const LoginScreen();
+
+    if (adminLogin == 'true') {
+      nextScreen = AdminDashboard();
+    } else if (userId != null && userId.isNotEmpty) {
+      nextScreen = const DashBoardScreen();
+    } else if (employerId != null && employerId.isNotEmpty) {
+      nextScreen = EmployerDashboardPage();
+    } else if (hrId != null && hrId.isNotEmpty) {
+      nextScreen = HrDashboard();
+    }
+
+    if (mounted) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => nextScreen),
+        (route) => false,
+      );
+    }
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-
-    // ✅ Safe place to use MediaQuery
     final isWeb = MediaQuery.of(context).size.width > 800;
     _typingSpeed = isWeb ? 40 : 70;
 
-    // Start typing only once
     if (!_startedTyping) {
       _startedTyping = true;
       _startTypingEffect();

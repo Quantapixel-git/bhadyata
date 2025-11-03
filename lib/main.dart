@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // ✅ add this
 import 'package:jobshub/common/views/splash_screen.dart';
-// import 'package:jobshub/users/view/auth/login_screen.dart';
 
-void main() {
+void main() async {
+  // ✅ Ensure all Flutter bindings and plugins are initialized
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // ✅ Optionally initialize SharedPreferences (not strictly required but safe)
+  await SharedPreferences.getInstance();
+
   runApp(const MyApp());
 }
 

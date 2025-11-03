@@ -1,6 +1,10 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/employer/views/drawer_dashboard/employer_dashboard.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
+import 'package:jobshub/common/constants/constants.dart';
 
 class EmployerTellUsMore extends StatefulWidget {
   const EmployerTellUsMore({super.key});
@@ -12,6 +16,7 @@ class EmployerTellUsMore extends StatefulWidget {
 class _EmployerTellUsMoreState extends State<EmployerTellUsMore> {
   final _formKey = GlobalKey<FormState>();
 
+  // Controllers
   final _companyNameController = TextEditingController();
   final _designationController = TextEditingController();
   final _websiteController = TextEditingController();
@@ -19,6 +24,11 @@ class _EmployerTellUsMoreState extends State<EmployerTellUsMore> {
   final _companySizeController = TextEditingController();
   final _locationController = TextEditingController();
   final _aboutCompanyController = TextEditingController();
+  final _bankAccountNameController = TextEditingController();
+  final _bankAccountNumberController = TextEditingController();
+  final _bankIfscController = TextEditingController();
+  final _bankNameController = TextEditingController();
+  final _bankBranchController = TextEditingController();
 
   @override
   void dispose() {
@@ -29,290 +39,371 @@ class _EmployerTellUsMoreState extends State<EmployerTellUsMore> {
     _companySizeController.dispose();
     _locationController.dispose();
     _aboutCompanyController.dispose();
+    _bankAccountNameController.dispose();
+    _bankAccountNumberController.dispose();
+    _bankIfscController.dispose();
+    _bankNameController.dispose();
+    _bankBranchController.dispose();
     super.dispose();
   }
 
-  void _submitProfile() {
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (_) => EmployerDashboardPage()),
-      (route) => false,
-    );
+  Future<void> _submitProfile() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    try {
+      final userId = await SessionManager.getValue('employer_id');
+      if (userId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("User ID not found. Please log in again."),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+        return;
+      }
+
+      final body = {
+        "user_id": userId,
+        "company_name": _companyNameController.text.trim(),
+        "designation": _designationController.text.trim(),
+        "company_website": _websiteController.text.trim(),
+        "industry_type": _industryController.text.trim(),
+        "company_size": _companySizeController.text.trim(),
+        "office_location": _locationController.text.trim(),
+        "about_company": _aboutCompanyController.text.trim(),
+        "bank_account_name": _bankAccountNameController.text.trim(),
+        "bank_account_number": _bankAccountNumberController.text.trim(),
+        "bank_ifsc": _bankIfscController.text.trim(),
+        "bank_name": _bankNameController.text.trim(),
+        "bank_branch": _bankBranchController.text.trim(),
+      };
+
+      final url = Uri.parse("${ApiConstants.baseUrl}employerSave-profile");
+
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const Center(child: CircularProgressIndicator()),
+      );
+
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(body),
+      );
+
+      Navigator.pop(context);
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && data['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data['message'] ?? "Profile saved successfully ✅"),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (_) => EmployerDashboardPage()),
+          (route) => false,
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(data['message'] ?? "Failed to save profile."),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    } catch (e) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e"), backgroundColor: Colors.redAccent),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xfff8f9fb),
-      appBar: AppBar(
-        automaticallyImplyLeading: true,
-        elevation: 0,
-        backgroundColor: Colors.white,
-        iconTheme: const IconThemeData(color: Colors.black),
-      ),
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            bool isWeb = constraints.maxWidth > 800;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        bool isWeb = constraints.maxWidth > 800;
 
-            Widget formContent = Form(
-              key: _formKey,
-              child: Padding(
-                padding: const EdgeInsets.all(28.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      "Tell us More",
-                      style: TextStyle(
-                        fontSize: isWeb ? 26 : 24,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      "We’ll help you connect with the right candidates",
-                      style: TextStyle(
-                        fontSize: isWeb ? 16 : 14,
-                        color: Colors.black54,
-                      ),
-                    ),
-                    const SizedBox(height: 25),
-                
-                    // 🔹 Company Name
-                    TextFormField(
-                      controller: _companyNameController,
-                      decoration: _inputDecoration(
-                        label: "Company Name",
-                        icon: Icons.business,
-                      ),
-                      validator: (v) => v == null || v.isEmpty
-                          ? "Please enter company name"
-                          : null,
-                    ),
-                    const SizedBox(height: 15),
-                
-                    // 🔹 Your Designation
-                    TextFormField(
-                      controller: _designationController,
-                      decoration: _inputDecoration(
-                        label: "Your Designation / Role",
-                        icon: Icons.badge_outlined,
-                      ),
-                      validator: (v) => v == null || v.isEmpty
-                          ? "Please enter your designation"
-                          : null,
-                    ),
-                    const SizedBox(height: 15),
-                
-                    // 🔹 Website
-                    TextFormField(
-                      controller: _websiteController,
-                      decoration: _inputDecoration(
-                        label: "Company Website (Optional)",
-                        icon: Icons.language,
-                      ),
-                      validator: (v) {
-                        if (v == null || v.isEmpty) return null;
-                        if (!Uri.parse(v).isAbsolute) return "Enter valid URL";
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 15),
-                
-                    // 🔹 Industry Type
-                    TextFormField(
-                      controller: _industryController,
-                      decoration: _inputDecoration(
-                        label: "Industry Type (e.g., IT, Manufacturing, Finance)",
-                        icon: Icons.category_outlined,
-                      ),
-                      validator: (v) => v == null || v.isEmpty
-                          ? "Please enter industry type"
-                          : null,
-                    ),
-                    const SizedBox(height: 15),
-                
-                    // 🔹 Company Size
-                    TextFormField(
-                      controller: _companySizeController,
-                      decoration: _inputDecoration(
-                        label: "Company Size (e.g., 10–50 employees)",
-                        icon: Icons.group_outlined,
-                      ),
-                      validator: (v) => v == null || v.isEmpty
-                          ? "Please enter company size"
-                          : null,
-                    ),
-                    const SizedBox(height: 15),
-                
-                    // 🔹 Office Location
-                    TextFormField(
-                      controller: _locationController,
-                      decoration: _inputDecoration(
-                        label: "Office Location / Address",
-                        icon: Icons.location_on_outlined,
-                      ),
-                      validator: (v) => v == null || v.isEmpty
-                          ? "Please enter office location"
-                          : null,
-                    ),
-                    const SizedBox(height: 15),
-                
-                    // 🔹 About Company
-                    TextFormField(
-                      controller: _aboutCompanyController,
-                      maxLines: 3,
-                      decoration: _inputDecoration(
-                        label: "About the Company",
-                        icon: Icons.info_outline,
-                      ),
-                      validator: (v) => v == null || v.isEmpty
-                          ? "Please write a short company description"
-                          : null,
-                    ),
-                    const SizedBox(height: 30),
-                
-                    // 🔹 Submit Button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: _submitProfile,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                        ),
-                        child: const Text(
-                          "Next",
-                          style: TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+        Widget formContent = Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                "Tell Us More",
+                style: TextStyle(
+                  fontSize: isWeb ? 28 : 24,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
                 ),
               ),
-            );
+              const SizedBox(height: 8),
+              Text(
+                "We’ll help you connect with the right candidates",
+                style: TextStyle(
+                  fontSize: isWeb ? 16 : 14,
+                  color: Colors.black54,
+                ),
+              ),
+              const SizedBox(height: 30),
 
-            if (isWeb) {
-              // 💻 Web/Desktop Layout
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 60,
-                    vertical: 40,
+              // 🏢 Company Fields
+              _buildTextField(
+                _companyNameController,
+                "Company Name",
+                icon: Icons.business,
+              ),
+              const SizedBox(height: 15),
+              _buildTextField(
+                _designationController,
+                "Your Designation / Role",
+                icon: Icons.badge_outlined,
+              ),
+              const SizedBox(height: 15),
+              _buildTextField(
+                _websiteController,
+                "Company Website (Optional)",
+                icon: Icons.language,
+                isUrl: true,
+              ),
+              const SizedBox(height: 15),
+              _buildTextField(
+                _industryController,
+                "Industry Type",
+                icon: Icons.category_outlined,
+              ),
+              const SizedBox(height: 15),
+              _buildTextField(
+                _companySizeController,
+                "Company Size",
+                icon: Icons.group_outlined,
+              ),
+              const SizedBox(height: 15),
+              _buildTextField(
+                _locationController,
+                "Office Location / Address",
+                icon: Icons.location_on_outlined,
+              ),
+              const SizedBox(height: 15),
+              _buildTextField(
+                _aboutCompanyController,
+                "About the Company",
+                icon: Icons.info_outline,
+                maxLines: 3,
+              ),
+
+              const SizedBox(height: 25),
+              Text(
+                "Bank Details",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(height: 15),
+
+              _buildTextField(
+                _bankAccountNameController,
+                "Account Holder Name",
+                icon: Icons.account_circle,
+              ),
+              const SizedBox(height: 15),
+              _buildTextField(
+                _bankAccountNumberController,
+                "Account Number",
+                icon: Icons.confirmation_number,
+                isNumeric: true,
+              ),
+              const SizedBox(height: 15),
+              _buildTextField(
+                _bankIfscController,
+                "IFSC Code",
+                icon: Icons.account_balance_wallet,
+              ),
+              const SizedBox(height: 15),
+              _buildTextField(
+                _bankNameController,
+                "Bank Name",
+                icon: Icons.account_balance,
+              ),
+              const SizedBox(height: 15),
+              _buildTextField(
+                _bankBranchController,
+                "Branch Name",
+                icon: Icons.location_city,
+              ),
+
+              const SizedBox(height: 30),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: _submitProfile,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    elevation: 3,
                   ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 1,
-                        child: Container(
-                          height: 600,
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withOpacity(0.08),
-                            borderRadius: BorderRadius.circular(20),
-                            image: const DecorationImage(
-                              image: AssetImage('assets/job_bgr.png'),
-                              fit: BoxFit.cover,
-                              opacity: 0.15,
-                            ),
-                          ),
-                          child: Center(
-                            child: Padding(
-                              padding: const EdgeInsets.all(32.0),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.business_center,
-                                    size: 80,
-                                    color: AppColors.primary,
-                                  ),
-                                  const SizedBox(height: 25),
-                                  Text(
-                                    "Grow your team with Badhyata",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      color: AppColors.primary,
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  const Text(
-                                    "Complete your company profile to start finding perfect candidates faster and smarter.",
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      color: Colors.black54,
-                                      fontSize: 15,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 60),
-                      Expanded(
-                        flex: 1,
-                        child: Card(
-                          elevation: 3,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(32.0),
-                            child: SingleChildScrollView(child: formContent),
-                          ),
-                        ),
-                      ),
-                    ],
+                  child: const Text(
+                    "Save & Continue",
+                    style: TextStyle(
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
-              );
-            } else {
-              // 📱 Mobile Layout
-              return Center(
-                child: SingleChildScrollView(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      maxWidth: double.infinity,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(30, 10, 30, 40),
-                      child: formContent,
-                    ),
-                  ),
-                ),
-              );
-            }
-          },
+              ),
+            ],
+          ),
+        );
+
+        return Scaffold(
+          appBar: AppBar(
+            automaticallyImplyLeading: true,
+            elevation: 0,
+            iconTheme: const IconThemeData(color: Colors.black),
+          ),
+          body: SafeArea(
+            child: isWeb
+                ? _buildWebLayout(formContent)
+                : _buildMobileLayout(formContent),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildMobileLayout(Widget formContent) {
+    return Center(
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(30, 10, 30, 40),
+          child: formContent,
         ),
       ),
     );
   }
 
-  InputDecoration _inputDecoration({
-    required String label,
-    required IconData icon,
-  }) {
-    return InputDecoration(
-      labelText: label,
-      prefixIcon: Icon(icon, color: AppColors.primary),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-      focusedBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: AppColors.primary, width: 2),
-        borderRadius: BorderRadius.circular(14),
+  Widget _buildWebLayout(Widget formContent) {
+    return Container(
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFFFFE6EC), Color(0xFFF8D8E7)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
       ),
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1100),
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 8, top: 10),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // 🏢 Left Info
+                  Expanded(
+                    flex: 1,
+                    child: Padding(
+                      padding: const EdgeInsets.only(right: 40.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          Text(
+                            "Grow Your Business With Badhyata",
+                            style: TextStyle(
+                              fontSize: 30,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFFE91E63),
+                            ),
+                          ),
+                          SizedBox(height: 12),
+                          Text(
+                            "Complete your company profile, add your details, and start hiring the best talent with confidence.",
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Colors.black87,
+                              height: 1.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // 💼 Right Form Card
+                  Expanded(
+                    flex: 2,
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 20),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 40,
+                        vertical: 40,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(18),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.08),
+                            blurRadius: 25,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: formContent,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField(
+    TextEditingController controller,
+    String label, {
+    IconData? icon,
+    bool isUrl = false,
+    bool isNumeric = false,
+    int maxLines = 1,
+  }) {
+    return TextFormField(
+      controller: controller,
+      maxLines: maxLines,
+      keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: icon != null ? Icon(icon, color: AppColors.primary) : null,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: AppColors.primary, width: 2),
+          borderRadius: BorderRadius.circular(14),
+        ),
+      ),
+      validator: (v) {
+        if (v == null || v.isEmpty) return "$label is required";
+        if (isUrl && !Uri.parse(v).isAbsolute) return "Enter a valid URL";
+        return null;
+      },
     );
   }
 }

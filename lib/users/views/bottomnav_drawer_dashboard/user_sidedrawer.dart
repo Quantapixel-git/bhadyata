@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:jobshub/common/utils/session_manager.dart';
+import 'package:jobshub/users/views/kyc_upload.dart';
 import 'package:jobshub/users/views/auth/login_screen.dart';
 import 'package:jobshub/users/views/bottomnav_drawer_dashboard/bottom_nav.dart';
 import 'package:jobshub/users/views/my_salary_based_job.dart';
@@ -75,7 +77,7 @@ class AppDrawerMobile extends StatelessWidget {
                     horizontal: 10,
                   ),
                   children: [
-                    _sectionTitle("👤 Profile"),
+                    _sectionTitle("👤 Dashboard"),
                     _sidebarItem(context, Icons.home_outlined, "Home", () {
                       Navigator.push(
                         context,
@@ -89,6 +91,14 @@ class AppDrawerMobile extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (_) => const ProfileScreen(),
+                        ),
+                      );
+                    }),
+                    _sidebarItem(context, Icons.approval, "KYC", () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const KycUploadPage(),
                         ),
                       );
                     }),
@@ -251,10 +261,23 @@ class AppDrawerMobile extends StatelessWidget {
                         );
                       },
                     ),
-                    _sidebarItem(context, Icons.logout, "Logout", () {
-                      Navigator.pushReplacement(
+                    _sidebarItem(context, Icons.logout, "Logout", () async {
+                      // final prefs = await SharedPreferences.getInstance();
+                      await SessionManager.clearAll();
+                      // await prefs.clear();
+                      debugPrint("✅ SharedPreferences cleared successfully!");
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text("Logged out successfully."),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+
+                      Navigator.pushAndRemoveUntil(
                         context,
                         MaterialPageRoute(builder: (_) => const LoginScreen()),
+                        (route) => false,
                       );
                     }),
                   ],
@@ -400,18 +423,26 @@ class AppDrawerWeb extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _sectionTitle("👤 Profile"),
+                  _sectionTitle("👤 Dashboard"),
 
                   _menuItem(context, Icons.home_outlined, "Home", () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const DashBoardScreen()),
+                      MaterialPageRoute(
+                        builder: (_) => const DashBoardScreen(),
+                      ),
                     );
                   }),
                   _menuItem(context, Icons.person_outline, "Profile", () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const ProfileScreen()),
+                    );
+                  }),
+                    _menuItem(context, Icons.approval, "KYC", () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const KycUploadPage()),
                     );
                   }),
                   _expansionGroup(
@@ -517,10 +548,23 @@ class AppDrawerWeb extends StatelessWidget {
                       ),
                     );
                   }),
-                  _menuItem(context, Icons.logout, "Logout", () {
-                    Navigator.pushReplacement(
+                  _menuItem(context, Icons.logout, "Logout", () async {
+                    // final prefs = await SharedPreferences.getInstance();
+                    await SessionManager.clearAll();
+                    // await prefs.clear();
+                    debugPrint("✅ SharedPreferences cleared successfully!");
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Logged out successfully."),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+
+                    Navigator.pushAndRemoveUntil(
                       context,
                       MaterialPageRoute(builder: (_) => const LoginScreen()),
+                      (route) => false,
                     );
                   }),
                   const SizedBox(height: 20),

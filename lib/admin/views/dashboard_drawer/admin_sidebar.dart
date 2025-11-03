@@ -3,10 +3,13 @@ import 'package:jobshub/admin/views/aadmin_hr_user.dart';
 import 'package:jobshub/admin/views/admin_all_companies.dart';
 import 'package:jobshub/admin/views/admin_all_notification.dart';
 import 'package:jobshub/admin/views/admin_approved_comapniess_byhr.dart';
+import 'package:jobshub/admin/views/admin_category_job.dart';
 import 'package:jobshub/admin/views/dashboard_drawer/admin_dashboard.dart';
 import 'package:jobshub/admin/views/admin_employee.dart';
 import 'package:jobshub/admin/views/admin_employee_kyc.dart';
 import 'package:jobshub/admin/views/admin_employee_salary.dart';
+import 'package:jobshub/common/utils/session_manager.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jobshub/admin/views/admin_employee_to%20_employer_rating.dart';
 import 'package:jobshub/admin/views/admin_employer.dart';
 import 'package:jobshub/admin/views/admin_employer_kyc.dart';
@@ -76,6 +79,12 @@ class AdminSidebarMobile extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => AdminStats()),
+                    );
+                  }),
+                  _sidebarItem(context, Icons.category, "Category", () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => AdminCategoryPage()),
                     );
                   }),
                   ExpansionTile(
@@ -427,10 +436,26 @@ class AdminSidebarMobile extends StatelessWidget {
                       ),
                     ],
                   ),
-                  _sidebarItem(context, Icons.logout, "Logout", () {
-                    Navigator.pushReplacement(
+                  _sidebarItem(context, Icons.logout, "Logout", () async {
+                    // final prefs = await SharedPreferences.getInstance();
+
+                    // // 🧹 Clear all stored preferences
+                    // await prefs.clear();
+                    await SessionManager.clearAll();
+                    // 🖨️ Optional: Log in console for debugging
+                    debugPrint("✅ SharedPreferences cleared successfully!");
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Logged out successfully."),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+
+                    // 🔁 Navigate back to login screen
+                    Navigator.pushAndRemoveUntil(
                       context,
-                      MaterialPageRoute(builder: (_) => LoginScreen()),
+                      MaterialPageRoute(builder: (_) => const LoginScreen()),
+                      (route) => false,
                     );
                   }),
                 ],
@@ -552,6 +577,12 @@ class AdminSidebarWeb extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => AdminStats()),
+                    );
+                  }),
+                  _menuItem(context, Icons.category, "Category", () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => AdminCategoryPage()),
                     );
                   }),
                   _expansionGroup(context, Icons.business, "Company", [
@@ -731,10 +762,22 @@ class AdminSidebarWeb extends StatelessWidget {
                       );
                     }),
                   ]),
-                  _menuItem(context, Icons.logout, "Logout", () {
-                    Navigator.pushReplacement(
+                  _menuItem(context, Icons.logout, "Logout", () async {
+                    // final prefs = await SharedPreferences.getInstance();
+                    await SessionManager.clearAll();
+                    // await prefs.clear();
+                    debugPrint("✅ SharedPreferences cleared successfully!");
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Logged out successfully."),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+
+                    Navigator.pushAndRemoveUntil(
                       context,
-                      MaterialPageRoute(builder: (_) => LoginScreen()),
+                      MaterialPageRoute(builder: (_) => const LoginScreen()),
+                      (route) => false,
                     );
                   }),
                   const SizedBox(height: 20),

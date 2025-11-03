@@ -2,25 +2,24 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jobshub/common/utils/session_manager.dart';
-import 'package:jobshub/users/views/bottomnav_drawer_dashboard/bottom_nav.dart';
+import 'package:jobshub/hr/views/drawer_dashboard/hr_dashboard.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
 import 'package:jobshub/common/constants/constants.dart';
 
-class JobProfileDetailsPage extends StatefulWidget {
-  const JobProfileDetailsPage({super.key});
+class HrTellUsMore extends StatefulWidget {
+  const HrTellUsMore({super.key});
 
   @override
-  State<JobProfileDetailsPage> createState() => _JobProfileDetailsPageState();
+  State<HrTellUsMore> createState() => _HrTellUsMoreState();
 }
 
-class _JobProfileDetailsPageState extends State<JobProfileDetailsPage> {
+class _HrTellUsMoreState extends State<HrTellUsMore> {
   final _formKey = GlobalKey<FormState>();
 
-  final _skillsController = TextEditingController();
-  final _educationController = TextEditingController();
+  // Controllers
+  final _positionController = TextEditingController();
   final _experienceController = TextEditingController();
   final _linkedinController = TextEditingController();
-  final _resumeUrlController = TextEditingController();
   final _bioController = TextEditingController();
   final _bankAccountNameController = TextEditingController();
   final _bankAccountNumberController = TextEditingController();
@@ -30,11 +29,9 @@ class _JobProfileDetailsPageState extends State<JobProfileDetailsPage> {
 
   @override
   void dispose() {
-    _skillsController.dispose();
-    _educationController.dispose();
+    _positionController.dispose();
     _experienceController.dispose();
     _linkedinController.dispose();
-    _resumeUrlController.dispose();
     _bioController.dispose();
     _bankAccountNameController.dispose();
     _bankAccountNumberController.dispose();
@@ -48,12 +45,8 @@ class _JobProfileDetailsPageState extends State<JobProfileDetailsPage> {
     if (!_formKey.currentState!.validate()) return;
 
     try {
-      final userIdStr = await SessionManager.getValue('user_id');
-      final userId = userIdStr != null && userIdStr.isNotEmpty
-          ? int.tryParse(userIdStr)
-          : null;
-
-      if (userId == null) {
+      final userIdStr = await SessionManager.getValue('hr_id');
+      if (userIdStr == null || userIdStr.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("User ID not found. Please log in again."),
@@ -64,12 +57,11 @@ class _JobProfileDetailsPageState extends State<JobProfileDetailsPage> {
       }
 
       final body = {
-        "user_id": userId,
-        "skills": _skillsController.text.trim(),
-        "education": _educationController.text.trim(),
-        "experience": _experienceController.text.trim(),
+        "user_id": userIdStr,
+        "position_title": _positionController.text.trim(),
+        "experience_years":
+            int.tryParse(_experienceController.text.trim()) ?? 0,
         "linkedin_url": _linkedinController.text.trim(),
-        "resume_url": _resumeUrlController.text.trim(),
         "bio": _bioController.text.trim(),
         "bank_account_name": _bankAccountNameController.text.trim(),
         "bank_account_number": _bankAccountNumberController.text.trim(),
@@ -78,7 +70,7 @@ class _JobProfileDetailsPageState extends State<JobProfileDetailsPage> {
         "bank_branch": _bankBranchController.text.trim(),
       };
 
-      final url = Uri.parse("${ApiConstants.baseUrl}employeeSave-profile");
+      final url = Uri.parse("${ApiConstants.baseUrl}hrSave-Profile");
 
       showDialog(
         context: context,
@@ -104,7 +96,7 @@ class _JobProfileDetailsPageState extends State<JobProfileDetailsPage> {
         );
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (_) => const DashBoardScreen()),
+          MaterialPageRoute(builder: (_) => HrDashboard()),
           (route) => false,
         );
       } else {
@@ -145,7 +137,7 @@ class _JobProfileDetailsPageState extends State<JobProfileDetailsPage> {
               ),
               const SizedBox(height: 8),
               Text(
-                "We’ll match you with the best job opportunities",
+                "Help us complete your HR profile",
                 style: TextStyle(
                   fontSize: isWeb ? 16 : 14,
                   color: Colors.black54,
@@ -153,23 +145,17 @@ class _JobProfileDetailsPageState extends State<JobProfileDetailsPage> {
               ),
               const SizedBox(height: 30),
 
-              // 🧠 Profile Fields
               _buildTextField(
-                _skillsController,
-                "Skills (comma separated)",
-                icon: Icons.code,
-              ),
-              const SizedBox(height: 15),
-              _buildTextField(
-                _educationController,
-                "Education (e.g., B.Tech Computer Science)",
-                icon: Icons.school,
+                _positionController,
+                "Position Title",
+                icon: Icons.badge_outlined,
               ),
               const SizedBox(height: 15),
               _buildTextField(
                 _experienceController,
-                "Experience (e.g., 2 years, Fresher)",
-                icon: Icons.work_outline,
+                "Experience (in years)",
+                icon: Icons.timeline,
+                isNumeric: true,
               ),
               const SizedBox(height: 15),
               _buildTextField(
@@ -180,20 +166,13 @@ class _JobProfileDetailsPageState extends State<JobProfileDetailsPage> {
               ),
               const SizedBox(height: 15),
               _buildTextField(
-                _resumeUrlController,
-                "Resume URL (Google Drive, Dropbox, etc.)",
-                icon: Icons.picture_as_pdf,
-                isUrl: true,
-              ),
-              const SizedBox(height: 15),
-              _buildTextField(
                 _bioController,
-                "Short Bio / About Yourself",
-                icon: Icons.person_outline,
+                "Short Bio / About You",
+                icon: Icons.info_outline,
                 maxLines: 3,
               ),
-              const SizedBox(height: 25),
 
+              const SizedBox(height: 25),
               Text(
                 "Bank Details",
                 style: TextStyle(
@@ -214,6 +193,7 @@ class _JobProfileDetailsPageState extends State<JobProfileDetailsPage> {
                 _bankAccountNumberController,
                 "Account Number",
                 icon: Icons.confirmation_number,
+                isNumeric: true,
               ),
               const SizedBox(height: 15),
               _buildTextField(
@@ -233,8 +213,8 @@ class _JobProfileDetailsPageState extends State<JobProfileDetailsPage> {
                 "Branch Name",
                 icon: Icons.location_city,
               ),
-              const SizedBox(height: 30),
 
+              const SizedBox(height: 30),
               SizedBox(
                 width: double.infinity,
                 height: 50,
@@ -262,17 +242,11 @@ class _JobProfileDetailsPageState extends State<JobProfileDetailsPage> {
         );
 
         return Scaffold(
-          appBar: isWeb
-              ? AppBar(
-                  automaticallyImplyLeading: true,
-                  elevation: 0,
-                  iconTheme: const IconThemeData(color: Colors.black),
-                )
-              : AppBar(
-                  automaticallyImplyLeading: true,
-                  elevation: 0,
-                  iconTheme: const IconThemeData(color: Colors.black),
-                ),
+          appBar: AppBar(
+            automaticallyImplyLeading: true,
+            elevation: 0,
+            iconTheme: const IconThemeData(color: Colors.black),
+          ),
           body: SafeArea(
             child: isWeb
                 ? _buildWebLayout(formContent)
@@ -283,7 +257,6 @@ class _JobProfileDetailsPageState extends State<JobProfileDetailsPage> {
     );
   }
 
-  // 📱 Mobile Layout
   Widget _buildMobileLayout(Widget formContent) {
     return Center(
       child: SingleChildScrollView(
@@ -295,7 +268,6 @@ class _JobProfileDetailsPageState extends State<JobProfileDetailsPage> {
     );
   }
 
-  // 💻 Web Layout (Same as SignUpPage)
   Widget _buildWebLayout(Widget formContent) {
     return Container(
       width: double.infinity,
@@ -312,25 +284,20 @@ class _JobProfileDetailsPageState extends State<JobProfileDetailsPage> {
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 1100),
             child: Padding(
-              padding: const EdgeInsets.only(
-                bottom: 8,
-                top: 10,
-                // horizontal: 0,
-              ),
+              padding: const EdgeInsets.only(bottom: 8, top: 10),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // 🩷 Left Section
+                  // Left Info
                   Expanded(
                     flex: 1,
                     child: Padding(
                       padding: const EdgeInsets.only(right: 40.0),
                       child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: const [
                           Text(
-                            "Build Your Job Profile",
+                            "Empower Your Career With Badhyata",
                             style: TextStyle(
                               fontSize: 30,
                               fontWeight: FontWeight.bold,
@@ -339,7 +306,7 @@ class _JobProfileDetailsPageState extends State<JobProfileDetailsPage> {
                           ),
                           SizedBox(height: 12),
                           Text(
-                            "Add your education, experience, and bank details — and get matched with top employers instantly!",
+                            "Complete your HR profile, share your experience and start connecting with the best employers.",
                             style: TextStyle(
                               fontSize: 16,
                               color: Colors.black87,
@@ -351,7 +318,7 @@ class _JobProfileDetailsPageState extends State<JobProfileDetailsPage> {
                     ),
                   ),
 
-                  // 🩷 Right Form Card
+                  // Right Form Card
                   Expanded(
                     flex: 2,
                     child: Container(
@@ -387,14 +354,14 @@ class _JobProfileDetailsPageState extends State<JobProfileDetailsPage> {
     TextEditingController controller,
     String label, {
     IconData? icon,
-    TextInputType keyboardType = TextInputType.text,
     bool isUrl = false,
+    bool isNumeric = false,
     int maxLines = 1,
   }) {
     return TextFormField(
       controller: controller,
       maxLines: maxLines,
-      keyboardType: keyboardType,
+      keyboardType: isNumeric ? TextInputType.number : TextInputType.text,
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: icon != null ? Icon(icon, color: AppColors.primary) : null,

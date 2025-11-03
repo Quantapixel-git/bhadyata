@@ -1,6 +1,12 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:jobshub/common/utils/session_manager.dart';
+
+// import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jobshub/admin/views/dashboard_drawer/admin_dashboard.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
+import 'package:jobshub/common/constants/constants.dart'; // ✅ for ApiConstants.baseUrl
 
 class AdminLoginPage extends StatefulWidget {
   const AdminLoginPage({super.key});
@@ -12,31 +18,103 @@ class AdminLoginPage extends StatefulWidget {
 class _AdminLoginPageState extends State<AdminLoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _isPasswordVisible = false;
+
   String? _emailError;
   String? _passwordError;
 
-  bool _isPasswordVisible = false;
-
-  void _login() {
+  // 🔹 Admin Login Function
+  Future<void> _login() async {
     setState(() {
       _emailError = null;
       _passwordError = null;
-
-      // Add your validation if needed
-      // if (!_emailController.text.contains("@")) {
-      //   _emailError = "Enter a valid email";
-      //   return;
-      // }
-      // if (_passwordController.text.length < 6) {
-      //   _passwordError = "Password must be at least 6 characters";
-      //   return;
-      // }
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => AdminDashboard()),
-      );
     });
+
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (email.isEmpty || password.isEmpty) {
+      setState(() {
+        _emailError = email.isEmpty ? "Email is required" : null;
+        _passwordError = password.isEmpty ? "Password is required" : null;
+      });
+      return;
+    }
+
+    final url = Uri.parse("${ApiConstants.baseUrl}adminLogin");
+    final body = {"email": email, "password": password};
+
+    try {
+      // 🔹 Show Loader Dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const Center(child: CircularProgressIndicator()),
+      );
+
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(body),
+      );
+
+      Navigator.pop(context); // Close loader
+
+      // 🧾 Pretty print API logs
+      print("\n═══════════════════════════════════════════");
+      print("🔹 API Endpoint: $url");
+      print("🔹 Status Code: ${response.statusCode}");
+      print("🔹 Request Body: ${jsonEncode(body)}");
+      print("🔹 Response Body:");
+      try {
+        const encoder = JsonEncoder.withIndent('  ');
+        final pretty = encoder.convert(jsonDecode(response.body));
+        print(pretty);
+      } catch (_) {
+        print(response.body);
+      }
+      print("═══════════════════════════════════════════\n");
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200 &&
+          (data['success'] == true || data['status'] == true)) {
+        // ✅ Save admin login flag
+       await SessionManager.setValue('admin_login', 'true');
+
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Login successful ✅"),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // ✅ Navigate to Dashboard
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => AdminDashboard()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              data['message'] ?? "Invalid credentials, please try again.",
+            ),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    } catch (e) {
+      Navigator.pop(context);
+      print("❌ Exception while logging in: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Something went wrong: $e"),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    }
   }
 
   Widget _buildLoginContent(bool isWeb, double width) {
@@ -45,9 +123,9 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
       children: [
         const SizedBox(height: 20),
 
-        // 🔹 Logo
         Image.asset("assets/job_bgr.png", height: isWeb ? 120 : 100),
         const SizedBox(height: 20),
+
         Text(
           "Admin Login",
           style: TextStyle(
@@ -151,7 +229,6 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
             bool isWeb = constraints.maxWidth > 800;
 
             if (isWeb) {
-              // 💻 Web/Desktop Layout
               return Center(
                 child: Container(
                   margin: const EdgeInsets.symmetric(vertical: 50),
@@ -173,7 +250,6 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
                   ),
                   child: Row(
                     children: [
-                      // Left side (branding)
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.only(right: 30),
@@ -208,15 +284,11 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
                           ),
                         ),
                       ),
-
-                      // Divider
                       Container(
                         width: 1,
                         height: 400,
                         color: Colors.grey.shade300,
                       ),
-
-                      // Right side (form)
                       Expanded(
                         child: SingleChildScrollView(
                           child: Padding(
@@ -232,7 +304,6 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
                 ),
               );
             } else {
-              // 📱 Mobile Layout
               return Center(
                 child: SingleChildScrollView(
                   child: Padding(

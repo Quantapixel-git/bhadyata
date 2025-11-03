@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/employer/views/emnployer_post_project.dart';
 import 'package:jobshub/employer/views/notification/employer_all_notification.dart';
 import 'package:jobshub/employer/views/employer_attendance.dart';
@@ -23,7 +24,9 @@ import 'package:jobshub/employer/views/employer_waller_note.dart';
 import 'package:jobshub/employer/views/leave_requests.dart';
 import 'package:jobshub/employer/views/notes_salary_based_recrut.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
+import 'package:jobshub/employer/views/upload_kyc_employer.dart';
 import 'package:jobshub/users/views/auth/login_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// ✅ MAIN WRAPPER that decides which sidebar to show
 class EmployerSidebar extends StatelessWidget {
@@ -120,6 +123,14 @@ class EmployerSidebarMobile extends StatelessWidget {
                       ),
                     ],
                   ),
+                  _sidebarItem(context, Icons.approval, "KYC", () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const EmployerKycUploadPage(),
+                      ),
+                    );
+                  }),
 
                   ExpansionTile(
                     leading: Icon(
@@ -551,10 +562,23 @@ class EmployerSidebarMobile extends StatelessWidget {
                     ],
                   ),
 
-                  _sidebarItem(context, Icons.logout, "Logout", () {
-                    Navigator.pushReplacement(
+                  _sidebarItem(context, Icons.logout, "Logout", () async {
+                    // final prefs = await SharedPreferences.getInstance();
+                    await SessionManager.clearAll();
+                    // await prefs.clear();
+                    debugPrint("✅ SharedPreferences cleared successfully!");
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Logged out successfully."),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+
+                    Navigator.pushAndRemoveUntil(
                       context,
-                      MaterialPageRoute(builder: (_) => LoginScreen()),
+                      MaterialPageRoute(builder: (_) => const LoginScreen()),
+                      (route) => false,
                     );
                   }),
                 ],
@@ -703,6 +727,14 @@ class EmployerSidebarWeb extends StatelessWidget {
                       );
                     }),
                   ]),
+                  _menuItem(context, Icons.approval, "KYC", () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const EmployerKycUploadPage(),
+                      ),
+                    );
+                  }),
                   _expansionGroup(
                     context,
                     Icons.note_alt_outlined,
@@ -1054,10 +1086,23 @@ class EmployerSidebarWeb extends StatelessWidget {
                       );
                     }),
                   ]),
-                  _menuItem(context, Icons.logout, "Logout", () {
-                    Navigator.pushReplacement(
+                  _menuItem(context, Icons.logout, "Logout", () async {
+                    // final prefs = await SharedPreferences.getInstance();
+                    await SessionManager.clearAll();
+                    // await prefs.clear();
+                    debugPrint("✅ SharedPreferences cleared successfully!");
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Logged out successfully."),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+
+                    Navigator.pushAndRemoveUntil(
                       context,
-                      MaterialPageRoute(builder: (_) => LoginScreen()),
+                      MaterialPageRoute(builder: (_) => const LoginScreen()),
+                      (route) => false,
                     );
                   }),
                   const SizedBox(height: 20),
@@ -1080,45 +1125,48 @@ class EmployerSidebarWeb extends StatelessWidget {
       ),
     );
   }
-//
+
+  //
   // Header
-Widget _buildHeader() {
-  return AnimatedContainer(
-    duration: const Duration(milliseconds: 250),
-    height: 120,
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      gradient: LinearGradient(
-        colors: [AppColors.primary, AppColors.primary.withOpacity(0.8)],
+  Widget _buildHeader() {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      height: 120,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [AppColors.primary, AppColors.primary.withOpacity(0.8)],
+        ),
       ),
-    ),
-    child: ClipRect( // ✅ prevents overflow during width animation
-      child: Row(
-        mainAxisAlignment:
-            isCollapsed ? MainAxisAlignment.center : MainAxisAlignment.start,
-        children: [
-          const CircleAvatar(
-            radius: 20,
-            backgroundImage: AssetImage("assets/job_bgr.png"),
-          ),
-          if (!isCollapsed) ...[
-            const SizedBox(width: 10),
-            const Expanded(
-              child: Text(
-                "Employer Panel",
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
+      child: ClipRect(
+        // ✅ prevents overflow during width animation
+        child: Row(
+          mainAxisAlignment: isCollapsed
+              ? MainAxisAlignment.center
+              : MainAxisAlignment.start,
+          children: [
+            const CircleAvatar(
+              radius: 20,
+              backgroundImage: AssetImage("assets/job_bgr.png"),
+            ),
+            if (!isCollapsed) ...[
+              const SizedBox(width: 10),
+              const Expanded(
+                child: Text(
+                  "Employer Panel",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ),
+            ],
           ],
-        ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   // Simple Menu Item
   Widget _menuItem(

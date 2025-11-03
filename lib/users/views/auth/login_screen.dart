@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:jobshub/admin/views/auth/admin_login.dart';
+import 'package:jobshub/common/constants/constants.dart';
 import 'package:jobshub/employer/views/auth/employer_login.dart';
 import 'package:jobshub/hr/views/auth/hr_login_screen.dart';
 import 'package:jobshub/users/views/auth/otp_screen.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -19,20 +22,102 @@ class _LoginScreenState extends State<LoginScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
-  void _sendOtp() {
-    // final mobile = _mobileController.text.trim();
-    // if (mobile.length != 10) {
-    //   setState(() => _mobileError = "Enter a valid 10-digit mobile number");
-    //   return;
-    // }
-    // setState(() => _mobileError = null);
+  // void _sendOtp() {
 
-    Future.microtask(() {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => OtpScreen(mobile: '')),
+  //   Future.microtask(() {
+  //     Navigator.push(
+  //       context,
+  //       MaterialPageRoute(builder: (_) => OtpScreen(mobile: '')),
+  //     );
+  //   });
+  // }
+
+  void _sendOtp() async {
+    final mobile = _mobileController.text.trim();
+
+    // 🔹 Validation
+    if (mobile.isEmpty || mobile.length != 10) {
+      setState(() => _mobileError = "Enter a valid 10-digit mobile number");
+      return;
+    } else {
+      setState(() => _mobileError = null);
+    }
+
+    final url = Uri.parse("${ApiConstants.baseUrl}sendOtp");
+
+    try {
+      // 🔹 Show loading dialog
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const Center(child: CircularProgressIndicator()),
       );
-    });
+
+      final body = {"mobile": mobile, "fcm_token": "abc123xyz", "role": 1};
+
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(body),
+      );
+
+      Navigator.pop(context); // Close loader
+
+      // 🧾 Clean, formatted response print
+      print("\n═══════════════════════════════════════════");
+      print("🔹 API Endpoint: $url");
+      print("🔹 Status Code: ${response.statusCode}");
+      print("🔹 Raw Response:");
+      const JsonEncoder encoder = JsonEncoder.withIndent('  ');
+      try {
+        final formatted = encoder.convert(jsonDecode(response.body));
+        print(formatted);
+      } catch (_) {
+        print(response.body);
+      }
+      print("═══════════════════════════════════════════\n");
+
+      if (response.statusCode == 200 ||response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+
+        final success = data['status'] == true || data['success'] == true;
+        if (success) {
+          final otp =
+              data['otp_demo']?.toString() ??
+              data['data']?['otp_code']?.toString() ??
+              "";
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("OTP sent successfully! (OTP: $otp)")),
+          );
+
+          // ✅ Pass OTP to next screen (for dev only)
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => OtpScreen(
+                mobile: mobile,
+                otp: otp, // Add this param in OtpScreen
+              ),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(data['message'] ?? "Failed to send OTP")),
+          );
+        }
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: ${response.statusCode}")),
+        );
+      }
+    } catch (e) {
+      Navigator.pop(context);
+      print("❌ Exception while calling sendOtp: $e");
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Something went wrong: $e")));
+    }
   }
 
   Widget _buildRoleButton({
@@ -298,24 +383,6 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
 
         const SizedBox(height: 5),
-
-        // 🔹 Admin button (hidden)
-        // if (_showAdminButton)
-        //   OutlinedButton.icon(
-        //     onPressed: () => Navigator.push(
-        //       context,
-        //       MaterialPageRoute(builder: (_) => AdminLoginPage()),
-        //     ),
-        //     icon: const Icon(Icons.admin_panel_settings_outlined),
-        //     label: const Text("Admin Login"),
-        //     style: OutlinedButton.styleFrom(
-        //       side: BorderSide(color: AppColors.primary, width: 1.5),
-        //       foregroundColor: AppColors.primary,
-        //       shape: RoundedRectangleBorder(
-        //         borderRadius: BorderRadius.circular(12),
-        //       ),
-        //     ),
-        //   ),
       ],
     );
   }
@@ -323,7 +390,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xfff8f9fb),
+      // backgroundColor: const Color(0xfff8f9fb),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
