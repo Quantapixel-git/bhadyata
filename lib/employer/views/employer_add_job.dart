@@ -183,6 +183,7 @@ class _AddJobPageState extends State<AddJobPage> {
 
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
+                          behavior: SnackBarBehavior.floating,
                           content: Text("Job added successfully!"),
                         ),
                       );

@@ -130,8 +130,8 @@ class _OtpScreenState extends State<OtpScreen> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text("OTP Verified Successfully ✅"),
-            backgroundColor: Colors.green,
+            content: Text("OTP Verified Successfully "),
+            behavior: SnackBarBehavior.floating,
           ),
         );
 
@@ -159,7 +159,7 @@ class _OtpScreenState extends State<OtpScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(data['message'] ?? "Invalid OTP, please try again."),
-            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
           ),
         );
         // Stay on same page (do nothing)
@@ -170,7 +170,7 @@ class _OtpScreenState extends State<OtpScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Something went wrong: $e"),
-          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
         ),
       );
     }

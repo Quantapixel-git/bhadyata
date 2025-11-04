@@ -385,7 +385,7 @@ class _OneTimeJobCardState extends State<_OneTimeJobCard> {
                       setState(() => applied = true);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          backgroundColor: Colors.orange,
+                         behavior: SnackBarBehavior.floating,
                           content: Text(
                             "Applied for '${job["title"]}' successfully!",
                             style: const TextStyle(color: Colors.white),

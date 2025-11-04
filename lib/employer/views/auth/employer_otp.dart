@@ -130,8 +130,8 @@ class _EmployerOtpScreenState extends State<EmployerOtpScreen> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text("OTP Verified Successfully ✅"),
-            backgroundColor: Colors.green,
+            content: Text("OTP Verified Successfully "),
+            behavior: SnackBarBehavior.floating,
           ),
         );
 
@@ -153,7 +153,7 @@ class _EmployerOtpScreenState extends State<EmployerOtpScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(data['message'] ?? "Invalid OTP, please try again."),
-            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -163,7 +163,7 @@ class _EmployerOtpScreenState extends State<EmployerOtpScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Something went wrong: $e"),
-          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
         ),
       );
     }

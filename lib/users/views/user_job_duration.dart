@@ -59,8 +59,10 @@ class _JobDurationScreenState extends State<JobDurationScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
+          behavior: SnackBarBehavior.floating,
           content: Text(
-              "${job.title} extended till ${DateFormat('yyyy-MM-dd').format(job.endDate)}"),
+            "${job.title} extended till ${DateFormat('yyyy-MM-dd').format(job.endDate)}",
+          ),
         ),
       );
     }
@@ -72,16 +74,22 @@ class _JobDurationScreenState extends State<JobDurationScreen> {
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("${job.title} marked as completed")),
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        content: Text("${job.title} marked as completed"),
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-       appBar: AppBar(
+      appBar: AppBar(
         iconTheme: IconThemeData(color: Colors.white),
-        title: const Text("Job Status",style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white),),
+        title: const Text(
+          "Job Status",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        ),
         backgroundColor: AppColors.primary,
       ),
       body: Padding(
@@ -98,7 +106,8 @@ class _JobDurationScreenState extends State<JobDurationScreen> {
                     elevation: 4,
                     margin: const EdgeInsets.symmetric(vertical: 8),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16)),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Column(
@@ -120,19 +129,27 @@ class _JobDurationScreenState extends State<JobDurationScreen> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(job.title,
-                                        style: const TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold)),
+                                    Text(
+                                      job.title,
+                                      style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                                     const SizedBox(height: 4),
-                                    Text(job.company,
-                                        style: const TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.black54)),
+                                    Text(
+                                      job.company,
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.black54,
+                                      ),
+                                    ),
                                     Text(
                                       "Start: ${DateFormat('yyyy-MM-dd').format(job.startDate)} | End: ${DateFormat('yyyy-MM-dd').format(job.endDate)}",
                                       style: const TextStyle(
-                                          fontSize: 14, color: Colors.black54),
+                                        fontSize: 14,
+                                        color: Colors.black54,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -148,7 +165,9 @@ class _JobDurationScreenState extends State<JobDurationScreen> {
                               children: [
                                 Container(
                                   padding: const EdgeInsets.symmetric(
-                                      vertical: 8, horizontal: 12),
+                                    vertical: 8,
+                                    horizontal: 12,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: Colors.green.shade100,
                                     borderRadius: BorderRadius.circular(12),
@@ -156,8 +175,9 @@ class _JobDurationScreenState extends State<JobDurationScreen> {
                                   child: const Text(
                                     "Completed",
                                     style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.green),
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.green,
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(height: 8),
@@ -166,22 +186,23 @@ class _JobDurationScreenState extends State<JobDurationScreen> {
                                   child: ElevatedButton.icon(
                                     onPressed: () {
                                       Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (_) =>
-                                                  ReviewEmployerScreen(
-                                                    jobTitle: job.title,
-                                                    company: job.company,
-                                                  )));
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => ReviewEmployerScreen(
+                                            jobTitle: job.title,
+                                            company: job.company,
+                                          ),
+                                        ),
+                                      );
                                     },
                                     icon: const Icon(Icons.rate_review),
                                     label: const Text("Review Employer"),
                                     style: ElevatedButton.styleFrom(
                                       padding: const EdgeInsets.symmetric(
-                                          vertical: 14),
+                                        vertical: 14,
+                                      ),
                                       shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(12),
+                                        borderRadius: BorderRadius.circular(12),
                                       ),
                                     ),
                                   ),
@@ -196,21 +217,24 @@ class _JobDurationScreenState extends State<JobDurationScreen> {
                                 Expanded(
                                   child: ElevatedButton.icon(
                                     onPressed: () => requestExtension(job),
-                                    icon: const Icon(Icons.calendar_today,
-                                        color: Colors.white),
+                                    icon: const Icon(
+                                      Icons.calendar_today,
+                                      color: Colors.white,
+                                    ),
                                     label: const Text(
                                       "Request Extension",
                                       style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white),
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
                                     ),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: AppColors.primary,
                                       padding: const EdgeInsets.symmetric(
-                                          vertical: 14),
+                                        vertical: 14,
+                                      ),
                                       shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(12),
+                                        borderRadius: BorderRadius.circular(12),
                                       ),
                                     ),
                                   ),
@@ -225,21 +249,24 @@ class _JobDurationScreenState extends State<JobDurationScreen> {
                                 Expanded(
                                   child: ElevatedButton.icon(
                                     onPressed: () => markCompleted(job),
-                                    icon: const Icon(Icons.check,
-                                        color: Colors.white),
+                                    icon: const Icon(
+                                      Icons.check,
+                                      color: Colors.white,
+                                    ),
                                     label: const Text(
                                       "Mark Completed",
                                       style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white),
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
                                     ),
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: AppColors.primary,
                                       padding: const EdgeInsets.symmetric(
-                                          vertical: 14),
+                                        vertical: 14,
+                                      ),
                                       shape: RoundedRectangleBorder(
-                                        borderRadius:
-                                            BorderRadius.circular(12),
+                                        borderRadius: BorderRadius.circular(12),
                                       ),
                                     ),
                                   ),
@@ -261,8 +288,11 @@ class ReviewEmployerScreen extends StatefulWidget {
   final String jobTitle;
   final String company;
 
-  const ReviewEmployerScreen(
-      {super.key, required this.jobTitle, required this.company});
+  const ReviewEmployerScreen({
+    super.key,
+    required this.jobTitle,
+    required this.company,
+  });
 
   @override
   State<ReviewEmployerScreen> createState() => _ReviewEmployerScreenState();
@@ -276,15 +306,22 @@ class _ReviewEmployerScreenState extends State<ReviewEmployerScreen> {
     String review = reviewController.text.trim();
     if (review.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please write a review before submitting.')),
+        const SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: Text('Please write a review before submitting.'),
+        ),
       );
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(
-          'Review for ${widget.company} submitted! Rating: $rating, Review: $review'),
-    ));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        content: Text(
+          'Review for ${widget.company} submitted! Rating: $rating, Review: $review',
+        ),
+      ),
+    );
 
     setState(() {
       rating = 4.0;
@@ -302,15 +339,17 @@ class _ReviewEmployerScreenState extends State<ReviewEmployerScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: Text("Review ${widget.company}"),
-          backgroundColor: AppColors.primary
-          ),
+        title: Text("Review ${widget.company}"),
+        backgroundColor: AppColors.primary,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Text("Rate your experience for '${widget.jobTitle}'",
-                style: const TextStyle(fontSize: 18)),
+            Text(
+              "Rate your experience for '${widget.jobTitle}'",
+              style: const TextStyle(fontSize: 18),
+            ),
             const SizedBox(height: 20),
             RatingBar.builder(
               initialRating: rating,
@@ -328,8 +367,9 @@ class _ReviewEmployerScreenState extends State<ReviewEmployerScreen> {
               maxLines: 5,
               decoration: InputDecoration(
                 hintText: "Write your review",
-                border:
-                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
             const Spacer(),
@@ -341,9 +381,13 @@ class _ReviewEmployerScreenState extends State<ReviewEmployerScreen> {
                   backgroundColor: AppColors.primary,
                   padding: const EdgeInsets.symmetric(vertical: 16),
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-                child: const Text("Submit Review", style: TextStyle(fontSize: 18)),
+                child: const Text(
+                  "Submit Review",
+                  style: TextStyle(fontSize: 18),
+                ),
               ),
             ),
           ],

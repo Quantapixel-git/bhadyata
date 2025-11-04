@@ -47,19 +47,22 @@ class UserMyApplicationsPage extends StatelessWidget {
 
         return Scaffold(
           appBar: isWeb
-          ? null : AppBar(
-            title:
-            const Text(
-              "My Applications",
-              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-            ),
-            iconTheme: const IconThemeData(color: Colors.white),
-            backgroundColor: AppColors.primary,
-            centerTitle: isWeb,
-          ),
+              ? null
+              : AppBar(
+                  title: const Text(
+                    "My Applications",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  iconTheme: const IconThemeData(color: Colors.white),
+                  backgroundColor: AppColors.primary,
+                  centerTitle: isWeb,
+                ),
           body: Row(
             children: [
-               const AppDrawer(),
+              const AppDrawer(),
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(10),
@@ -79,7 +82,9 @@ class UserMyApplicationsPage extends StatelessWidget {
                         onTap: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => JobDetailPage(job: job)),
+                            MaterialPageRoute(
+                              builder: (_) => JobDetailPage(job: job),
+                            ),
                           );
                         },
                       );
@@ -154,7 +159,10 @@ class _HoverApplicationCardState extends State<_HoverApplicationCard> {
               children: [
                 Text(
                   widget.job["title"] ?? "",
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 Text("${widget.job["company"]} • ${widget.job["location"]}"),
                 const SizedBox(height: 6),
@@ -227,26 +235,34 @@ class JobDetailPage extends StatelessWidget {
                             children: [
                               CircleAvatar(
                                 radius: 32,
-                                backgroundColor:
-                                    AppColors.primary.withOpacity(0.1),
-                                child: const Icon(Icons.work,
-                                    color: AppColors.primary, size: 32),
+                                backgroundColor: AppColors.primary.withOpacity(
+                                  0.1,
+                                ),
+                                child: const Icon(
+                                  Icons.work,
+                                  color: AppColors.primary,
+                                  size: 32,
+                                ),
                               ),
                               const SizedBox(width: 20),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(job["title"]!,
-                                        style: TextStyle(
-                                            fontSize: isWeb ? 28 : 22,
-                                            fontWeight: FontWeight.bold)),
+                                    Text(
+                                      job["title"]!,
+                                      style: TextStyle(
+                                        fontSize: isWeb ? 28 : 22,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                                     const SizedBox(height: 6),
                                     Text(
                                       "${job["company"]} • ${job["location"]}",
                                       style: TextStyle(
-                                          fontSize: isWeb ? 18 : 14,
-                                          color: Colors.grey[600]),
+                                        fontSize: isWeb ? 18 : 14,
+                                        color: Colors.grey[600],
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -288,24 +304,30 @@ class JobDetailPage extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text("Job Description",
-                                  style: TextStyle(
-                                      fontSize: isWeb ? 22 : 18,
-                                      fontWeight: FontWeight.bold)),
+                              Text(
+                                "Job Description",
+                                style: TextStyle(
+                                  fontSize: isWeb ? 22 : 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                               const SizedBox(height: 12),
                               Text(
                                 job["description"] ??
                                     "This is a detailed description of the job role. "
                                         "It includes key responsibilities, skills required, and other details.",
                                 style: TextStyle(
-                                    fontSize: isWeb ? 16 : 14,
-                                    color: Colors.black87,
-                                    height: 1.5),
+                                  fontSize: isWeb ? 16 : 14,
+                                  color: Colors.black87,
+                                  height: 1.5,
+                                ),
                               ),
                             ],
                           ),
                         ),
-                        const SizedBox(height: 120), // leave space for sticky button
+                        const SizedBox(
+                          height: 120,
+                        ), // leave space for sticky button
                       ],
                     ),
                   ),
@@ -313,8 +335,9 @@ class JobDetailPage extends StatelessWidget {
 
                 // Sticky Apply Button
                 Align(
-                  alignment:
-                      isWeb ? Alignment.bottomRight : Alignment.bottomCenter,
+                  alignment: isWeb
+                      ? Alignment.bottomRight
+                      : Alignment.bottomCenter,
                   child: SizedBox(
                     width: isWeb ? 280 : double.infinity,
                     child: _HoverApplyButton(
@@ -327,7 +350,9 @@ class JobDetailPage extends StatelessWidget {
                         );
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                              content: Text("Applied for ${job["title"]}")),
+                            behavior: SnackBarBehavior.floating,
+                            content: Text("Applied for ${job["title"]}"),
+                          ),
                         );
                       },
                     ),
@@ -419,17 +444,21 @@ class _HoverApplyButtonState extends State<_HoverApplyButton> {
       onExit: (_) => setState(() => _hovering = false),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        transform:
-            _hovering ? (Matrix4.identity()..scale(1.02)) : Matrix4.identity(),
+        transform: _hovering
+            ? (Matrix4.identity()..scale(1.02))
+            : Matrix4.identity(),
         child: ElevatedButton(
           onPressed: widget.onTap,
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primary,
             padding: const EdgeInsets.symmetric(vertical: 18),
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            textStyle:
-                const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            textStyle: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           child: Text(widget.label),
         ),
@@ -457,7 +486,9 @@ class _HoverButtonState extends State<_HoverButton> {
 
     Widget button = AnimatedContainer(
       duration: const Duration(milliseconds: 200),
-      transform: _hovered && isWeb ? (Matrix4.identity()..scale(1.05)) : Matrix4.identity(),
+      transform: _hovered && isWeb
+          ? (Matrix4.identity()..scale(1.05))
+          : Matrix4.identity(),
       child: SizedBox(
         width: double.infinity,
         child: ElevatedButton(

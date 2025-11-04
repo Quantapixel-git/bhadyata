@@ -43,6 +43,7 @@ class _EmployerKycUploadPageState extends State<EmployerKycUploadPage> {
     if (aadharFile == null || panFile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
+          behavior: SnackBarBehavior.floating,
           content: Text("Please select both Aadhaar and PAN files"),
         ),
       );
@@ -90,7 +91,10 @@ class _EmployerKycUploadPageState extends State<EmployerKycUploadPage> {
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("✅ KYC uploaded successfully!")),
+          const SnackBar(
+            behavior: SnackBarBehavior.floating,
+            content: Text("KYC uploaded successfully!"),
+          ),
         );
         setState(() {
           aadharFile = null;
@@ -98,16 +102,22 @@ class _EmployerKycUploadPageState extends State<EmployerKycUploadPage> {
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("❌ Upload failed: ${response.statusCode}")),
+          SnackBar(
+            behavior: SnackBarBehavior.floating,
+            content: Text("Upload failed: ${response.statusCode}"),
+          ),
         );
       }
 
       debugPrint("Response Body: $responseBody");
     } catch (e) {
       debugPrint("🟥 Error during KYC upload: $e");
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("⚠️ Error: $e")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: Text(" Error: $e"),
+        ),
+      );
     } finally {
       setState(() => isLoading = false);
     }

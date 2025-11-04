@@ -35,8 +35,8 @@ class _KycStepperPageState extends State<KycStepperPage> {
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("🎉 KYC Submitted Successfully"),
-          backgroundColor: Colors.green,
+          content: Text(" KYC Submitted Successfully"),
+           behavior: SnackBarBehavior.floating,
         ),
       );
       Future.delayed(const Duration(seconds: 1), () {

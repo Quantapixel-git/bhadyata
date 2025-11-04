@@ -42,9 +42,12 @@ class _AdminQueryPageState extends State<AdminQueryPage> {
 
     _queryController.clear();
 
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text("Query sent to employees")));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        behavior: SnackBarBehavior.floating,
+        content: Text("Query sent to employees"),
+      ),
+    );
   }
 
   @override

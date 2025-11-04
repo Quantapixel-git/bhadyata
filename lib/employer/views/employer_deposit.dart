@@ -32,20 +32,27 @@ class _MyDepositPageState extends State<MyDepositPage> {
   ];
 
   void _onSalaryPayment() {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text("Proceed to pay salaries...")));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        behavior: SnackBarBehavior.floating,
+        content: Text("Proceed to pay salaries..."),
+      ),
+    );
   }
 
   void _onDepositPayment() {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Proceed to pay refundable deposit...")),
+      const SnackBar(
+        behavior: SnackBarBehavior.floating,
+        content: Text("Proceed to pay refundable deposit..."),
+      ),
     );
   }
 
   void _onOneTimePayment() {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
+        behavior: SnackBarBehavior.floating,
         content: Text("Proceed to pay one-time recruitment fee..."),
       ),
     );

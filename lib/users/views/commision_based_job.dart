@@ -114,8 +114,7 @@ class _CommissionAllJobsPageState extends State<CommissionAllJobsPage> {
                   onChanged: (_) => setState(() {}),
                   decoration: InputDecoration(
                     hintText: "What (Job title, keywords, or company)",
-                    prefixIcon:
-                        const Icon(Icons.search, color: Colors.grey),
+                    prefixIcon: const Icon(Icons.search, color: Colors.grey),
                     filled: true,
                     fillColor: Colors.grey.shade100,
                     border: OutlineInputBorder(
@@ -134,9 +133,12 @@ class _CommissionAllJobsPageState extends State<CommissionAllJobsPage> {
                             ? "Where (Location)"
                             : selectedLocation,
                         prefixIcon: const Icon(
-                            Icons.location_on_outlined, color: Colors.grey),
-                        suffixIcon:
-                            const Icon(Icons.keyboard_arrow_down_rounded),
+                          Icons.location_on_outlined,
+                          color: Colors.grey,
+                        ),
+                        suffixIcon: const Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                        ),
                         filled: true,
                         fillColor: Colors.grey.shade100,
                         border: OutlineInputBorder(
@@ -170,8 +172,9 @@ class _CommissionAllJobsPageState extends State<CommissionAllJobsPage> {
                         backgroundColor: Colors.grey.shade200,
                         labelStyle: TextStyle(
                           color: isSelected ? Colors.white : Colors.black,
-                          fontWeight:
-                              isSelected ? FontWeight.bold : FontWeight.w500,
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.w500,
                         ),
                         onSelected: (_) {
                           setState(() => selectedCategory = category);
@@ -315,17 +318,17 @@ class _CommissionJobCardState extends State<_CommissionJobCard> {
             const SizedBox(height: 6),
             Text(
               job["company"],
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-              ),
+              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 8),
             Row(
               children: [
                 const Icon(Icons.location_on, size: 16, color: Colors.grey),
                 const SizedBox(width: 4),
-                Text(job["location"], style: const TextStyle(color: Colors.grey)),
+                Text(
+                  job["location"],
+                  style: const TextStyle(color: Colors.grey),
+                ),
               ],
             ),
             const Spacer(),
@@ -345,7 +348,7 @@ class _CommissionJobCardState extends State<_CommissionJobCard> {
                       setState(() => applied = true);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          backgroundColor: AppColors.primary,
+                          behavior: SnackBarBehavior.floating,
                           content: Text(
                             "Applied for '${job["title"]}' successfully!",
                             style: const TextStyle(color: Colors.white),
@@ -359,8 +362,9 @@ class _CommissionJobCardState extends State<_CommissionJobCard> {
               ),
               label: Text(applied ? "Applied" : "Apply Now"),
               style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    applied ? Colors.grey.shade400 : AppColors.primary,
+                backgroundColor: applied
+                    ? Colors.grey.shade400
+                    : AppColors.primary,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),

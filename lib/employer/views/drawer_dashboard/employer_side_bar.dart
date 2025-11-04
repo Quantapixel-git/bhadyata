@@ -572,6 +572,7 @@ class EmployerSidebarMobile extends StatelessWidget {
                       const SnackBar(
                         content: Text("Logged out successfully."),
                         duration: Duration(seconds: 2),
+                        behavior: SnackBarBehavior.floating,
                       ),
                     );
 
@@ -1094,6 +1095,7 @@ class EmployerSidebarWeb extends StatelessWidget {
 
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
+                        behavior: SnackBarBehavior.floating,
                         content: Text("Logged out successfully."),
                         duration: Duration(seconds: 2),
                       ),

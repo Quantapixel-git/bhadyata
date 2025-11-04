@@ -37,6 +37,7 @@ class _SalaryBasedAttendancePageState extends State<SalaryBasedAttendancePage> {
     setState(() => employees[index]["isPresent"] = isPresent);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
+        behavior: SnackBarBehavior.floating,
         content: Text(
           "${employees[index]['name']} marked as ${isPresent ? 'Present' : 'Absent'}",
         ),
@@ -59,6 +60,7 @@ class _SalaryBasedAttendancePageState extends State<SalaryBasedAttendancePage> {
     final absentCount = employees.length - presentCount;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
+        behavior: SnackBarBehavior.floating,
         content: Text(
           "Attendance submitted!\nPresent: $presentCount, Absent: $absentCount",
         ),
@@ -358,8 +360,12 @@ class _AttendanceHistoryPageState extends State<AttendanceHistoryPage> {
                   ),
                   calendarBuilders: CalendarBuilders(
                     defaultBuilder: (context, day, _) {
-                      final status = attendanceData[
-                          DateTime(day.year, day.month, day.day)];
+                      final status =
+                          attendanceData[DateTime(
+                            day.year,
+                            day.month,
+                            day.day,
+                          )];
                       Color? bgColor;
                       if (status == "Present") {
                         bgColor = Colors.green.shade100;
@@ -420,8 +426,8 @@ class _AttendanceHistoryPageState extends State<AttendanceHistoryPage> {
               color: status == "Present"
                   ? Colors.green
                   : status == "Absent"
-                      ? Colors.redAccent
-                      : Colors.grey,
+                  ? Colors.redAccent
+                  : Colors.grey,
               fontWeight: FontWeight.bold,
             ),
           ),

@@ -36,16 +36,9 @@ class _UserWorkScreenState extends State<UserWorkScreen> {
     // Show a nice snackbar message
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Row(
-          children: const [
-            Icon(Icons.celebration, color: Colors.white),
-            SizedBox(width: 10),
-            Text("🎉 Project marked as completed!"),
-          ],
-        ),
-        backgroundColor: Colors.green,
+        content: Text(" Project marked as completed!"),
+
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         duration: const Duration(seconds: 2),
       ),
     );
@@ -55,10 +48,7 @@ class _UserWorkScreenState extends State<UserWorkScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey.shade100,
-      appBar: AppBar(
-        title: const Text('Work on Project'),
-        elevation: 0,
-      ),
+      appBar: AppBar(title: const Text('Work on Project'), elevation: 0),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -87,7 +77,9 @@ class _UserWorkScreenState extends State<UserWorkScreen> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: isCompleted ? Colors.green.shade900 : AppColors.primary,
+                        color: isCompleted
+                            ? Colors.green.shade900
+                            : AppColors.primary,
                       ),
                     ),
                   ),
@@ -132,10 +124,14 @@ class _UserWorkScreenState extends State<UserWorkScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text("${widget.paymentType}: ${widget.paymentValue}"
-                            "${widget.paymentType == 'Commission' ? '%' : ''}"),
                         Text(
-                          "Deadline: ${widget.deadline.toLocal()}".split(' ')[0],
+                          "${widget.paymentType}: ${widget.paymentValue}"
+                          "${widget.paymentType == 'Commission' ? '%' : ''}",
+                        ),
+                        Text(
+                          "Deadline: ${widget.deadline.toLocal()}".split(
+                            ' ',
+                          )[0],
                         ),
                       ],
                     ),

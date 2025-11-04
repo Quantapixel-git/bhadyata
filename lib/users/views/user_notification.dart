@@ -65,7 +65,9 @@ class UserNotificationsPage extends StatelessWidget {
               onTap: () {
                 // Later: navigate to job detail / application detail
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Tapped: ${notif["title"]}")),
+                  SnackBar(
+                     behavior: SnackBarBehavior.floating,
+                    content: Text("Tapped: ${notif["title"]}")),
                 );
               },
             ),

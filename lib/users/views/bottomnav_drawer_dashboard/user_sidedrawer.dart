@@ -269,6 +269,7 @@ class AppDrawerMobile extends StatelessWidget {
 
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
+                          behavior: SnackBarBehavior.floating,
                           content: Text("Logged out successfully."),
                           duration: Duration(seconds: 2),
                         ),
@@ -439,7 +440,7 @@ class AppDrawerWeb extends StatelessWidget {
                       MaterialPageRoute(builder: (_) => const ProfileScreen()),
                     );
                   }),
-                    _menuItem(context, Icons.approval, "KYC", () {
+                  _menuItem(context, Icons.approval, "KYC", () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const KycUploadPage()),
@@ -556,6 +557,7 @@ class AppDrawerWeb extends StatelessWidget {
 
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
+                        behavior: SnackBarBehavior.floating,
                         content: Text("Logged out successfully."),
                         duration: Duration(seconds: 2),
                       ),

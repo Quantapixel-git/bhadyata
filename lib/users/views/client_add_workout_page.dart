@@ -45,8 +45,8 @@ class _AddWorkPageState extends State<AddWorkPage> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("✅ Work submitted for approval"),
-          backgroundColor: AppColors.primary,
+          content: Text(" Work submitted for approval"),
+          behavior: SnackBarBehavior.floating,
         ),
       );
     }

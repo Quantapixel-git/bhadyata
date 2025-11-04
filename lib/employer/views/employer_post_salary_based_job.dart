@@ -29,8 +29,8 @@ class _PostSalaryJobPageState extends State<PostSalaryJobPage> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
+          behavior: SnackBarBehavior.floating,
           content: Text("Job '$jobTitle' posted successfully!"),
-          backgroundColor: Colors.green,
         ),
       );
 

@@ -291,7 +291,10 @@ class _EmployerLoginState extends State<EmployerLogin> {
               "";
 
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("OTP sent successfully! (OTP: $otp)")),
+            SnackBar(
+              behavior: SnackBarBehavior.floating,
+              content: Text("OTP sent successfully!"),
+            ),
           );
 
           // ✅ Navigate to OTP screen
@@ -306,20 +309,29 @@ class _EmployerLoginState extends State<EmployerLogin> {
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(data['message'] ?? "Failed to send OTP")),
+            SnackBar(
+              behavior: SnackBarBehavior.floating,
+              content: Text(data['message'] ?? "Failed to send OTP"),
+            ),
           );
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: ${response.statusCode}")),
+          SnackBar(
+            behavior: SnackBarBehavior.floating,
+            content: Text("Error: ${response.statusCode}"),
+          ),
         );
       }
     } catch (e) {
       Navigator.pop(context);
       print("❌ Exception while calling sendOtp: $e");
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Something went wrong: $e")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: Text("Something went wrong: $e"),
+        ),
+      );
     }
   }
 

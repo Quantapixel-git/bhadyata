@@ -76,7 +76,7 @@ class _HrCompleteProfileState extends State<HrCompleteProfile> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("User ID not found. Please verify OTP again."),
-            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
           ),
         );
         return;
@@ -128,8 +128,8 @@ class _HrCompleteProfileState extends State<HrCompleteProfile> {
       if (response.statusCode == 200 && data['success'] == true) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text("Profile updated successfully ✅"),
-            backgroundColor: Colors.green,
+            content: Text("Profile updated successfully"),
+            behavior: SnackBarBehavior.floating,
           ),
         );
         Navigator.pushReplacement(
@@ -140,14 +140,17 @@ class _HrCompleteProfileState extends State<HrCompleteProfile> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(data['message'] ?? "Failed to update profile."),
-            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
     } catch (e) {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e"), backgroundColor: Colors.redAccent),
+        SnackBar(
+          content: Text("Error: $e"),
+          behavior: SnackBarBehavior.floating,
+        ),
       );
     }
   }

@@ -284,12 +284,16 @@ class _HrLoginPageState extends State<HrLoginPage> {
         final success = data['status'] == true || data['success'] == true;
 
         if (success) {
-          final otp = data['otp_demo']?.toString() ??
+          final otp =
+              data['otp_demo']?.toString() ??
               data['data']?['otp_code']?.toString() ??
               "";
 
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("OTP sent successfully! (OTP: $otp)")),
+            SnackBar(
+              behavior: SnackBarBehavior.floating,
+              content: Text("OTP sent successfully!"),
+            ),
           );
 
           // Navigate to HR OTP screen
@@ -301,20 +305,29 @@ class _HrLoginPageState extends State<HrLoginPage> {
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(data['message'] ?? "Failed to send OTP")),
+            SnackBar(
+              behavior: SnackBarBehavior.floating,
+              content: Text(data['message'] ?? "Failed to send OTP"),
+            ),
           );
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: ${response.statusCode}")),
+          SnackBar(
+            behavior: SnackBarBehavior.floating,
+            content: Text("Error: ${response.statusCode}"),
+          ),
         );
       }
     } catch (e) {
       Navigator.pop(context);
       print("❌ Exception while calling sendOtp: $e");
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Something went wrong: $e")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: Text("Something went wrong: $e"),
+        ),
+      );
     }
   }
 

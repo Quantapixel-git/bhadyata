@@ -55,13 +55,19 @@ class _AdminSendNotificationPageState extends State<AdminSendNotificationPage> {
 
     if (selectedUsers.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please select at least one user")),
+        const SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: Text("Please select at least one user"),
+        ),
       );
       return;
     }
     if (title.isEmpty || message.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter title and message")),
+        const SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: Text("Please enter title and message"),
+        ),
       );
       return;
     }
@@ -69,8 +75,8 @@ class _AdminSendNotificationPageState extends State<AdminSendNotificationPage> {
     // Future API integration placeholder
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
+        behavior: SnackBarBehavior.floating,
         content: Text("Notification sent to ${selectedUsers.length} users!"),
-        backgroundColor: Colors.green,
       ),
     );
 

@@ -443,9 +443,10 @@ class AdminSidebarMobile extends StatelessWidget {
                     // await prefs.clear();
                     await SessionManager.clearAll();
                     // 🖨️ Optional: Log in console for debugging
-                    debugPrint("✅ SharedPreferences cleared successfully!");
+                    debugPrint("SharedPreferences cleared successfully!");
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
+                        behavior: SnackBarBehavior.floating,
                         content: Text("Logged out successfully."),
                         duration: Duration(seconds: 2),
                       ),
@@ -769,6 +770,7 @@ class AdminSidebarWeb extends StatelessWidget {
                     debugPrint("✅ SharedPreferences cleared successfully!");
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
+                        behavior: SnackBarBehavior.floating,
                         content: Text("Logged out successfully."),
                         duration: Duration(seconds: 2),
                       ),

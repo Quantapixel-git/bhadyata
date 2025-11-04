@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
@@ -17,14 +16,20 @@ class _ReviewEmployerScreenState extends State<ReviewEmployerScreen> {
     String review = reviewController.text.trim();
     if (review.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please write a review before submitting.')),
+        const SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: Text('Please write a review before submitting.'),
+        ),
       );
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text('Review submitted! Rating: $rating, Review: $review'),
-    ));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        content: Text('Review submitted! Rating: $rating, Review: $review'),
+      ),
+    );
 
     setState(() {
       rating = 4.0;
@@ -41,12 +46,18 @@ class _ReviewEmployerScreenState extends State<ReviewEmployerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Review Company"), backgroundColor: Colors.deepPurple),
+      appBar: AppBar(
+        title: const Text("Review Company"),
+        backgroundColor: Colors.deepPurple,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            const Text("Rate your experience with the employer:", style: TextStyle(fontSize: 18)),
+            const Text(
+              "Rate your experience with the employer:",
+              style: TextStyle(fontSize: 18),
+            ),
             const SizedBox(height: 20),
             RatingBar.builder(
               initialRating: rating,
@@ -54,7 +65,8 @@ class _ReviewEmployerScreenState extends State<ReviewEmployerScreen> {
               direction: Axis.horizontal,
               allowHalfRating: true,
               itemCount: 5,
-              itemBuilder: (context, _) => const Icon(Icons.star, color: Colors.amber),
+              itemBuilder: (context, _) =>
+                  const Icon(Icons.star, color: Colors.amber),
               onRatingUpdate: (r) => setState(() => rating = r),
             ),
             const SizedBox(height: 20),
@@ -63,7 +75,9 @@ class _ReviewEmployerScreenState extends State<ReviewEmployerScreen> {
               maxLines: 5,
               decoration: InputDecoration(
                 hintText: "Write your review",
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
             const Spacer(),
@@ -74,9 +88,14 @@ class _ReviewEmployerScreenState extends State<ReviewEmployerScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.deepPurple,
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-                child: const Text("Submit Review", style: TextStyle(fontSize: 18)),
+                child: const Text(
+                  "Submit Review",
+                  style: TextStyle(fontSize: 18),
+                ),
               ),
             ),
           ],

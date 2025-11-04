@@ -5,24 +5,32 @@ class AdminCreateNotificationScreen extends StatefulWidget {
   const AdminCreateNotificationScreen({super.key});
 
   @override
-  State<AdminCreateNotificationScreen> createState() => _AdminCreateNotificationScreenState();
+  State<AdminCreateNotificationScreen> createState() =>
+      _AdminCreateNotificationScreenState();
 }
 
-class _AdminCreateNotificationScreenState extends State<AdminCreateNotificationScreen> {
+class _AdminCreateNotificationScreenState
+    extends State<AdminCreateNotificationScreen> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
 
   void _sendNotification() {
     if (_titleController.text.isEmpty || _messageController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter title and message")),
+        const SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: Text("Please enter title and message"),
+        ),
       );
       return;
     }
 
     // Later: call API to send notification
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Notification Sent: ${_titleController.text}")),
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        content: Text("Notification Sent: ${_titleController.text}"),
+      ),
     );
 
     // Clear input fields
@@ -77,7 +85,10 @@ class _AdminCreateNotificationScreenState extends State<AdminCreateNotificationS
                   ),
                 ),
                 onPressed: _sendNotification,
-                child: const Text("Send Notification", style: TextStyle(fontSize: 16)),
+                child: const Text(
+                  "Send Notification",
+                  style: TextStyle(fontSize: 16),
+                ),
               ),
             ),
           ],

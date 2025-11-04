@@ -77,7 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
       print("═══════════════════════════════════════════\n");
 
-      if (response.statusCode == 200 ||response.statusCode == 201) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body);
 
         final success = data['status'] == true || data['success'] == true;
@@ -88,7 +88,10 @@ class _LoginScreenState extends State<LoginScreen> {
               "";
 
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("OTP sent successfully! (OTP: $otp)")),
+            SnackBar(
+              behavior: SnackBarBehavior.floating,
+              content: Text("OTP sent successfully! (OTP: $otp)"),
+            ),
           );
 
           // ✅ Pass OTP to next screen (for dev only)
@@ -103,20 +106,29 @@ class _LoginScreenState extends State<LoginScreen> {
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(data['message'] ?? "Failed to send OTP")),
+            SnackBar(
+              behavior: SnackBarBehavior.floating,
+              content: Text(data['message'] ?? "Failed to send OTP"),
+            ),
           );
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: ${response.statusCode}")),
+          SnackBar(
+            behavior: SnackBarBehavior.floating,
+            content: Text("Error: ${response.statusCode}"),
+          ),
         );
       }
     } catch (e) {
       Navigator.pop(context);
       print("❌ Exception while calling sendOtp: $e");
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Something went wrong: $e")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: Text("Something went wrong: $e"),
+        ),
+      );
     }
   }
 

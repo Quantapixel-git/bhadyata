@@ -20,18 +20,14 @@ class _AdminApprovalScreenState extends State<AdminApprovalScreen> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
+        behavior: SnackBarBehavior.floating,
         content: Text(
           status == "approved"
-              ? "✅ ${project.assignedUser} approved for ${project.title}"
+              ? "${project.assignedUser} approved for ${project.title}"
               : status == "rejected"
-                  ? "❌ ${project.assignedUser} rejected for ${project.title}"
-                  : "⏳ ${project.assignedUser} set as pending for ${project.title}",
+              ? "${project.assignedUser} rejected for ${project.title}"
+              : "${project.assignedUser} set as pending for ${project.title}",
         ),
-        backgroundColor: status == "approved"
-            ? Colors.green
-            : status == "rejected"
-                ? Colors.red
-                : Colors.orange,
       ),
     );
   }
@@ -49,13 +45,17 @@ class _AdminApprovalScreenState extends State<AdminApprovalScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final assignedProjects =
-        widget.projects.where((p) => p.assignedUser != null).toList();
+    final assignedProjects = widget.projects
+        .where((p) => p.assignedUser != null)
+        .toList();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Manage Works",style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white),),
-         iconTheme: IconThemeData(color: Colors.white),
+        title: const Text(
+          "Manage Works",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+        iconTheme: IconThemeData(color: Colors.white),
         backgroundColor: AppColors.primary,
       ),
       body: assignedProjects.isEmpty
@@ -68,7 +68,8 @@ class _AdminApprovalScreenState extends State<AdminApprovalScreen> {
 
                 return Card(
                   shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12)),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   margin: const EdgeInsets.symmetric(vertical: 8),
                   elevation: 3,
                   child: Padding(
@@ -77,24 +78,37 @@ class _AdminApprovalScreenState extends State<AdminApprovalScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Project title
-                        Text(project.title,
-                            style: const TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold)),
+                        Text(
+                          project.title,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         const SizedBox(height: 6),
-                        Text("Assigned User: ${project.assignedUser}",
-                            style: const TextStyle(color: Colors.black87)),
+                        Text(
+                          "Assigned User: ${project.assignedUser}",
+                          style: const TextStyle(color: Colors.black87),
+                        ),
                         Text("Category: ${project.category}"),
                         Text("Budget: ₹${project.budget}"),
                         Text(
-                            "Deadline: ${project.deadline.toLocal()}".split(" ")[0]),
+                          "Deadline: ${project.deadline.toLocal()}".split(
+                            " ",
+                          )[0],
+                        ),
                         const SizedBox(height: 10),
 
                         // Dropdown for status
                         Row(
                           children: [
-                            const Text("Status: ",
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold, fontSize: 14)),
+                            const Text(
+                              "Status: ",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
                             const SizedBox(width: 12),
                             DropdownButton<String>(
                               value: project.adminStatus,
@@ -102,8 +116,11 @@ class _AdminApprovalScreenState extends State<AdminApprovalScreen> {
                                 return DropdownMenuItem(
                                   value: status,
                                   child: Text(
-                                    status[0].toUpperCase() + status.substring(1),
-                                    style: TextStyle(color: getStatusColor(status)),
+                                    status[0].toUpperCase() +
+                                        status.substring(1),
+                                    style: TextStyle(
+                                      color: getStatusColor(status),
+                                    ),
                                   ),
                                 );
                               }).toList(),

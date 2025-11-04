@@ -77,7 +77,7 @@ class HrSidebarMobile extends StatelessWidget {
                       );
                     },
                   ),
-                      _sidebarItem(context, Icons.approval, "KYC", () {
+                  _sidebarItem(context, Icons.approval, "KYC", () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -437,6 +437,7 @@ class HrSidebarMobile extends StatelessWidget {
 
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
+                        behavior: SnackBarBehavior.floating,
                         content: Text("Logged out successfully."),
                         duration: Duration(seconds: 2),
                       ),
@@ -572,7 +573,7 @@ class HrSidebarWeb extends StatelessWidget {
                       MaterialPageRoute(builder: (_) => HrDashboard()),
                     );
                   }),
-                     _menuItem(context, Icons.approval, "KYC", () {
+                  _menuItem(context, Icons.approval, "KYC", () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -832,6 +833,7 @@ class HrSidebarWeb extends StatelessWidget {
 
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
+                         behavior: SnackBarBehavior.floating,
                         content: Text("Logged out successfully."),
                         duration: Duration(seconds: 2),
                       ),

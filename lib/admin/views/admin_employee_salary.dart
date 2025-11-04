@@ -25,6 +25,7 @@ class _EmployeeSalaryPageState extends State<EmployeeSalaryPage> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
+        behavior: SnackBarBehavior.floating,
         content: Text(
           employeeSalaries[index]["isPaid"]
               ? "${employeeSalaries[index]["name"]} marked as paid."

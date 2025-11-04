@@ -80,7 +80,7 @@ class _EmployerCompleteProfileState extends State<EmployerCompleteProfile> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("User ID not found. Please verify OTP again."),
-            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
           ),
         );
         return;
@@ -132,8 +132,8 @@ class _EmployerCompleteProfileState extends State<EmployerCompleteProfile> {
       if (response.statusCode == 200 && data['success'] == true) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text("Profile updated successfully ✅"),
-            backgroundColor: Colors.green,
+            content: Text("Profile updated successfully"),
+            behavior: SnackBarBehavior.floating,
           ),
         );
         Navigator.pushReplacement(
@@ -144,7 +144,7 @@ class _EmployerCompleteProfileState extends State<EmployerCompleteProfile> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(data['message'] ?? "Failed to update profile."),
-            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
@@ -152,7 +152,10 @@ class _EmployerCompleteProfileState extends State<EmployerCompleteProfile> {
       Navigator.pop(context);
       print("❌ Exception: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e"), backgroundColor: Colors.redAccent),
+        SnackBar(
+          content: Text("Error: $e"),
+          behavior: SnackBarBehavior.floating,
+        ),
       );
     }
   }

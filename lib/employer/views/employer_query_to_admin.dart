@@ -17,7 +17,10 @@ class _QueryToAdminPageState extends State<QueryToAdminPage> {
   void _submitQuery() {
     if (_formKey.currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Query sent to Admin successfully!")),
+        const SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: Text("Query sent to Admin successfully!"),
+        ),
       );
       _subjectController.clear();
       _messageController.clear();

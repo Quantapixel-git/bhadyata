@@ -25,7 +25,7 @@ class _PostProjectPageState extends State<PostProjectPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Project '$title' posted successfully!"),
-          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
         ),
       );
 

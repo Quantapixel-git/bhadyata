@@ -1,9 +1,53 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:jobshub/common/constants/constants.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
+import 'package:jobshub/common/utils/session_manager.dart';
+import 'package:jobshub/employer/model/employer_profile_model.dart';
 import 'package:jobshub/employer/views/drawer_dashboard/employer_side_bar.dart';
 
-class EmployerProfilePage extends StatelessWidget {
+class EmployerProfilePage extends StatefulWidget {
   const EmployerProfilePage({super.key});
+
+  @override
+  State<EmployerProfilePage> createState() => _EmployerProfilePageState();
+}
+
+class _EmployerProfilePageState extends State<EmployerProfilePage> {
+  late Future<EmployerProfile?> _profileFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _profileFuture = fetchEmployerProfile();
+  }
+
+  // 🧩 API CALL - getProfileById
+  Future<EmployerProfile?> fetchEmployerProfile() async {
+    final userId = await SessionManager.getValue('employer_id');
+
+    final url = Uri.parse("${ApiConstants.baseUrl}getProfileById");
+
+    final response = await http.post(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({"user_id": userId}),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      if (data['success'] == true && data['data'] != null) {
+        return EmployerProfile.fromJson(data['data']);
+      } else {
+        debugPrint("⚠️ API error: ${data['message']}");
+        return null;
+      }
+    } else {
+      debugPrint("❌ HTTP error: ${response.statusCode}");
+      return null;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +58,6 @@ class EmployerProfilePage extends StatelessWidget {
         return EmployerDashboardWrapper(
           child: Column(
             children: [
-              // ✅ AppBar same pattern as AdminDashboard
               AppBar(
                 iconTheme: const IconThemeData(color: Colors.white),
                 automaticallyImplyLeading: !isWeb,
@@ -29,11 +72,24 @@ class EmployerProfilePage extends StatelessWidget {
                 elevation: 2,
               ),
 
-              // ✅ Body Section
               Expanded(
                 child: Container(
                   color: Colors.grey.shade100,
-                  child: _buildProfileContent(isWeb),
+                  child: FutureBuilder<EmployerProfile?>(
+                    future: _profileFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (snapshot.hasError) {
+                        return Center(child: Text("Error: ${snapshot.error}"));
+                      } else if (!snapshot.hasData || snapshot.data == null) {
+                        return const Center(child: Text("No profile found"));
+                      }
+
+                      final user = snapshot.data!;
+                      return _buildProfileContent(isWeb, user);
+                    },
+                  ),
                 ),
               ),
             ],
@@ -43,8 +99,7 @@ class EmployerProfilePage extends StatelessWidget {
     );
   }
 
-  // ---------- PROFILE CONTENT ----------
-  Widget _buildProfileContent(bool isWeb) {
+  Widget _buildProfileContent(bool isWeb, EmployerProfile user) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Center(
@@ -57,47 +112,27 @@ class EmployerProfilePage extends StatelessWidget {
               Stack(
                 alignment: Alignment.bottomRight,
                 children: [
-                  const CircleAvatar(
+                  CircleAvatar(
                     radius: 55,
-                    backgroundImage: AssetImage('assets/job_bgr.png'),
-                  ),
-                  Positioned(
-                    bottom: 4,
-                    right: 4,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withOpacity(0.4),
-                            blurRadius: 4,
-                          ),
-                        ],
-                      ),
-                      child: IconButton(
-                        icon: const Icon(
-                          Icons.edit,
-                          color: Colors.white,
-                          size: 18,
-                        ),
-                        onPressed: () {
-                          // TODO: Implement edit image feature
-                        },
-                      ),
-                    ),
+                    backgroundImage: user.profileImage != null
+                        ? NetworkImage(user.profileImage!)
+                        : const AssetImage('assets/job_bgr.png')
+                              as ImageProvider,
                   ),
                 ],
               ),
               const SizedBox(height: 16),
 
-              // 🧑‍💼 Name & Company
-              const Text(
-                "John Doe",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+              // 🧑‍💼 Name
+              Text(
+                "${user.firstName} ${user.lastName}",
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               Text(
-                "Employer | ABC Pvt. Ltd.",
+                "Employer ID: ${user.id}",
                 style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
               ),
               const SizedBox(height: 24),
@@ -118,18 +153,27 @@ class EmployerProfilePage extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: Column(
-                    children: const [
-                      ProfileInfoRow(title: "Full Name", value: "John Doe"),
-                      Divider(),
-                      ProfileInfoRow(title: "Email", value: "john.doe@abc.com"),
-                      Divider(),
-                      ProfileInfoRow(title: "Phone", value: "+91 9876543210"),
-                      Divider(),
-                      ProfileInfoRow(title: "Designation", value: "HR Manager"),
-                      Divider(),
+                    children: [
                       ProfileInfoRow(
-                        title: "Location",
-                        value: "New Delhi, India",
+                        title: "Full Name",
+                        value: "${user.firstName} ${user.lastName}",
+                      ),
+                      const Divider(),
+                      ProfileInfoRow(title: "Email", value: user.email),
+                      const Divider(),
+                      ProfileInfoRow(
+                        title: "Referral Code",
+                        value: user.referralCode ?? "-",
+                      ),
+                      const Divider(),
+                      // ProfileInfoRow(
+                      //   title: "Referred By",
+                      //   value: user.referredBy ?? "-",
+                      // ),
+                      // const Divider(),
+                      ProfileInfoRow(
+                        title: "Status",
+                        value: user.status == 1 ? "Active" : "Inactive",
                       ),
                     ],
                   ),
@@ -152,9 +196,7 @@ class EmployerProfilePage extends StatelessWidget {
                     ),
                     elevation: 2,
                   ),
-                  onPressed: () {
-                    // TODO: Navigate to edit profile page
-                  },
+                  onPressed: () {},
                 ),
               ),
             ],
@@ -165,6 +207,7 @@ class EmployerProfilePage extends StatelessWidget {
   }
 }
 
+// Profile Info Row Widget
 class ProfileInfoRow extends StatelessWidget {
   final String title;
   final String value;

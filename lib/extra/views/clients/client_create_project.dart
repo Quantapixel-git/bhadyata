@@ -304,10 +304,11 @@ class _ClientCreateProjectState extends State<ClientCreateProject> {
 
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
+                                    behavior: SnackBarBehavior.floating,
                                     content: Text(
-                                      'Project created successfully! 🎉',
+                                      'Project created successfully!',
                                     ),
-                                    backgroundColor: Colors.green,
+
                                     duration: Duration(seconds: 2),
                                   ),
                                 );
@@ -326,7 +327,7 @@ class _ClientCreateProjectState extends State<ClientCreateProject> {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                     content: Text('Please pick a deadline'),
-                                    backgroundColor: Colors.red,
+                                    behavior: SnackBarBehavior.floating,
                                   ),
                                 );
                               }

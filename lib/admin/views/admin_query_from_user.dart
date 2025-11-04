@@ -36,7 +36,10 @@ class _EmployeeQueryToAdminPageState extends State<EmployeeQueryToAdminPage> {
 
     _controllers[index]?.clear();
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Reply submitted successfully")),
+      const SnackBar(
+        behavior: SnackBarBehavior.floating,
+        content: Text("Reply submitted successfully"),
+      ),
     );
   }
 
@@ -81,7 +84,9 @@ class _EmployeeQueryToAdminPageState extends State<EmployeeQueryToAdminPage> {
                     itemBuilder: (context, index) {
                       final query = queries[index];
                       _controllers.putIfAbsent(
-                          index, () => TextEditingController());
+                        index,
+                        () => TextEditingController(),
+                      );
 
                       return Card(
                         shape: RoundedRectangleBorder(
@@ -102,8 +107,8 @@ class _EmployeeQueryToAdminPageState extends State<EmployeeQueryToAdminPage> {
                               Row(
                                 children: [
                                   CircleAvatar(
-                                    backgroundColor:
-                                        AppColors.primary.withOpacity(0.1),
+                                    backgroundColor: AppColors.primary
+                                        .withOpacity(0.1),
                                     child: Icon(
                                       Icons.question_answer,
                                       color: AppColors.primary,
@@ -159,8 +164,9 @@ class _EmployeeQueryToAdminPageState extends State<EmployeeQueryToAdminPage> {
                                       decoration: InputDecoration(
                                         hintText: "Write your reply...",
                                         border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(12),
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
                                         ),
                                         suffixIcon: IconButton(
                                           icon: Icon(

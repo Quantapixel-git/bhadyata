@@ -5,24 +5,32 @@ class ClientCreateNotification extends StatefulWidget {
   const ClientCreateNotification({super.key});
 
   @override
-  State<ClientCreateNotification> createState() => ClientCreateNotificationeNotificationScreenState();
+  State<ClientCreateNotification> createState() =>
+      ClientCreateNotificationeNotificationScreenState();
 }
 
-class ClientCreateNotificationeNotificationScreenState extends State<ClientCreateNotification> {
+class ClientCreateNotificationeNotificationScreenState
+    extends State<ClientCreateNotification> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _messageController = TextEditingController();
 
   void _sendNotification() {
     if (_titleController.text.isEmpty || _messageController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter title and message")),
+        const SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: Text("Please enter title and message"),
+        ),
       );
       return;
     }
 
     // Later: call API to send notification
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Notification Sent: ${_titleController.text}")),
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        content: Text("Notification Sent: ${_titleController.text}"),
+      ),
     );
 
     // Clear input fields
@@ -77,7 +85,10 @@ class ClientCreateNotificationeNotificationScreenState extends State<ClientCreat
                   ),
                 ),
                 onPressed: _sendNotification,
-                child: const Text("Send Notification", style: TextStyle(fontSize: 16)),
+                child: const Text(
+                  "Send Notification",
+                  style: TextStyle(fontSize: 16),
+                ),
               ),
             ),
           ],

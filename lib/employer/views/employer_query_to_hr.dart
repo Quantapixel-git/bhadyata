@@ -17,7 +17,10 @@ class _QueryToHrPageState extends State<QueryToHrPage> {
   void _submitQuery() {
     if (_formKey.currentState!.validate()) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Query sent to HR successfully!")),
+        const SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: Text("Query sent to HR successfully!"),
+        ),
       );
       _subjectController.clear();
       _messageController.clear();

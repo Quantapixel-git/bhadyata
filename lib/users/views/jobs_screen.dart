@@ -505,15 +505,7 @@ class JobDetailPage extends StatelessWidget {
                         child: _HoverApplyButton(
                           label: "Apply Now",
                           onTap: () {
-                            // Navigator.pushAndRemoveUntil(
-                            //     context,
-                            //     MaterialPageRoute(
-                            //         builder: (_) => KycStepperPage()),
-                            //     (route) => false);
-                            // ScaffoldMessenger.of(context).showSnackBar(
-                            //   SnackBar(
-                            //       content: Text("Applied for ${job["title"]}")),
-                            // );
+                          
                           },
                         ),
                       ),

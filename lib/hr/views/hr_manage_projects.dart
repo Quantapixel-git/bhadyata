@@ -198,8 +198,9 @@ class _HrManageProjectsState extends State<HrManageProjects> {
             });
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
+                 behavior: SnackBarBehavior.floating,
                 content: Text("Project deleted"),
-                backgroundColor: Colors.red,
+                // backgroundColor: Colors.red,
                 duration: Duration(seconds: 2),
               ),
             );

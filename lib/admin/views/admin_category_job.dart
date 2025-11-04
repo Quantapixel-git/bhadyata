@@ -51,26 +51,36 @@ class _AdminCategoryPageState extends State<AdminCategoryPage> {
 
         if (data["status"] == 1) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("✅ Category added successfully")),
+            const SnackBar(
+              behavior: SnackBarBehavior.floating,
+              content: Text("Category added successfully"),
+            ),
           );
           fetchCategories(); // Refresh list
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text("❌ Failed: ${data["message"] ?? "Unknown"}"),
+              behavior: SnackBarBehavior.floating,
+              content: Text("Failed: ${data["message"] ?? "Unknown"}"),
             ),
           );
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Server Error: ${response.statusCode}")),
+          SnackBar(
+            behavior: SnackBarBehavior.floating,
+            content: Text("Server Error: ${response.statusCode}"),
+          ),
         );
       }
     } catch (e) {
-      debugPrint("🟥 Error adding category: $e");
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Error: $e")));
+      debugPrint("Error adding category: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: Text("Error: $e"),
+        ),
+      );
     }
   }
 
@@ -97,23 +107,32 @@ class _AdminCategoryPageState extends State<AdminCategoryPage> {
           setState(() => isLoading = false);
           debugPrint("❌ API returned failure status.");
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Failed to load categories.")),
+            const SnackBar(
+              behavior: SnackBarBehavior.floating,
+              content: Text("Failed to load categories."),
+            ),
           );
         }
       } else {
         setState(() => isLoading = false);
         debugPrint("🚫 Server error ${response.statusCode}: ${response.body}");
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Server error: ${response.statusCode}")),
+          SnackBar(
+            behavior: SnackBarBehavior.floating,
+            content: Text("Server error: ${response.statusCode}"),
+          ),
         );
       }
     } catch (e, st) {
       debugPrint("🟥 Error fetching categories: $e");
       debugPrintStack(stackTrace: st);
       setState(() => isLoading = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Error: $e")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: Text("Error: $e"),
+        ),
+      );
     }
   }
 
@@ -324,7 +343,9 @@ class _AdminCategoryPageState extends State<AdminCategoryPage> {
               });
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Category deleted locally.")),
+                const SnackBar(
+                   behavior: SnackBarBehavior.floating,
+                  content: Text("Category deleted locally.")),
               );
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
@@ -406,6 +427,7 @@ class _AdminCategoryPageState extends State<AdminCategoryPage> {
                     if (name.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
+                           behavior: SnackBarBehavior.floating,
                           content: Text("Category name cannot be empty."),
                         ),
                       );

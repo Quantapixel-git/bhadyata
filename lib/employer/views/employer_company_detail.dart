@@ -1,9 +1,56 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:jobshub/common/constants/constants.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
+import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/employer/views/drawer_dashboard/employer_side_bar.dart';
 
-class CompanyDetailsPage extends StatelessWidget {
+class CompanyDetailsPage extends StatefulWidget {
   const CompanyDetailsPage({super.key});
+
+  @override
+  State<CompanyDetailsPage> createState() => _CompanyDetailsPageState();
+}
+
+class _CompanyDetailsPageState extends State<CompanyDetailsPage> {
+  late Future<Map<String, dynamic>?> _companyFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _companyFuture = fetchCompanyDetails();
+  }
+
+  // 🧩 API CALL — getEmployerProfileByUserId
+  Future<Map<String, dynamic>?> fetchCompanyDetails() async {
+    final userId = await SessionManager.getValue('employer_id');
+    final url = Uri.parse("${ApiConstants.baseUrl}getEmployerProfileByUserId");
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"user_id": userId}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true && data['data'] != null) {
+          return data['data'];
+        } else {
+          debugPrint("⚠️ API returned error: ${data['message']}");
+          return null;
+        }
+      } else {
+        debugPrint("❌ HTTP Error: ${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      debugPrint("❌ Exception: $e");
+      return null;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,11 +61,9 @@ class CompanyDetailsPage extends StatelessWidget {
         return EmployerDashboardWrapper(
           child: Column(
             children: [
-              // ✅ Consistent AppBar like AdminDashboard
               AppBar(
                 iconTheme: const IconThemeData(color: Colors.white),
-                automaticallyImplyLeading:
-                    !isWeb, // ✅ hide drawer icon on web
+                automaticallyImplyLeading: !isWeb,
                 title: const Text(
                   "Company Details",
                   style: TextStyle(
@@ -30,112 +75,26 @@ class CompanyDetailsPage extends StatelessWidget {
                 elevation: 2,
               ),
 
-              // ✅ Main body content
+              // ✅ Body Section
               Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(24),
-                  child: Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 600),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          // 🏢 Company Logo
-                          const CircleAvatar(
-                            radius: 55,
-                            backgroundImage: AssetImage('assets/job_bgr.png'),
-                          ),
-                          const SizedBox(height: 16),
+                child: Container(
+                  color: Colors.grey.shade100,
+                  child: FutureBuilder<Map<String, dynamic>?>(
+                    future: _companyFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (snapshot.hasError) {
+                        return Center(child: Text("Error: ${snapshot.error}"));
+                      } else if (!snapshot.hasData || snapshot.data == null) {
+                        return const Center(
+                          child: Text("No company details found"),
+                        );
+                      }
 
-                          // 🧾 Company Name
-                          const Text(
-                            "ABC Pvt. Ltd.",
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-
-                          // 🗂️ Company Info Card
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(14),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.grey.shade200,
-                                  blurRadius: 6,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ],
-                            ),
-                            child: const Padding(
-                              padding: EdgeInsets.all(16),
-                              child: Column(
-                                children: [
-                                  InfoRow(
-                                    title: "Company Name",
-                                    value: "ABC Pvt. Ltd.",
-                                  ),
-                                  Divider(),
-                                  InfoRow(
-                                      title: "Industry",
-                                      value: "IT & Software"),
-                                  Divider(),
-                                  InfoRow(
-                                    title: "Company Size",
-                                    value: "50–100 Employees",
-                                  ),
-                                  Divider(),
-                                  InfoRow(
-                                      title: "Established", value: "2018"),
-                                  Divider(),
-                                  InfoRow(
-                                      title: "Email", value: "info@abc.com"),
-                                  Divider(),
-                                  InfoRow(
-                                      title: "Phone", value: "+91 9812345678"),
-                                  Divider(),
-                                  InfoRow(
-                                    title: "Address",
-                                    value:
-                                        "123 Business Avenue, Gurugram, Haryana",
-                                  ),
-                                  Divider(),
-                                  InfoRow(
-                                      title: "Website", value: "www.abc.com"),
-                                ],
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 30),
-
-                          // ✏️ Edit Button
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton.icon(
-                              icon: const Icon(Icons.edit),
-                              label:
-                                  const Text("Edit Company Details"),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                foregroundColor: Colors.white,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 14),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                elevation: 2,
-                              ),
-                              onPressed: () {
-                                // TODO: Navigate to edit company details
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                      final company = snapshot.data!;
+                      return _buildCompanyDetails(isWeb, company);
+                    },
                   ),
                 ),
               ),
@@ -143,6 +102,141 @@ class CompanyDetailsPage extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildCompanyDetails(bool isWeb, Map<String, dynamic> company) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // 🏢 Company Logo (Static Placeholder)
+              const CircleAvatar(
+                radius: 55,
+                backgroundImage: AssetImage('assets/job_bgr.png'),
+              ),
+              const SizedBox(height: 16),
+
+              // 🧾 Company Name
+              Text(
+                company['company_name'] ?? "Not Available",
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // 🗂️ Company Info Card
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.shade200,
+                      blurRadius: 6,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      InfoRow(
+                        title: "Company Name",
+                        value: company['company_name'] ?? "-",
+                      ),
+                      const Divider(),
+                      InfoRow(
+                        title: "Industry Type",
+                        value: company['industry_type'] ?? "-",
+                      ),
+                      const Divider(),
+                      InfoRow(
+                        title: "Company Size",
+                        value: company['company_size'] ?? "-",
+                      ),
+                      const Divider(),
+                      InfoRow(
+                        title: "Designation",
+                        value: company['designation'] ?? "-",
+                      ),
+                      const Divider(),
+                      InfoRow(
+                        title: "Website",
+                        value: company['company_website'] ?? "-",
+                      ),
+                      const Divider(),
+                      InfoRow(
+                        title: "Office Location",
+                        value: company['office_location'] ?? "-",
+                      ),
+                      const Divider(),
+                      InfoRow(
+                        title: "About Company",
+                        value: company['about_company'] ?? "-",
+                      ),
+                      const Divider(),
+                      InfoRow(
+                        title: "Bank Name",
+                        value: company['bank_name'] ?? "-",
+                      ),
+                      const Divider(),
+                      InfoRow(
+                        title: "Account No.",
+                        value: company['bank_account_number'] ?? "-",
+                      ),
+                      const Divider(),
+                      InfoRow(
+                        title: "IFSC Code",
+                        value: company['bank_ifsc'] ?? "-",
+                      ),
+                      const Divider(),
+                      InfoRow(
+                        title: "KYC PAN",
+                        value: company['kyc_pan'] ?? "Not Uploaded",
+                      ),
+                      const Divider(),
+                      InfoRow(
+                        title: "KYC Aadhaar",
+                        value: company['kyc_aadhaar'] ?? "Not Uploaded",
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 30),
+
+              // ✏️ Edit Button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.edit),
+                  label: const Text("Edit Company Details"),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 2,
+                  ),
+                  onPressed: () {
+                    // TODO: Navigate to edit company details
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -175,10 +269,7 @@ class InfoRow extends StatelessWidget {
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(
-                color: Colors.black87,
-                fontSize: 15,
-              ),
+              style: const TextStyle(color: Colors.black87, fontSize: 15),
             ),
           ),
         ],

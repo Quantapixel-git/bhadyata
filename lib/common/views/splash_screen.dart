@@ -147,7 +147,7 @@ class _SplashScreenState extends State<SplashScreen>
                   Image.asset("assets/job_bgr.png", height: isWeb ? 220 : 160),
                   const SizedBox(height: 24),
                   Text(
-                    "Bhadyata",
+                    "Badhyata",
                     style: TextStyle(
                       fontSize: isWeb ? 40 : 30,
                       fontWeight: FontWeight.bold,

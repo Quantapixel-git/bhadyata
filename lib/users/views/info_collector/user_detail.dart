@@ -56,8 +56,8 @@ class _JobProfileDetailsPageState extends State<JobProfileDetailsPage> {
       if (userId == null) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
+            behavior: SnackBarBehavior.floating,
             content: Text("User ID not found. Please log in again."),
-            backgroundColor: Colors.redAccent,
           ),
         );
         return;
@@ -98,8 +98,8 @@ class _JobProfileDetailsPageState extends State<JobProfileDetailsPage> {
       if (response.statusCode == 200 && data['success'] == true) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(data['message'] ?? "Profile saved successfully ✅"),
-            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            content: Text(data['message'] ?? "Profile saved successfully"),
           ),
         );
         Navigator.pushAndRemoveUntil(
@@ -110,15 +110,18 @@ class _JobProfileDetailsPageState extends State<JobProfileDetailsPage> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
+            behavior: SnackBarBehavior.floating,
             content: Text(data['message'] ?? "Failed to save profile."),
-            backgroundColor: Colors.redAccent,
           ),
         );
       }
     } catch (e) {
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e"), backgroundColor: Colors.redAccent),
+        SnackBar(
+          content: Text("Error: $e"),
+          behavior: SnackBarBehavior.floating,
+        ),
       );
     }
   }

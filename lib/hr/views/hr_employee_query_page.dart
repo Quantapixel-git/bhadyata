@@ -42,7 +42,9 @@ class _EmployeeQueryPageState extends State<EmployeeQueryPage> {
     _controllers[index]?.clear();
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Reply submitted successfully")),
+      const SnackBar(
+         behavior: SnackBarBehavior.floating,
+        content: Text("Reply submitted successfully")),
     );
   }
 

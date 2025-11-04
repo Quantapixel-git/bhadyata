@@ -45,16 +45,17 @@ class _UserWorksPageState extends State<UserWorksPage> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text("✅ You applied for ${_works[index]["title"]}"),
-        backgroundColor: Colors.green,
+        content: Text(" You applied for ${_works[index]["title"]}"),
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    List<Map<String, dynamic>> displayedWorks =
-        _currentIndex == 0 ? _works : _works.where((w) => w["applied"]).toList();
+    List<Map<String, dynamic>> displayedWorks = _currentIndex == 0
+        ? _works
+        : _works.where((w) => w["applied"]).toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -90,7 +91,10 @@ class _UserWorksPageState extends State<UserWorksPage> {
                           children: [
                             CircleAvatar(
                               backgroundColor: AppColors.primary,
-                              child: const Icon(Icons.work, color: AppColors.primary),
+                              child: const Icon(
+                                Icons.work,
+                                color: AppColors.primary,
+                              ),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
@@ -105,16 +109,19 @@ class _UserWorksPageState extends State<UserWorksPage> {
                             Chip(
                               label: Text(work["category"]),
                               backgroundColor: AppColors.primary,
-                              labelStyle:
-                                  const TextStyle(color: AppColors.primary),
+                              labelStyle: const TextStyle(
+                                color: AppColors.primary,
+                              ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 10),
                         Text(
                           work["desc"],
-                          style:
-                              const TextStyle(color: Colors.black87, fontSize: 14),
+                          style: const TextStyle(
+                            color: Colors.black87,
+                            fontSize: 14,
+                          ),
                         ),
                         const SizedBox(height: 10),
                         Row(
@@ -129,13 +136,15 @@ class _UserWorksPageState extends State<UserWorksPage> {
                             ),
                             Chip(
                               label: Text(
-                                  work["applied"] ? "Applied" : work["status"]),
+                                work["applied"] ? "Applied" : work["status"],
+                              ),
                               backgroundColor: work["applied"]
                                   ? Colors.green.shade100
                                   : Colors.orange.shade100,
                               labelStyle: TextStyle(
-                                color:
-                                    work["applied"] ? Colors.green : Colors.orange,
+                                color: work["applied"]
+                                    ? Colors.green
+                                    : Colors.orange,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -148,8 +157,7 @@ class _UserWorksPageState extends State<UserWorksPage> {
                             child: ElevatedButton(
                               onPressed: work["applied"]
                                   ? null
-                                  : () => _applyForWork(
-                                      _works.indexOf(work)),
+                                  : () => _applyForWork(_works.indexOf(work)),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: work["applied"]
                                     ? Colors.grey
@@ -159,7 +167,10 @@ class _UserWorksPageState extends State<UserWorksPage> {
                                 ),
                               ),
                               child: Text(
-                                  work["applied"] ? "Already Applied" : "Apply Now"),
+                                work["applied"]
+                                    ? "Already Applied"
+                                    : "Apply Now",
+                              ),
                             ),
                           ),
                       ],

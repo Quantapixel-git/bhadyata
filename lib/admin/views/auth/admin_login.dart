@@ -80,13 +80,12 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
       if (response.statusCode == 200 &&
           (data['success'] == true || data['status'] == true)) {
         // ✅ Save admin login flag
-       await SessionManager.setValue('admin_login', 'true');
-
+        await SessionManager.setValue('admin_login', 'true');
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
+            behavior: SnackBarBehavior.floating,
             content: Text("Login successful ✅"),
-            backgroundColor: Colors.green,
           ),
         );
 
@@ -98,10 +97,11 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
+            behavior: SnackBarBehavior.floating,
             content: Text(
               data['message'] ?? "Invalid credentials, please try again.",
             ),
-            backgroundColor: Colors.redAccent,
+            // backgroundColor: Colors.redAccent,
           ),
         );
       }
@@ -110,8 +110,9 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
       print("❌ Exception while logging in: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
+          behavior: SnackBarBehavior.floating,
           content: Text("Something went wrong: $e"),
-          backgroundColor: Colors.redAccent,
+          // backgroundColor: Colors.redAccent,
         ),
       );
     }

@@ -44,7 +44,7 @@ class BrowseProjectsScreen extends StatelessWidget {
           style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         backgroundColor: AppColors.primary,
-         iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: ListView.builder(
         itemCount: projects.length,
@@ -64,7 +64,10 @@ class BrowseProjectsScreen extends StatelessWidget {
                 child: const Text('Apply'),
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Applied to ${project.title}')),
+                    SnackBar(
+                      behavior: SnackBarBehavior.floating,
+                      content: Text('Applied to ${project.title}'),
+                    ),
                   );
                 },
               ),

@@ -66,13 +66,19 @@ class _SendNotificationPageState extends State<SendNotificationPage> {
 
     if (selectedUsers.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please select at least one user")),
+        const SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: Text("Please select at least one user"),
+        ),
       );
       return;
     }
     if (title.isEmpty || message.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter title and message")),
+        const SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: Text("Please enter title and message"),
+        ),
       );
       return;
     }
@@ -80,7 +86,7 @@ class _SendNotificationPageState extends State<SendNotificationPage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text("Notification sent to ${selectedUsers.length} users!"),
-        backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
       ),
     );
 

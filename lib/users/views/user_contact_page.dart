@@ -64,7 +64,10 @@ class _UserContactUsPageState extends State<UserContactUsPage> {
               child: ElevatedButton.icon(
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Message sent!")),
+                    const SnackBar(
+                      behavior: SnackBarBehavior.floating,
+                      content: Text("Message sent!"),
+                    ),
                   );
                 },
                 icon: const Icon(Icons.send),

@@ -36,7 +36,10 @@ class _AdminHRtoAdminQueryPageState extends State<AdminHRtoAdminQueryPage> {
 
     _controllers[index]?.clear();
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Reply submitted successfully")),
+      const SnackBar(
+        behavior: SnackBarBehavior.floating,
+        content: Text("Reply submitted successfully"),
+      ),
     );
   }
 

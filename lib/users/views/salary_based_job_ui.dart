@@ -390,7 +390,7 @@ class _JobCardState extends State<_JobCard> {
                       setState(() => applied = true);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          backgroundColor: AppColors.primary,
+                          behavior: SnackBarBehavior.floating,
                           content: Text(
                             "Applied for '${job["title"]}' successfully!",
                             style: const TextStyle(color: Colors.white),

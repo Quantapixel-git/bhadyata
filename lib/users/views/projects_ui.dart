@@ -151,19 +151,31 @@ class _AllProjectsPageState extends State<AllProjectsPage> {
                                 // 🔹 Job Info
                                 Row(
                                   children: [
-                                    const Icon(Icons.location_on_outlined,
-                                        size: 16, color: Colors.grey),
+                                    const Icon(
+                                      Icons.location_on_outlined,
+                                      size: 16,
+                                      color: Colors.grey,
+                                    ),
                                     const SizedBox(width: 4),
-                                    Text(proj.location,
-                                        style: const TextStyle(
-                                            color: Colors.grey)),
+                                    Text(
+                                      proj.location,
+                                      style: const TextStyle(
+                                        color: Colors.grey,
+                                      ),
+                                    ),
                                     const SizedBox(width: 14),
-                                    const Icon(Icons.work_outline,
-                                        size: 16, color: Colors.grey),
+                                    const Icon(
+                                      Icons.work_outline,
+                                      size: 16,
+                                      color: Colors.grey,
+                                    ),
                                     const SizedBox(width: 4),
-                                    Text(proj.jobType,
-                                        style: const TextStyle(
-                                            color: Colors.grey)),
+                                    Text(
+                                      proj.jobType,
+                                      style: const TextStyle(
+                                        color: Colors.grey,
+                                      ),
+                                    ),
                                   ],
                                 ),
 
@@ -204,7 +216,9 @@ class _AllProjectsPageState extends State<AllProjectsPage> {
                                         borderRadius: BorderRadius.circular(30),
                                       ),
                                       padding: const EdgeInsets.symmetric(
-                                          horizontal: 20, vertical: 10),
+                                        horizontal: 20,
+                                        vertical: 10,
+                                      ),
                                     ),
                                     onPressed: proj.applied
                                         ? null
@@ -212,13 +226,15 @@ class _AllProjectsPageState extends State<AllProjectsPage> {
                                             setState(() {
                                               proj.applied = true;
                                             });
-                                            ScaffoldMessenger.of(context)
-                                                .showSnackBar(
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
                                               SnackBar(
                                                 content: Text(
-                                                    "Applied successfully for '${proj.title}'"),
-                                                backgroundColor:
-                                                    AppColors.primary,
+                                                  "Applied successfully for '${proj.title}'",
+                                                ),
+                                                behavior:
+                                                    SnackBarBehavior.floating,
                                               ),
                                             );
                                           },
@@ -231,8 +247,9 @@ class _AllProjectsPageState extends State<AllProjectsPage> {
                                     ),
                                     label: Text(
                                       proj.applied ? "Applied" : "Apply Now",
-                                      style:
-                                          const TextStyle(color: Colors.white),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -254,8 +271,7 @@ class _AllProjectsPageState extends State<AllProjectsPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.work_off_outlined,
-              size: 80, color: Colors.grey.shade400),
+          Icon(Icons.work_off_outlined, size: 80, color: Colors.grey.shade400),
           const SizedBox(height: 16),
           const Text(
             "No Projects Available",

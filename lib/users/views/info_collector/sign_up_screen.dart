@@ -89,7 +89,7 @@ class _SignUpPageState extends State<SignUpPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text("User ID not found. Please verify OTP again."),
-            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
           ),
         );
         return;
@@ -155,8 +155,8 @@ class _SignUpPageState extends State<SignUpPage> {
       if (response.statusCode == 200 && data['success'] == true) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text("Profile updated successfully ✅"),
-            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+            content: Text("Profile updated successfully"),
           ),
         );
         Navigator.pushReplacement(
@@ -166,16 +166,19 @@ class _SignUpPageState extends State<SignUpPage> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
+            behavior: SnackBarBehavior.floating,
             content: Text(data['message'] ?? "Failed to update profile."),
-            backgroundColor: Colors.redAccent,
           ),
         );
       }
     } catch (e) {
       Navigator.pop(context);
-      print("❌ Exception while updating profile: $e");
+      print("Exception while updating profile: $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error: $e"), backgroundColor: Colors.redAccent),
+        SnackBar(
+          content: Text("Error: $e"),
+          behavior: SnackBarBehavior.floating,
+        ),
       );
     }
   }
