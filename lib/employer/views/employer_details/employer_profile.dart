@@ -5,7 +5,7 @@ import 'package:jobshub/common/constants/constants.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/employer/model/employer_profile_model.dart';
-import 'package:jobshub/employer/views/drawer_dashboard/employer_side_bar.dart';
+import 'package:jobshub/employer/views/sidebar_dashboard/employer_side_bar.dart';
 
 class EmployerProfilePage extends StatefulWidget {
   const EmployerProfilePage({super.key});

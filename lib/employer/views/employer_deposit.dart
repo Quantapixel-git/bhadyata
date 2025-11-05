@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
-import 'package:jobshub/employer/views/drawer_dashboard/employer_side_bar.dart';
+import 'package:jobshub/employer/views/sidebar_dashboard/employer_side_bar.dart';
 
 class MyDepositPage extends StatefulWidget {
   const MyDepositPage({super.key});

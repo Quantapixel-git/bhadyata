@@ -1,30 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
-import 'package:jobshub/employer/views/emnployer_post_project.dart';
+import 'package:jobshub/employer/views/commission_based_job/employer_post_commission_based_job.dart';
+import 'package:jobshub/employer/views/project_job/emnployer_post_project.dart';
+import 'package:jobshub/employer/views/one_time_job/employer_post_one_time_job.dart';
+import 'package:jobshub/employer/views/salary_based_job/employer_post_salary_based_job.dart';
 import 'package:jobshub/employer/views/notification/employer_all_notification.dart';
 import 'package:jobshub/employer/views/employer_attendance.dart';
 import 'package:jobshub/employer/views/employer_commision_based.dart';
-import 'package:jobshub/employer/views/employer_commision_note.dart';
-import 'package:jobshub/employer/views/employer_company_detail.dart';
-import 'package:jobshub/employer/views/drawer_dashboard/employer_dashboard.dart';
+import 'package:jobshub/employer/views/notes/employer_commision_based_job_note.dart';
+import 'package:jobshub/employer/views/employer_details/employer_company.dart';
+import 'package:jobshub/employer/views/sidebar_dashboard/employer_dashboard.dart';
 import 'package:jobshub/employer/views/employer_deposit.dart';
 import 'package:jobshub/employer/views/employer_one_time_employee.dart';
-import 'package:jobshub/employer/views/employer_one_time_recrut_note.dart';
-import 'package:jobshub/employer/views/employer_post_salary_based_job.dart';
-import 'package:jobshub/employer/views/employer_profile.dart';
-import 'package:jobshub/employer/views/employer_project_based_recrutment_note.dart';
+import 'package:jobshub/employer/views/notes/employer_one_time_job_note.dart';
+// import 'package:jobshub/employer/views/employer_post_salary_based_job.dart';
+import 'package:jobshub/employer/views/employer_details/employer_profile.dart';
+import 'package:jobshub/employer/views/notes/employer_project_note.dart';
 import 'package:jobshub/employer/views/employer_project_employee.dart';
 import 'package:jobshub/employer/views/employer_query_to_admin.dart';
 import 'package:jobshub/employer/views/employer_query_to_hr.dart';
 import 'package:jobshub/employer/views/employer_salary_based.dart';
 import 'package:jobshub/employer/views/notification/employer_send_notification.dart';
-import 'package:jobshub/employer/views/employer_view_posted_salary_based_job.dart';
+import 'package:jobshub/employer/views/salary_based_job/employer_view_salary_based_jobs.dart';
 import 'package:jobshub/employer/views/employer_view_project.dart';
-import 'package:jobshub/employer/views/employer_waller_note.dart';
+import 'package:jobshub/employer/views/notes/employer_wallet_note.dart';
 import 'package:jobshub/employer/views/leave_requests.dart';
-import 'package:jobshub/employer/views/notes_salary_based_recrut.dart';
+import 'package:jobshub/employer/views/notes/employer_salary_based_job_note.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
-import 'package:jobshub/employer/views/upload_kyc_employer.dart';
+import 'package:jobshub/employer/views/kyc/employer_upload_kyc.dart';
 import 'package:jobshub/users/views/auth/login_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -236,7 +239,7 @@ class EmployerSidebarMobile extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => PostSalaryJobPage(),
+                            builder: (_) => EmployerPostSalaryBasedJob(),
                           ),
                         );
                       }),
@@ -265,7 +268,7 @@ class EmployerSidebarMobile extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => PostSalaryJobPage(),
+                            builder: (_) => EmployerPostOneTimeJob(),
                           ),
                         );
                       }),
@@ -294,7 +297,7 @@ class EmployerSidebarMobile extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => PostSalaryJobPage(),
+                            builder: (_) => EmployerPostCommissionBasedJob(),
                           ),
                         );
                       }),
@@ -822,7 +825,7 @@ class EmployerSidebarWeb extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => PostSalaryJobPage(),
+                            builder: (_) => EmployerPostSalaryBasedJob(),
                           ),
                         );
                       }),
@@ -845,7 +848,7 @@ class EmployerSidebarWeb extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => PostSalaryJobPage(),
+                            builder: (_) => EmployerPostOneTimeJob(),
                           ),
                         );
                       }),
@@ -868,7 +871,7 @@ class EmployerSidebarWeb extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => PostSalaryJobPage(),
+                            builder: (_) => EmployerPostCommissionBasedJob(),
                           ),
                         );
                       }),

@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:jobshub/admin/views/dashboard_drawer/admin_dashboard.dart';
-import 'package:jobshub/employer/views/drawer_dashboard/employer_dashboard.dart';
+import 'package:jobshub/employer/views/sidebar_dashboard/employer_dashboard.dart';
 import 'package:jobshub/hr/views/drawer_dashboard/hr_dashboard.dart';
 import 'package:jobshub/users/views/bottomnav_drawer_dashboard/bottom_nav.dart';
 // import 'package:shared_preferences/shared_preferences.dart';

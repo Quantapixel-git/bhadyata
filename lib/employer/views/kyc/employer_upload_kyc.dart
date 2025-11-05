@@ -7,7 +7,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:jobshub/common/constants/constants.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
-import 'package:jobshub/employer/views/drawer_dashboard/employer_side_bar.dart';
+import 'package:jobshub/employer/views/sidebar_dashboard/employer_side_bar.dart';
 
 class EmployerKycUploadPage extends StatefulWidget {
   const EmployerKycUploadPage({super.key});

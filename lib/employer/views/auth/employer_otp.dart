@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:jobshub/common/constants/constants.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
-import 'package:jobshub/employer/views/drawer_dashboard/employer_dashboard.dart';
+import 'package:jobshub/employer/views/sidebar_dashboard/employer_dashboard.dart';
 import 'package:jobshub/employer/views/info_collector/employer_complete_profile.dart';
 
 class EmployerOtpScreen extends StatefulWidget {

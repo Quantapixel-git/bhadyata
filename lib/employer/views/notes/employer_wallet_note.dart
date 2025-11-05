@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
-import 'package:jobshub/employer/views/drawer_dashboard/employer_side_bar.dart';
+import 'package:jobshub/employer/views/sidebar_dashboard/employer_side_bar.dart';
 
-class CommissionBasedRecruitmentPage extends StatelessWidget {
-  const CommissionBasedRecruitmentPage({super.key});
+class WalletDepositWorkingPage extends StatelessWidget {
+  const WalletDepositWorkingPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -14,12 +14,12 @@ class CommissionBasedRecruitmentPage extends StatelessWidget {
         return EmployerDashboardWrapper(
           child: Column(
             children: [
-              // ✅ AppBar same logic as AdminDashboard
+              // ✅ Consistent AppBar like AdminDashboard
               AppBar(
                 iconTheme: const IconThemeData(color: Colors.white),
                 automaticallyImplyLeading: !isWeb, // hide drawer icon on web
                 title: const Text(
-                  "Commission-Based Recruitment",
+                  "Wallet & Deposit Working",
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
@@ -29,7 +29,7 @@ class CommissionBasedRecruitmentPage extends StatelessWidget {
                 elevation: 2,
               ),
 
-              // ✅ Main Content
+              // ✅ Page content
               Expanded(
                 child: Container(
                   color: Colors.grey.shade100,
@@ -43,6 +43,7 @@ class CommissionBasedRecruitmentPage extends StatelessWidget {
     );
   }
 
+  // ---------- MAIN CONTENT ----------
   Widget _buildContent(bool isWeb) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
@@ -53,7 +54,7 @@ class CommissionBasedRecruitmentPage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                "Understanding Commission-Based Recruitment",
+                "Understanding Wallet & Deposit System",
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w700,
@@ -62,7 +63,7 @@ class CommissionBasedRecruitmentPage extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               const Text(
-                "Commission-Based Recruitment enables employers to hire lead generators or sales professionals who are paid based on performance, verified leads, or closed deals. This model promotes accountability and performance-driven results.",
+                "The Wallet & Deposit System enables employers to manage and release salary payments securely for employees hired under the Salary-Based Recruitment model. It ensures transparency, timely payments, and easy financial tracking.",
                 style: TextStyle(
                   fontSize: 15,
                   color: Colors.black87,
@@ -71,48 +72,48 @@ class CommissionBasedRecruitmentPage extends StatelessWidget {
               ),
               const SizedBox(height: 20),
 
-              // Steps
+              // ✅ Steps
               _buildStep(
                 step: "1",
-                title: "Post a Commission-Based Job",
+                title: "Deposit Money into Wallet",
                 description:
-                    "Define your commission structure, product/service details, and performance expectations. Once submitted, our HR team will review your post before it goes live.",
+                    "Employers can add funds to their company wallet using UPI, Debit Card, Credit Card, or Net Banking. Deposited balance appears instantly in your wallet section.",
               ),
               _buildStep(
                 step: "2",
-                title: "HR Review & Approval",
+                title: "Salary Deduction Logic",
                 description:
-                    "The HR team verifies your post to ensure clear commission terms and fair compliance before publishing it for candidates.",
+                    "After verifying employee attendance and work completion, the system automatically calculates each employee’s payable salary for the month.",
               ),
               _buildStep(
                 step: "3",
-                title: "Receive & Review Applications",
+                title: "Salary Payment from Deposit Wallet",
                 description:
-                    "Interested lead generators or sales candidates will apply. You can review their profiles, communication skills, and experience level.",
+                    "Once verified, the total payable salary amount is deducted from your deposit wallet, ensuring payments are made only to active and verified employees.",
               ),
               _buildStep(
                 step: "4",
-                title: "Select or Train Candidates",
+                title: "Salary Status Update",
                 description:
-                    "You can either directly onboard candidates or organize short product training to explain commission rules and expectations.",
+                    "After successful payment, each employee’s salary status is automatically updated to ‘Paid’ in your employer dashboard for full transparency.",
               ),
               _buildStep(
                 step: "5",
-                title: "Track Leads & Performance",
+                title: "Wallet History & Transparency",
                 description:
-                    "Once hired, candidates can begin generating leads or sales. You can track performance and verify submissions through your employer dashboard.",
+                    "All transactions — including Deposits, Deductions, Refunds, or Bonuses — are logged with date, amount, and description for complete traceability.",
               ),
               _buildStep(
                 step: "6",
-                title: "Commission Payment",
+                title: "Low Balance Alerts",
                 description:
-                    "Make commission payouts after verifying leads or confirmed sales. Payments are one-time and not part of a monthly salary structure.",
+                    "If your wallet balance runs low, the system notifies you before salary processing. You must top up to ensure timely salary payments.",
               ),
               _buildStep(
                 step: "7",
                 title: "Need Assistance?",
                 description:
-                    "For queries related to payment or candidate performance, reach out via the ‘Query Portal’ or contact our HR support team.",
+                    "For payment failures or wallet-related issues, contact our Finance Support Team via the ‘Query Portal’.",
               ),
 
               const SizedBox(height: 30),

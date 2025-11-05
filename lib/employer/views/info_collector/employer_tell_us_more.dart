@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jobshub/common/utils/session_manager.dart';
-import 'package:jobshub/employer/views/drawer_dashboard/employer_dashboard.dart';
+import 'package:jobshub/employer/views/sidebar_dashboard/employer_dashboard.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
 import 'package:jobshub/common/constants/constants.dart';
 

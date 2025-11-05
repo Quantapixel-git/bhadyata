@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:jobshub/employer/views/drawer_dashboard/employer_side_bar.dart';
+import 'package:jobshub/employer/views/sidebar_dashboard/employer_side_bar.dart';
 import '../../common/utils/AppColor.dart';
 
 class EmployeeListPage extends StatelessWidget {
@@ -64,8 +64,11 @@ class EmployeeListPage extends StatelessWidget {
                           ),
                         ],
                       ),
-                      trailing: const Icon(Icons.arrow_forward_ios_rounded,
-                          size: 16, color: Colors.black54),
+                      trailing: const Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        size: 16,
+                        color: Colors.black54,
+                      ),
                       onTap: () {
                         // You can navigate to employee details page later
                       },
