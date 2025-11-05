@@ -4,8 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:jobshub/common/utils/AppColor.dart';
 import 'package:jobshub/employer/views/sidebar_dashboard/employer_side_bar.dart';
 
-class SalaryBasedViewPostedJobsPage extends StatelessWidget {
-  const SalaryBasedViewPostedJobsPage({super.key});
+class CommissionBasedViewPostedJobsPage extends StatelessWidget {
+  const CommissionBasedViewPostedJobsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -74,11 +74,11 @@ class _JobsListState extends State<JobsList> {
 
   // API URLs (You can replace these with variables from your environment)
   final String apiUrlPending =
-      'https://dialfirst.in/quantapixel/badhyata/api/SalaryBasedgetPendingJobs';
+      'https://dialfirst.in/quantapixel/badhyata/api/getPendingCommissionJobs';
   final String apiUrlApproved =
-      'https://dialfirst.in/quantapixel/badhyata/api/SalaryBasedgetApprovedJobs';
+      'https://dialfirst.in/quantapixel/badhyata/api/getApprovedCommissionJobs';
   final String apiUrlRejected =
-      'https://dialfirst.in/quantapixel/badhyata/api/SalaryBasedgetRejectedJobs';
+      'https://dialfirst.in/quantapixel/badhyata/api/getRejectedCommissionJobs';
 
   // Fetch jobs based on status
   Future<void> fetchJobs() async {

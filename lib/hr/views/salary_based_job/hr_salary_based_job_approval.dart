@@ -2,10 +2,10 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jobshub/common/utils/AppColor.dart';
-import 'package:jobshub/employer/views/sidebar_dashboard/employer_side_bar.dart';
+import 'package:jobshub/hr/views/sidebar_dashboard/hr_side_bar.dart';
 
-class SalaryBasedViewPostedJobsPage extends StatelessWidget {
-  const SalaryBasedViewPostedJobsPage({super.key});
+class HrSalaryBasedViewPostedJobsPage extends StatelessWidget {
+  const HrSalaryBasedViewPostedJobsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -13,17 +13,14 @@ class SalaryBasedViewPostedJobsPage extends StatelessWidget {
       builder: (context, constraints) {
         final bool isWeb = constraints.maxWidth >= 900;
 
-        return EmployerDashboardWrapper(
+        return HrDashboardWrapper(
           child: DefaultTabController(
             length: 3,
             child: Scaffold(
               backgroundColor: Colors.grey.shade100,
               appBar: AppBar(
-                iconTheme: const IconThemeData(
-                  color: Colors.white, // ✅ White menu icon for mobile
-                ),
-                automaticallyImplyLeading:
-                    !isWeb, // ✅ Drawer icon visible only on mobile
+                iconTheme: const IconThemeData(color: Colors.white),
+                automaticallyImplyLeading: !isWeb,
                 title: const Text(
                   "View Posted Jobs",
                   style: TextStyle(
@@ -40,7 +37,6 @@ class SalaryBasedViewPostedJobsPage extends StatelessWidget {
                     Tab(text: "Pending"),
                     Tab(text: "Approved"),
                     Tab(text: "Rejected"),
-                    // Tab(text: "Approved"),
                   ],
                 ),
               ),
@@ -49,7 +45,6 @@ class SalaryBasedViewPostedJobsPage extends StatelessWidget {
                   JobsList(status: "Pending"),
                   JobsList(status: "Approved"),
                   JobsList(status: "Rejected"),
-                  // JobsList(status: "Approved"),
                 ],
               ),
             ),
@@ -72,7 +67,6 @@ class _JobsListState extends State<JobsList> {
   bool isLoading = true;
   List<Map<String, dynamic>> jobs = [];
 
-  // API URLs (You can replace these with variables from your environment)
   final String apiUrlPending =
       'https://dialfirst.in/quantapixel/badhyata/api/SalaryBasedgetPendingJobs';
   final String apiUrlApproved =
@@ -80,7 +74,6 @@ class _JobsListState extends State<JobsList> {
   final String apiUrlRejected =
       'https://dialfirst.in/quantapixel/badhyata/api/SalaryBasedgetRejectedJobs';
 
-  // Fetch jobs based on status
   Future<void> fetchJobs() async {
     setState(() {
       isLoading = true;
@@ -100,7 +93,6 @@ class _JobsListState extends State<JobsList> {
       final response = await http.post(
         Uri.parse(apiUrl),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({"employer_id": 14}),
       );
 
       print("📬 Response Status: ${response.statusCode}");
@@ -182,7 +174,7 @@ class _JobsListState extends State<JobsList> {
                             Text("Location: ${job["location"] ?? "N/A"}"),
                             const SizedBox(height: 2),
                             Text("Posted on: ${job["created_at"] ?? "N/A"}"),
-                            const SizedBox(height: 4),
+                            const SizedBox(height: 6),
                             Text(
                               "Status: ${widget.status}",
                               style: TextStyle(
@@ -196,15 +188,57 @@ class _JobsListState extends State<JobsList> {
                             ),
                           ],
                         ),
-                        trailing: IconButton(
-                          icon: const Icon(
-                            Icons.visibility,
-                            color: AppColors.primary,
-                          ),
-                          onPressed: () {
-                            // TODO: Navigate to job detail page
-                          },
-                        ),
+                        trailing: widget.status == "Pending"
+                            ? Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    tooltip: "Approve",
+                                    icon: const Icon(
+                                      Icons.check_circle_outline,
+                                      color: Colors.green,
+                                    ),
+                                    onPressed: () {
+                                      // TODO: Approve job API
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text("✅ Approved (UI only)"),
+                                          behavior: SnackBarBehavior.floating,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  IconButton(
+                                    tooltip: "Reject",
+                                    icon: const Icon(
+                                      Icons.cancel_outlined,
+                                      color: Colors.red,
+                                    ),
+                                    onPressed: () {
+                                      // TODO: Reject job API
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        const SnackBar(
+                                          content: Text("❌ Rejected (UI only)"),
+                                          behavior: SnackBarBehavior.floating,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ],
+                              )
+                            : IconButton(
+                                icon: const Icon(
+                                  Icons.visibility,
+                                  color: AppColors.primary,
+                                ),
+                                onPressed: () {
+                                  // TODO: Navigate to job detail page
+                                },
+                              ),
                       ),
                     );
                   },

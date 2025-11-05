@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
-import 'package:jobshub/hr/views/drawer_dashboard/hr_sidebar.dart';
+import 'package:jobshub/hr/views/sidebar_dashboard/hr_side_bar.dart';
 import 'package:jobshub/hr/views/hr_employee_attendance_detail_page.dart';
 
 class EmployeesAttendancePage extends StatelessWidget {

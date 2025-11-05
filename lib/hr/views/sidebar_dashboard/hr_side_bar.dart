@@ -4,14 +4,17 @@ import 'package:jobshub/hr/views/employee_salary_management.dart';
 import 'package:jobshub/hr/views/employee_to_employer_ratings_page.dart';
 import 'package:jobshub/hr/views/hr_admin_query_page.dart';
 import 'package:jobshub/hr/views/hr_companies.dart';
-import 'package:jobshub/hr/views/drawer_dashboard/hr_dashboard.dart';
+import 'package:jobshub/hr/views/hr_details/hr_detail.dart';
+import 'package:jobshub/hr/views/hr_details/hr_profile.dart';
+import 'package:jobshub/hr/views/salary_based_job/hr_salary_based_job_approval.dart';
+import 'package:jobshub/hr/views/sidebar_dashboard/hr_dashboard.dart';
 import 'package:jobshub/hr/views/hr_employee_query_page.dart';
 import 'package:jobshub/hr/views/hr_employees.dart';
 import 'package:jobshub/hr/views/hr_employees_attendance_page.dart';
 import 'package:jobshub/hr/views/hr_employer_list.dart';
 import 'package:jobshub/hr/views/hr_employer_to_employee_ratings_page.dart';
 import 'package:jobshub/hr/views/hr_job_applicants_page.dart';
-import 'package:jobshub/hr/views/hr_job_approval_page.dart';
+// import 'package:jobshub/hr/views/hr_job_approval_page.dart';
 import 'package:jobshub/hr/views/hr_revenue_employer_profit.dart';
 import 'package:jobshub/hr/views/hr_revenue_employer_total.dart';
 import 'package:jobshub/hr/views/hr_salary_management.dart';
@@ -20,7 +23,7 @@ import 'package:jobshub/hr/views/notification/hr_view_notifications_page.dart';
 import 'package:jobshub/hr/views/upload_kyc_hr.dart';
 import 'package:jobshub/users/views/auth/login_screen.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:shared_preferences/shared_preferences.dart';
 
 /// ✅ MAIN WRAPPER that decides which sidebar to show
 class HrSidebar extends StatelessWidget {
@@ -76,6 +79,41 @@ class HrSidebarMobile extends StatelessWidget {
                         MaterialPageRoute(builder: (_) => HrDashboard()),
                       );
                     },
+                  ),
+                  ExpansionTile(
+                    leading: Icon(Icons.business, color: AppColors.primary),
+                    title: const Text("My Info"),
+                    childrenPadding: const EdgeInsets.only(left: 20, bottom: 8),
+                    iconColor: AppColors.primary,
+                    collapsedIconColor: AppColors.primary,
+                    children: [
+                      ListTile(
+                        title: const Text(
+                          "My Profile",
+                          style: TextStyle(fontSize: 13.5),
+                        ),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const HrProfilePage(),
+                            ),
+                          );
+                        },
+                      ),
+                      ListTile(
+                        title: const Text(
+                          "Details",
+                          style: TextStyle(fontSize: 13.5),
+                        ),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => HrDetailsPage()),
+                          );
+                        },
+                      ),
+                    ],
                   ),
                   _sidebarItem(context, Icons.approval, "KYC", () {
                     Navigator.push(
@@ -219,44 +257,42 @@ class HrSidebarMobile extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const JobApprovalPage(
-                              title: "Salary-based Jobs",
-                            ),
+                            builder: (_) => HrSalaryBasedViewPostedJobsPage(),
                           ),
                         );
                       }),
                       _expTileChild(context, "One-time Recruitment", () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const JobApprovalPage(
-                              title: "One-time Recruitment",
-                            ),
-                          ),
-                        );
+                        // Navigator.push(
+                        //   context,
+                        //   MaterialPageRoute(
+                        //     builder: (_) => const JobApprovalPage(
+                        //       title: "One-time Recruitment",
+                        //     ),
+                        //   ),
+                        // );
                       }),
                       _expTileChild(
                         context,
                         "Commission-based Lead generator job",
                         () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const JobApprovalPage(
-                                title: "Commission-based Lead Generator Job",
-                              ),
-                            ),
-                          );
+                          // Navigator.push(
+                          //   context,
+                          //   MaterialPageRoute(
+                          //     builder: (_) => const JobApprovalPage(
+                          //       title: "Commission-based Lead Generator Job",
+                          //     ),
+                          //   ),
+                          // );
                         },
                       ),
                       _expTileChild(context, "Projects", () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                const JobApprovalPage(title: "Projects"),
-                          ),
-                        );
+                        // Navigator.push(
+                        //   context,
+                        //   MaterialPageRoute(
+                        //     builder: (_) =>
+                        //         const JobApprovalPage(title: "Projects"),
+                        //   ),
+                        // );
                       }),
                     ],
                   ),
@@ -573,6 +609,22 @@ class HrSidebarWeb extends StatelessWidget {
                       MaterialPageRoute(builder: (_) => HrDashboard()),
                     );
                   }),
+                  _expansionGroup(context, Icons.business, "My Info", [
+                    _expTileChild(context, "My Profile", () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const HrProfilePage(),
+                        ),
+                      );
+                    }),
+                    _expTileChild(context, "Details", () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => HrDetailsPage()),
+                      );
+                    }),
+                  ]),
                   _menuItem(context, Icons.approval, "KYC", () {
                     Navigator.push(
                       context,
@@ -657,9 +709,7 @@ class HrSidebarWeb extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const JobApprovalPage(
-                              title: "Salary-based Jobs",
-                            ),
+                            builder: (_) => HrSalaryBasedViewPostedJobsPage(),
                           ),
                         );
                       }),
@@ -667,9 +717,7 @@ class HrSidebarWeb extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const JobApprovalPage(
-                              title: "One-time Recruitment",
-                            ),
+                            builder: (_) => HrSalaryBasedViewPostedJobsPage(),
                           ),
                         );
                       }),
@@ -677,24 +725,24 @@ class HrSidebarWeb extends StatelessWidget {
                         context,
                         "Commission-based Lead generator job",
                         () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const JobApprovalPage(
-                                title: "Commission-based Lead Generator Job",
-                              ),
-                            ),
-                          );
+                          // Navigator.push(
+                          //   context,
+                          //   MaterialPageRoute(
+                          //     builder: (_) => const JobApprovalPage(
+                          //       title: "Commission-based Lead Generator Job",
+                          //     ),
+                          //   ),
+                          // );
                         },
                       ),
                       _expTileChild(context, "Projects", () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                const JobApprovalPage(title: "Projects"),
-                          ),
-                        );
+                        // Navigator.push(
+                        //   context,
+                        //   MaterialPageRoute(
+                        //     builder: (_) =>
+                        //         const JobApprovalPage(title: "Projects"),
+                        //   ),
+                        // );
                       }),
                     ],
                   ),
@@ -833,7 +881,7 @@ class HrSidebarWeb extends StatelessWidget {
 
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                         behavior: SnackBarBehavior.floating,
+                        behavior: SnackBarBehavior.floating,
                         content: Text("Logged out successfully."),
                         duration: Duration(seconds: 2),
                       ),

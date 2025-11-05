@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:jobshub/extra/views/clients/client_create_project.dart';
 import 'package:jobshub/hr/views/hr_create_notification.dart';
-import 'package:jobshub/hr/views/drawer_dashboard/hr_sidebar.dart';
+import 'package:jobshub/hr/views/sidebar_dashboard/hr_side_bar.dart';
 import 'package:jobshub/users/views/project_model.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
 

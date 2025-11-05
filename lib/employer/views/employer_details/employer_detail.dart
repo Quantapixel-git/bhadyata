@@ -197,16 +197,16 @@ class _CompanyDetailsPageState extends State<CompanyDetailsPage> {
                         title: "IFSC Code",
                         value: company['bank_ifsc'] ?? "-",
                       ),
-                      const Divider(),
-                      InfoRow(
-                        title: "KYC PAN",
-                        value: company['kyc_pan'] ?? "Not Uploaded",
-                      ),
-                      const Divider(),
-                      InfoRow(
-                        title: "KYC Aadhaar",
-                        value: company['kyc_aadhaar'] ?? "Not Uploaded",
-                      ),
+                      // const Divider(),
+                      // InfoRow(
+                      //   title: "KYC PAN",
+                      //   value: company['kyc_pan'] ?? "Not Uploaded",
+                      // ),
+                      // const Divider(),
+                      // InfoRow(
+                      //   title: "KYC Aadhaar",
+                      //   value: company['kyc_aadhaar'] ?? "Not Uploaded",
+                      // ),
                     ],
                   ),
                 ),

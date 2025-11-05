@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -7,9 +6,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:jobshub/common/constants/constants.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
-import 'package:jobshub/hr/views/drawer_dashboard/hr_sidebar.dart';
-// import 'package:jobshub/users/views/bottomnav_drawer_dashboard/user_sidedrawer.dart';
-// import 'dart:io' if (dart.library.html) 'dart:html' as html;
+import 'package:jobshub/hr/views/sidebar_dashboard/hr_side_bar.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HrKycUploadPage extends StatefulWidget {
   const HrKycUploadPage({super.key});
@@ -22,12 +20,52 @@ class _HrKycUploadPageState extends State<HrKycUploadPage> {
   PlatformFile? aadharFile;
   PlatformFile? panFile;
   bool isLoading = false;
+  bool isFetching = true;
+
+  String? existingAadharUrl;
+  String? existingPanUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchHrKycStatus();
+  }
+
+  Future<void> _fetchHrKycStatus() async {
+    try {
+      final userIdStr = await SessionManager.getValue('hr_id');
+      final userId = userIdStr?.toString() ?? '0';
+      final url = Uri.parse("${ApiConstants.baseUrl}getHrProfileByUserId");
+
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({"user_id": userId}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['success'] == true && data['data'] != null) {
+          setState(() {
+            existingAadharUrl = data['data']['kyc_aadhaar'];
+            existingPanUrl = data['data']['kyc_pan'];
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint("❌ Error fetching HR KYC status: $e");
+    } finally {
+      setState(() {
+        isFetching = false;
+      });
+    }
+  }
 
   Future<void> _pickFile(String type) async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf'],
-      withData: kIsWeb, // Needed for web to get bytes
+      withData: kIsWeb,
     );
 
     if (result != null && result.files.single.path != null) {
@@ -63,7 +101,6 @@ class _HrKycUploadPageState extends State<HrKycUploadPage> {
       request.fields['user_id'] = userId;
 
       if (kIsWeb) {
-        // 🕸️ Web-safe upload using bytes
         request.files.add(
           http.MultipartFile.fromBytes(
             'kyc_aadhaar',
@@ -79,7 +116,6 @@ class _HrKycUploadPageState extends State<HrKycUploadPage> {
           ),
         );
       } else {
-        // 📱 Mobile/Desktop upload using file path
         request.files.add(
           await http.MultipartFile.fromPath('kyc_aadhaar', aadharFile!.path!),
         );
@@ -95,12 +131,13 @@ class _HrKycUploadPageState extends State<HrKycUploadPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             behavior: SnackBarBehavior.floating,
-            content: Text(" KYC uploaded successfully!"),
+            content: Text("✅ HR KYC uploaded successfully!"),
           ),
         );
         setState(() {
           aadharFile = null;
           panFile = null;
+          _fetchHrKycStatus(); // refresh
         });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -113,15 +150,26 @@ class _HrKycUploadPageState extends State<HrKycUploadPage> {
 
       debugPrint("Response Body: $responseBody");
     } catch (e) {
-      debugPrint("🟥 Error during KYC upload: $e");
+      debugPrint("🟥 Error during HR KYC upload: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           behavior: SnackBarBehavior.floating,
-          content: Text(" Error: $e"),
+          content: Text("Error: $e"),
         ),
       );
     } finally {
       setState(() => isLoading = false);
+    }
+  }
+
+  Future<void> _openPdf(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Cannot open PDF link")));
     }
   }
 
@@ -142,63 +190,91 @@ class _HrKycUploadPageState extends State<HrKycUploadPage> {
             ),
           ),
         ),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _sectionTitle("Upload Your KYC Documents"),
-              const SizedBox(height: 12),
-              _uploadCard(
-                title: "Aadhaar Card (PDF)",
-                subtitle: "Upload front and back in a single PDF file",
-                icon: Icons.picture_as_pdf,
-                fileName: aadharFile?.name,
-                onTap: () => _pickFile('aadhar'),
-              ),
-              const SizedBox(height: 16),
-              _uploadCard(
-                title: "PAN Card (PDF)",
-                subtitle: "Upload a clear scanned copy",
-                icon: Icons.picture_as_pdf,
-                fileName: panFile?.name,
-                onTap: () => _pickFile('pan'),
-              ),
-              const SizedBox(height: 30),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: isLoading ? null : _uploadKyc,
-                  icon: isLoading
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
+        body: isFetching
+            ? const Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 24,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _sectionTitle("Upload or View Your KYC Documents"),
+                    const SizedBox(height: 12),
+
+                    _uploadCard(
+                      title: "Aadhaar Card (PDF)",
+                      subtitle: "Upload front and back in a single PDF file",
+                      icon: Icons.picture_as_pdf,
+                      fileName: aadharFile?.name,
+                      existingUrl: existingAadharUrl,
+                      onTap: () => _pickFile('aadhar'),
+                      onPreview: existingAadharUrl != null
+                          ? () => _openPdf(existingAadharUrl!)
+                          : null,
+                    ),
+                    const SizedBox(height: 16),
+
+                    _uploadCard(
+                      title: "PAN Card (PDF)",
+                      subtitle: "Upload a clear scanned copy",
+                      icon: Icons.picture_as_pdf,
+                      fileName: panFile?.name,
+                      existingUrl: existingPanUrl,
+                      onTap: () => _pickFile('pan'),
+                      onPreview: existingPanUrl != null
+                          ? () => _openPdf(existingPanUrl!)
+                          : null,
+                    ),
+
+                    const SizedBox(height: 30),
+
+                    if (existingAadharUrl == null || existingPanUrl == null)
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: isLoading ? null : _uploadKyc,
+                          icon: isLoading
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Icon(Icons.upload, color: Colors.white),
+                          label: Text(
+                            isLoading ? "Uploading..." : "Submit KYC",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        )
-                      : const Icon(Icons.upload, color: Colors.white),
-                  label: Text(
-                    isLoading ? "Uploading..." : "Submit KYC",
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                          ),
+                        ),
+                      )
+                    else
+                      const Center(
+                        child: Text(
+                          "✅ KYC documents already uploaded.",
+                          style: TextStyle(
+                            color: Colors.green,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -221,7 +297,11 @@ class _HrKycUploadPageState extends State<HrKycUploadPage> {
     required IconData icon,
     required VoidCallback onTap,
     String? fileName,
+    String? existingUrl,
+    VoidCallback? onPreview,
   }) {
+    final hasExistingFile = existingUrl != null && existingUrl.isNotEmpty;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -260,50 +340,73 @@ class _HrKycUploadPageState extends State<HrKycUploadPage> {
             style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
           ),
           const SizedBox(height: 12),
-          Container(
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.grey.shade300),
-            ),
-            child: InkWell(
-              onTap: onTap,
-              borderRadius: BorderRadius.circular(10),
-              child: Padding(
+
+          if (hasExistingFile)
+            ElevatedButton.icon(
+              onPressed: onPreview,
+              icon: const Icon(Icons.visibility, color: Colors.white),
+              label: const Text(
+                "View Uploaded Document",
+                style: TextStyle(color: Colors.white),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 14,
+                  horizontal: 12,
+                  vertical: 10,
                 ),
-                child: Row(
-                  children: [
-                    Icon(
-                      fileName != null ? Icons.check_circle : Icons.upload_file,
-                      color: fileName != null
-                          ? Colors.green
-                          : AppColors.primary,
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        fileName ?? "Choose PDF File",
-                        style: TextStyle(
-                          color: fileName != null
-                              ? Colors.black87
-                              : Colors.grey.shade600,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            )
+          else
+            Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: InkWell(
+                onTap: onTap,
+                borderRadius: BorderRadius.circular(10),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        fileName != null
+                            ? Icons.check_circle
+                            : Icons.upload_file,
+                        color: fileName != null
+                            ? Colors.green
+                            : AppColors.primary,
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          fileName ?? "Choose PDF File",
+                          style: TextStyle(
+                            color: fileName != null
+                                ? Colors.black87
+                                : Colors.grey.shade600,
+                          ),
                         ),
                       ),
-                    ),
-                    const Icon(
-                      Icons.arrow_forward_ios,
-                      size: 16,
-                      color: Colors.grey,
-                    ),
-                  ],
+                      const Icon(
+                        Icons.arrow_forward_ios,
+                        size: 16,
+                        color: Colors.grey,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );

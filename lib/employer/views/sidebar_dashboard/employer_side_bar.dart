@@ -1,28 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/employer/views/commission_based_job/employer_post_commission_based_job.dart';
+import 'package:jobshub/employer/views/commission_based_job/employer_view_commission_based_jobs.dart';
+import 'package:jobshub/employer/views/one_time_job/employer_view_ome_time_jobs.dart';
 import 'package:jobshub/employer/views/project_job/emnployer_post_project.dart';
 import 'package:jobshub/employer/views/one_time_job/employer_post_one_time_job.dart';
+import 'package:jobshub/employer/views/project_job/employer_view_projects.dart';
 import 'package:jobshub/employer/views/salary_based_job/employer_post_salary_based_job.dart';
 import 'package:jobshub/employer/views/notification/employer_all_notification.dart';
 import 'package:jobshub/employer/views/employer_attendance.dart';
 import 'package:jobshub/employer/views/employer_commision_based.dart';
 import 'package:jobshub/employer/views/notes/employer_commision_based_job_note.dart';
-import 'package:jobshub/employer/views/employer_details/employer_company.dart';
+import 'package:jobshub/employer/views/employer_details/employer_detail.dart';
 import 'package:jobshub/employer/views/sidebar_dashboard/employer_dashboard.dart';
 import 'package:jobshub/employer/views/employer_deposit.dart';
 import 'package:jobshub/employer/views/employer_one_time_employee.dart';
 import 'package:jobshub/employer/views/notes/employer_one_time_job_note.dart';
-// import 'package:jobshub/employer/views/employer_post_salary_based_job.dart';
 import 'package:jobshub/employer/views/employer_details/employer_profile.dart';
 import 'package:jobshub/employer/views/notes/employer_project_note.dart';
 import 'package:jobshub/employer/views/employer_project_employee.dart';
-import 'package:jobshub/employer/views/employer_query_to_admin.dart';
-import 'package:jobshub/employer/views/employer_query_to_hr.dart';
+import 'package:jobshub/employer/views/query/employer_query_to_admin.dart';
+import 'package:jobshub/employer/views/query/employer_query_to_hr.dart';
 import 'package:jobshub/employer/views/employer_salary_based.dart';
 import 'package:jobshub/employer/views/notification/employer_send_notification.dart';
 import 'package:jobshub/employer/views/salary_based_job/employer_view_salary_based_jobs.dart';
-import 'package:jobshub/employer/views/employer_view_project.dart';
 import 'package:jobshub/employer/views/notes/employer_wallet_note.dart';
 import 'package:jobshub/employer/views/leave_requests.dart';
 import 'package:jobshub/employer/views/notes/employer_salary_based_job_note.dart';
@@ -91,7 +92,7 @@ class EmployerSidebarMobile extends StatelessWidget {
 
                   ExpansionTile(
                     leading: Icon(Icons.business, color: AppColors.primary),
-                    title: const Text("My Company"),
+                    title: const Text("My Info"),
                     childrenPadding: const EdgeInsets.only(left: 20, bottom: 8),
                     iconColor: AppColors.primary,
                     collapsedIconColor: AppColors.primary,
@@ -112,7 +113,7 @@ class EmployerSidebarMobile extends StatelessWidget {
                       ),
                       ListTile(
                         title: const Text(
-                          "Company Details",
+                          "Details",
                           style: TextStyle(fontSize: 13.5),
                         ),
                         onTap: () {
@@ -247,7 +248,7 @@ class EmployerSidebarMobile extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => ViewPostedJobsPage(),
+                            builder: (_) => SalaryBasedViewPostedJobsPage(),
                           ),
                         );
                       }),
@@ -276,7 +277,7 @@ class EmployerSidebarMobile extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => ViewPostedJobsPage(),
+                            builder: (_) => OneTimeViewPostedJobsPage(),
                           ),
                         );
                       }),
@@ -305,7 +306,7 @@ class EmployerSidebarMobile extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => ViewPostedJobsPage(),
+                            builder: (_) => CommissionBasedViewPostedJobsPage(),
                           ),
                         );
                       }),
@@ -383,7 +384,9 @@ class EmployerSidebarMobile extends StatelessWidget {
                       _expTileChild(context, "View Projects", () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => ViewProjectsPage()),
+                          MaterialPageRoute(
+                            builder: (_) => ViewPostedProjectsPage(),
+                          ),
                         );
                       }),
                     ],
@@ -715,7 +718,7 @@ class EmployerSidebarWeb extends StatelessWidget {
                       ),
                     );
                   }),
-                  _expansionGroup(context, Icons.business, "My Company", [
+                  _expansionGroup(context, Icons.business, "My Info", [
                     _expTileChild(context, "My Profile", () {
                       Navigator.push(
                         context,
@@ -724,7 +727,7 @@ class EmployerSidebarWeb extends StatelessWidget {
                         ),
                       );
                     }),
-                    _expTileChild(context, "Company Details", () {
+                    _expTileChild(context, "Details", () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (_) => CompanyDetailsPage()),
@@ -833,7 +836,7 @@ class EmployerSidebarWeb extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => ViewPostedJobsPage(),
+                            builder: (_) => SalaryBasedViewPostedJobsPage(),
                           ),
                         );
                       }),
@@ -856,7 +859,7 @@ class EmployerSidebarWeb extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => ViewPostedJobsPage(),
+                            builder: (_) => OneTimeViewPostedJobsPage(),
                           ),
                         );
                       }),
@@ -879,7 +882,7 @@ class EmployerSidebarWeb extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => ViewPostedJobsPage(),
+                            builder: (_) => CommissionBasedViewPostedJobsPage(),
                           ),
                         );
                       }),
@@ -939,7 +942,9 @@ class EmployerSidebarWeb extends StatelessWidget {
                     _expTileChild(context, "View Projects", () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => ViewProjectsPage()),
+                        MaterialPageRoute(
+                          builder: (_) => ViewPostedProjectsPage(),
+                        ),
                       );
                     }),
                   ]),

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
-import 'package:jobshub/hr/views/drawer_dashboard/hr_sidebar.dart';
+import 'package:jobshub/hr/views/sidebar_dashboard/hr_side_bar.dart';
 
 class EmployeeToEmployerRatingsPage extends StatelessWidget {
   const EmployeeToEmployerRatingsPage({super.key});

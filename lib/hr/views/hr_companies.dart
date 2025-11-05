@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
 import 'package:jobshub/hr/views/hr_comapy_detail.dart';
-import 'package:jobshub/hr/views/drawer_dashboard/hr_sidebar.dart';
+import 'package:jobshub/hr/views/sidebar_dashboard/hr_side_bar.dart';
 
 class HrCompanies extends StatelessWidget {
   HrCompanies({super.key});

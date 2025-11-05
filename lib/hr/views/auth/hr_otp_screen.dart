@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:jobshub/common/constants/constants.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
-import 'package:jobshub/hr/views/drawer_dashboard/hr_dashboard.dart';
+import 'package:jobshub/hr/views/sidebar_dashboard/hr_dashboard.dart';
 import 'package:jobshub/hr/views/info_collector/hr_complete_profile.dart';
 
 class HROtpScreen extends StatefulWidget {
