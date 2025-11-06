@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:jobshub/admin/views/dashboard_drawer/admin_dashboard.dart';
+import 'package:jobshub/admin/views/side_bar_dashboard/admin_dashboard.dart';
+import 'package:jobshub/common/views/onboarding_screen.dart';
 import 'package:jobshub/employer/views/sidebar_dashboard/employer_dashboard.dart';
 import 'package:jobshub/hr/views/sidebar_dashboard/hr_dashboard.dart';
 import 'package:jobshub/users/views/bottomnav_drawer_dashboard/bottom_nav.dart';
@@ -53,7 +54,8 @@ class _SplashScreenState extends State<SplashScreen>
     final employerId = await SessionManager.getValue('employer_id');
     final hrId = await SessionManager.getValue('hr_id');
 
-    Widget nextScreen = const LoginScreen();
+    // Widget nextScreen = const LoginScreen();
+    Widget nextScreen = const OnboardingPage();
 
     if (adminLogin == 'true') {
       nextScreen = AdminDashboard();

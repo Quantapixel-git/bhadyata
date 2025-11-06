@@ -4,8 +4,8 @@ import 'package:http/http.dart' as http;
 import 'package:jobshub/common/utils/AppColor.dart';
 import 'package:jobshub/hr/views/sidebar_dashboard/hr_side_bar.dart';
 
-class HrOneTimeViewPostedJobsPage extends StatelessWidget {
-  const HrOneTimeViewPostedJobsPage({super.key});
+class HrCommissionBasedJobsApproval extends StatelessWidget {
+  const HrCommissionBasedJobsApproval({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -68,11 +68,11 @@ class _JobsListState extends State<JobsList> {
   List<Map<String, dynamic>> jobs = [];
 
   final String apiUrlPending =
-      'https://dialfirst.in/quantapixel/badhyata/api/getPendingOneTimeJobs';
+      'https://dialfirst.in/quantapixel/badhyata/api/getPendingCommissionJobs';
   final String apiUrlApproved =
-      'https://dialfirst.in/quantapixel/badhyata/api/getApprovedOneTimeJobs';
+      'https://dialfirst.in/quantapixel/badhyata/api/getApprovedCommissionJobs';
   final String apiUrlRejected =
-      'https://dialfirst.in/quantapixel/badhyata/api/getRejectedOneTimeJobs';
+      'https://dialfirst.in/quantapixel/badhyata/api/getRejectedCommissionJobs';
 
   Future<void> fetchJobs() async {
     setState(() {

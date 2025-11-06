@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
+import 'package:jobshub/common/views/onboarding_screen.dart';
 import 'package:jobshub/employer/views/commission_based_job/employer_post_commission_based_job.dart';
 import 'package:jobshub/employer/views/commission_based_job/employer_view_commission_based_jobs.dart';
 import 'package:jobshub/employer/views/one_time_job/employer_view_ome_time_jobs.dart';
@@ -29,8 +30,8 @@ import 'package:jobshub/employer/views/leave_requests.dart';
 import 'package:jobshub/employer/views/notes/employer_salary_based_job_note.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
 import 'package:jobshub/employer/views/kyc/employer_upload_kyc.dart';
-import 'package:jobshub/users/views/auth/login_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:jobshub/users/views/auth/login_screen.dart';
+// import 'package:shared_preferences/shared_preferences.dart';
 
 /// ✅ MAIN WRAPPER that decides which sidebar to show
 class EmployerSidebar extends StatelessWidget {
@@ -584,7 +585,7 @@ class EmployerSidebarMobile extends StatelessWidget {
 
                     Navigator.pushAndRemoveUntil(
                       context,
-                      MaterialPageRoute(builder: (_) => const LoginScreen()),
+                      MaterialPageRoute(builder: (_) => const OnboardingPage()),
                       (route) => false,
                     );
                   }),
@@ -1111,7 +1112,7 @@ class EmployerSidebarWeb extends StatelessWidget {
 
                     Navigator.pushAndRemoveUntil(
                       context,
-                      MaterialPageRoute(builder: (_) => const LoginScreen()),
+                      MaterialPageRoute(builder: (_) => const OnboardingPage()),
                       (route) => false,
                     );
                   }),

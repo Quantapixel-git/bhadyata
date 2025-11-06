@@ -1,29 +1,29 @@
 import 'package:flutter/material.dart';
-import 'package:jobshub/admin/views/aadmin_hr_user.dart';
+import 'package:jobshub/admin/views/manage_users/admin_hr_users.dart';
 import 'package:jobshub/admin/views/admin_all_companies.dart';
 import 'package:jobshub/admin/views/admin_all_notification.dart';
 import 'package:jobshub/admin/views/admin_approved_comapniess_byhr.dart';
 import 'package:jobshub/admin/views/admin_category_job.dart';
-import 'package:jobshub/admin/views/dashboard_drawer/admin_dashboard.dart';
-import 'package:jobshub/admin/views/admin_employee.dart';
+import 'package:jobshub/admin/views/side_bar_dashboard/admin_dashboard.dart';
+import 'package:jobshub/admin/views/manage_users/admin_employee_users.dart';
 import 'package:jobshub/admin/views/admin_employee_kyc.dart';
 import 'package:jobshub/admin/views/admin_employee_salary.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jobshub/admin/views/admin_employee_to%20_employer_rating.dart';
-import 'package:jobshub/admin/views/admin_employer.dart';
+import 'package:jobshub/admin/views/manage_users/admin_employer_users.dart';
 import 'package:jobshub/admin/views/admin_employer_kyc.dart';
 import 'package:jobshub/admin/views/admin_employer_to_project_rating.dart';
 import 'package:jobshub/admin/views/admin_evenue_total.dart';
 import 'package:jobshub/admin/views/admin_hr_kyc.dart';
 import 'package:jobshub/admin/views/admin_hr_salary.dart';
-import 'package:jobshub/admin/views/admin_query_from_employer_to_admin.dart';
-import 'package:jobshub/admin/views/admin_query_from_hr_to_admin.dart';
-import 'package:jobshub/admin/views/admin_query_from_user.dart';
+import 'package:jobshub/admin/views/query/admin_query_from_employer_to_admin.dart';
+import 'package:jobshub/admin/views/query/admin_query_from_hr_to_admin.dart';
+import 'package:jobshub/admin/views/query/admin_query_from_user.dart';
 import 'package:jobshub/admin/views/admin_revenue_profit.dart';
 import 'package:jobshub/admin/views/admin_send_notification.dart';
 import 'package:jobshub/admin/views/admin_stats.dart';
-import 'package:jobshub/users/views/auth/login_screen.dart';
+import 'package:jobshub/common/views/onboarding_screen.dart';
+// import 'package:jobshub/users/views/auth/login_screen.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
 
 /// ✅ MAIN WRAPPER that decides which sidebar to show
@@ -94,20 +94,20 @@ class AdminSidebarMobile extends StatelessWidget {
                     iconColor: AppColors.primary,
                     collapsedIconColor: AppColors.primary,
                     children: [
-                      ListTile(
-                        title: const Text(
-                          "Approved Company (by HR)",
-                          style: TextStyle(fontSize: 13.5),
-                        ),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => ApprovedCompaniesPage(),
-                            ),
-                          );
-                        },
-                      ),
+                      // ListTile(
+                      //   title: const Text(
+                      //     "Approved Company (by HR)",
+                      //     style: TextStyle(fontSize: 13.5),
+                      //   ),
+                      //   onTap: () {
+                      //     Navigator.push(
+                      //       context,
+                      //       MaterialPageRoute(
+                      //         builder: (_) => ApprovedCompaniesPage(),
+                      //       ),
+                      //     );
+                      //   },
+                      // ),
                       ListTile(
                         title: const Text(
                           "Companies",
@@ -141,21 +141,21 @@ class AdminSidebarMobile extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const HRUsersPage(),
+                              builder: (_) => const HrUsersPage(),
                             ),
                           );
                         },
                       ),
                       ListTile(
                         title: const Text(
-                          "Employees / Users",
+                          "Employees",
                           style: TextStyle(fontSize: 13.5),
                         ),
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const EmployeesPage(),
+                              builder: (_) => const EmployeeUsersPage(),
                             ),
                           );
                         },
@@ -169,7 +169,7 @@ class AdminSidebarMobile extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const EmployersPage(),
+                              builder: (_) => const EmployerUsersPage(),
                             ),
                           );
                         },
@@ -262,7 +262,7 @@ class AdminSidebarMobile extends StatelessWidget {
                     children: [
                       ListTile(
                         title: const Text(
-                          "Users / Employees",
+                          "Employees",
                           style: TextStyle(fontSize: 13.5),
                         ),
                         onTap: () {
@@ -394,7 +394,7 @@ class AdminSidebarMobile extends StatelessWidget {
                     children: [
                       ListTile(
                         title: const Text(
-                          "HR Query",
+                          "Query from HR",
                           style: TextStyle(fontSize: 13.5),
                         ),
                         onTap: () {
@@ -408,7 +408,7 @@ class AdminSidebarMobile extends StatelessWidget {
                       ),
                       ListTile(
                         title: const Text(
-                          "User Query",
+                          "Query from Employee",
                           style: TextStyle(fontSize: 13.5),
                         ),
                         onTap: () {
@@ -422,7 +422,7 @@ class AdminSidebarMobile extends StatelessWidget {
                       ),
                       ListTile(
                         title: const Text(
-                          "Employer Query",
+                          "Query from Employer",
                           style: TextStyle(fontSize: 13.5),
                         ),
                         onTap: () {
@@ -455,7 +455,7 @@ class AdminSidebarMobile extends StatelessWidget {
                     // 🔁 Navigate back to login screen
                     Navigator.pushAndRemoveUntil(
                       context,
-                      MaterialPageRoute(builder: (_) => const LoginScreen()),
+                      MaterialPageRoute(builder: (_) => const OnboardingPage()),
                       (route) => false,
                     );
                   }),
@@ -587,14 +587,14 @@ class AdminSidebarWeb extends StatelessWidget {
                     );
                   }),
                   _expansionGroup(context, Icons.business, "Company", [
-                    _expTileChild(context, "Approved Company (by HR)", () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ApprovedCompaniesPage(),
-                        ),
-                      );
-                    }),
+                    // _expTileChild(context, "Approved Company (by HR)", () {
+                    //   Navigator.push(
+                    //     context,
+                    //     MaterialPageRoute(
+                    //       builder: (_) => ApprovedCompaniesPage(),
+                    //     ),
+                    //   );
+                    // }),
                     _expTileChild(context, "Companies", () {
                       Navigator.push(
                         context,
@@ -611,15 +611,15 @@ class AdminSidebarWeb extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const HRUsersPage(),
+                            builder: (_) => const HrUsersPage(),
                           ),
                         );
                       }),
-                      _expTileChild(context, "Employees / Users", () {
+                      _expTileChild(context, "Employees", () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const EmployeesPage(),
+                            builder: (_) => const EmployeeUsersPage(),
                           ),
                         );
                       }),
@@ -627,7 +627,7 @@ class AdminSidebarWeb extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const EmployersPage(),
+                            builder: (_) => const EmployerUsersPage(),
                           ),
                         );
                       }),
@@ -672,7 +672,7 @@ class AdminSidebarWeb extends StatelessWidget {
                     ),
                   ]),
                   _expansionGroup(context, Icons.person_search, "Manage KYC", [
-                    _expTileChild(context, "Users / Employees", () {
+                    _expTileChild(context, "Employees", () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (_) => const UsersKYCPage()),
@@ -737,7 +737,7 @@ class AdminSidebarWeb extends StatelessWidget {
                   _divider(),
                   _sectionTitle("🧭 Support & Others"),
                   _expansionGroup(context, Icons.help_outline, "Query Panel", [
-                    _expTileChild(context, "HR Query", () {
+                    _expTileChild(context, "Query from HR", () {
                       Navigator.push(
                         context,
 
@@ -746,7 +746,7 @@ class AdminSidebarWeb extends StatelessWidget {
                         ),
                       );
                     }),
-                    _expTileChild(context, "User Query", () {
+                    _expTileChild(context, "Query from Employee", () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -754,7 +754,7 @@ class AdminSidebarWeb extends StatelessWidget {
                         ),
                       );
                     }),
-                    _expTileChild(context, "Employer Query", () {
+                    _expTileChild(context, "Query from Employer", () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -778,7 +778,7 @@ class AdminSidebarWeb extends StatelessWidget {
 
                     Navigator.pushAndRemoveUntil(
                       context,
-                      MaterialPageRoute(builder: (_) => const LoginScreen()),
+                      MaterialPageRoute(builder: (_) => const OnboardingPage()),
                       (route) => false,
                     );
                   }),

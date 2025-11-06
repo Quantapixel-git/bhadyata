@@ -15,6 +15,16 @@ class JobProfileDetailsPage extends StatefulWidget {
 
 class _JobProfileDetailsPageState extends State<JobProfileDetailsPage> {
   final _formKey = GlobalKey<FormState>();
+  // --- NEW: dropdown options & selected values ---
+  final List<String> _categories = ['id', 'cook'];
+  final List<String> _jobTypes = [
+    'one-time',
+    'salary-based',
+    'commision-based',
+  ];
+
+  String? _selectedCategory;
+  String? _selectedJobType;
 
   final _skillsController = TextEditingController();
   final _educationController = TextEditingController();
@@ -71,6 +81,12 @@ class _JobProfileDetailsPageState extends State<JobProfileDetailsPage> {
         "linkedin_url": _linkedinController.text.trim(),
         "resume_url": _resumeUrlController.text.trim(),
         "bio": _bioController.text.trim(),
+
+        // --- NEW fields ---
+        "category": _selectedCategory, // "id" | "cook"
+        "job_type":
+            _selectedJobType, // "one-time" | "salary-based" | "commision-based"
+
         "bank_account_name": _bankAccountNameController.text.trim(),
         "bank_account_number": _bankAccountNumberController.text.trim(),
         "bank_ifsc": _bankIfscController.text.trim(),
@@ -194,6 +210,55 @@ class _JobProfileDetailsPageState extends State<JobProfileDetailsPage> {
                 "Short Bio / About Yourself",
                 icon: Icons.person_outline,
                 maxLines: 3,
+              ),
+              const SizedBox(height: 25),
+              // Category
+              DropdownButtonFormField<String>(
+                value: _selectedCategory,
+                items: _categories
+                    .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                    .toList(),
+                onChanged: (v) => setState(() => _selectedCategory = v),
+                decoration: InputDecoration(
+                  labelText: 'Category',
+                  prefixIcon: Icon(
+                    Icons.category_outlined,
+                    color: AppColors.primary,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: AppColors.primary, width: 2),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                validator: (v) => v == null ? 'Category is required' : null,
+              ),
+              const SizedBox(height: 15),
+
+              // Job Type
+              DropdownButtonFormField<String>(
+                value: _selectedJobType,
+                items: _jobTypes
+                    .map((e) => DropdownMenuItem(value: e, child: Text(e)))
+                    .toList(),
+                onChanged: (v) => setState(() => _selectedJobType = v),
+                decoration: InputDecoration(
+                  labelText: 'Job Type',
+                  prefixIcon: Icon(
+                    Icons.work_outline,
+                    color: AppColors.primary,
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: AppColors.primary, width: 2),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                validator: (v) => v == null ? 'Job Type is required' : null,
               ),
               const SizedBox(height: 25),
 
