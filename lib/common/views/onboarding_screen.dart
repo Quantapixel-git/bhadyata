@@ -15,6 +15,7 @@ class OnboardingPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF4F6FF),
       appBar: PreferredSize(
+        
         preferredSize: Size.fromHeight(isDesktop ? 72 : 60),
         child: _buildStickyHeader(context, isDesktop),
       ),
@@ -54,136 +55,6 @@ class OnboardingPage extends StatelessWidget {
     );
   }
 
-  // Widget _buildStickyHeader(BuildContext context, bool isDesktop) {
-  //   return Material(
-  //     color: Colors.white,
-  //     elevation: 2,
-  //     child: SafeArea(
-  //       bottom: false,
-  //       child: Container(
-  //         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
-  //         child: Row(
-  //           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //           children: [
-  //             Row(
-  //               children: [
-  //                 Image.asset('assets/job_bgr.png', height: 40),
-  //                 const SizedBox(width: 8),
-  //                 Text(
-  //                   "Badhyata",
-  //                   style: TextStyle(
-  //                     color: AppColors.primary, // ✅ updated
-  //                     fontSize: 22,
-  //                     fontWeight: FontWeight.bold,
-  //                   ),
-  //                 ),
-  //               ],
-  //             ),
-
-  //             if (isDesktop)
-  //               Row(
-  //                 children: [
-  //                   TextButton(
-  //                     onPressed: () {
-  //                       Navigator.push(
-  //                         context,
-  //                         MaterialPageRoute(
-  //                           builder: (_) => const HrLoginPage(),
-  //                         ),
-  //                       );
-  //                     },
-  //                     child: Text(
-  //                       "HR",
-  //                       style: TextStyle(color: AppColors.primary), // ✅ updated
-  //                     ),
-  //                   ),
-
-  //                   TextButton(
-  //                     onPressed: () {},
-  //                     child: Text(
-  //                       "Team Lead",
-  //                       style: TextStyle(color: AppColors.primary), // ✅ updated
-  //                     ),
-  //                   ),
-  //                   TextButton(
-  //                     onPressed: () {},
-  //                     child: Text(
-  //                       "Company",
-  //                       style: TextStyle(color: AppColors.primary), // ✅ updated
-  //                     ),
-  //                   ),
-
-  //                   TextButton(
-  //                     onPressed: () {
-  //                       Navigator.push(
-  //                         context,
-  //                         MaterialPageRoute(builder: (_) => AdminLoginPage()),
-  //                       );
-  //                     },
-  //                     child: Text(
-  //                       "Admin",
-  //                       style: TextStyle(color: AppColors.primary), // ✅ updated
-  //                     ),
-  //                   ),
-
-  //                   const SizedBox(width: 12),
-
-  //                   OutlinedButton(
-  //                     onPressed: () {
-  //                       Navigator.push(
-  //                         context,
-  //                         MaterialPageRoute(
-  //                           builder: (_) => const LoginScreen(),
-  //                         ),
-  //                       );
-  //                     },
-  //                     style: OutlinedButton.styleFrom(
-  //                       side: BorderSide(color: AppColors.primary), // ✅ updated
-  //                       shape: RoundedRectangleBorder(
-  //                         borderRadius: BorderRadius.circular(8),
-  //                       ),
-  //                     ),
-
-  //                     child: Text(
-  //                       "Find a job",
-  //                       style: TextStyle(color: AppColors.primary), // ✅ updated
-  //                     ),
-  //                   ),
-
-  //                   const SizedBox(width: 8),
-
-  //                   ElevatedButton(
-  //                     style: ElevatedButton.styleFrom(
-  //                       backgroundColor: AppColors.primary, // ✅ updated
-  //                       padding: const EdgeInsets.symmetric(
-  //                         horizontal: 20,
-  //                         vertical: 14,
-  //                       ),
-  //                       shape: RoundedRectangleBorder(
-  //                         borderRadius: BorderRadius.circular(8),
-  //                       ),
-  //                     ),
-  //                     onPressed: () {
-  //                       Navigator.push(
-  //                         context,
-  //                         MaterialPageRoute(
-  //                           builder: (_) => const EmployerLogin(),
-  //                         ),
-  //                       );
-  //                     },
-  //                     child: const Text(
-  //                       "Hire Now",
-  //                       style: TextStyle(color: Colors.white),
-  //                     ),
-  //                   ),
-  //                 ],
-  //               ),
-  //           ],
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
   Widget _buildStickyHeader(BuildContext context, bool isDesktop) {
     return Material(
       color: Colors.white,
@@ -198,7 +69,7 @@ class OnboardingPage extends StatelessWidget {
                 // 👇 burger button for mobile
                 Builder(
                   builder: (ctx) => IconButton(
-                    icon: Icon(Icons.menu, color: AppColors.primary),
+                    icon: Icon(Icons.menu, size: 40, color: AppColors.secondary),
                     onPressed: () => Scaffold.of(ctx).openDrawer(),
                     tooltip: "Menu",
                   ),
@@ -211,7 +82,7 @@ class OnboardingPage extends StatelessWidget {
               Text(
                 "Badhyata",
                 style: TextStyle(
-                  color: AppColors.primary,
+                  color: AppColors.secondary,
                   fontSize: isDesktop ? 22 : 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -233,21 +104,21 @@ class OnboardingPage extends StatelessWidget {
                       },
                       child: Text(
                         "HR",
-                        style: TextStyle(color: AppColors.primary),
+                        style: TextStyle(color: AppColors.secondary),
                       ),
                     ),
                     TextButton(
                       onPressed: () {},
                       child: Text(
                         "Team Lead",
-                        style: TextStyle(color: AppColors.primary),
+                        style: TextStyle(color: AppColors.secondary),
                       ),
                     ),
                     TextButton(
                       onPressed: () {},
                       child: Text(
                         "Company",
-                        style: TextStyle(color: AppColors.primary),
+                        style: TextStyle(color: AppColors.secondary),
                       ),
                     ),
                     TextButton(
@@ -259,7 +130,7 @@ class OnboardingPage extends StatelessWidget {
                       },
                       child: Text(
                         "Admin",
-                        style: TextStyle(color: AppColors.primary),
+                        style: TextStyle(color: AppColors.secondary),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -273,20 +144,20 @@ class OnboardingPage extends StatelessWidget {
                         );
                       },
                       style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: AppColors.primary),
+                        side: BorderSide(color: AppColors.secondary),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
                       ),
                       child: Text(
                         "Find a job",
-                        style: TextStyle(color: AppColors.primary),
+                        style: TextStyle(color: AppColors.secondary),
                       ),
                     ),
                     const SizedBox(width: 8),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
+                        backgroundColor: AppColors.secondary,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 20,
                           vertical: 14,
@@ -341,7 +212,7 @@ class OnboardingPage extends StatelessWidget {
           ),
           const SizedBox(height: 40),
           Image.asset(
-            'assets/job_bgr.png',
+            'assets/job-removebg.png',
             width: isDesktop ? 480 : 300,
           ), // handshake illustration
           const SizedBox(height: 40),
@@ -369,69 +240,16 @@ class OnboardingPage extends StatelessWidget {
     );
   }
 
-  // ---------------- SEARCH SECTION ----------------
-  Widget _buildSearchSection(BuildContext context, bool isDesktop) {
-    return Container(
-      width: isDesktop ? 800 : double.infinity,
-      margin: const EdgeInsets.symmetric(horizontal: 24),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 10,
-            offset: Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "Search candidate database",
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 20),
-          isDesktop
-              ? Row(
-                  children: [
-                    Expanded(child: _searchField("Eg. Back Office job")),
-                    const SizedBox(width: 16),
-                    Expanded(child: _searchField("Pick Your City")),
-                    const SizedBox(width: 16),
-                    _searchButton(),
-                  ],
-                )
-              : Column(
-                  children: [
-                    _searchField("Eg. Back Office job"),
-                    const SizedBox(height: 12),
-                    _searchField("Pick Your City"),
-                    const SizedBox(height: 12),
-                    _searchButton(),
-                  ],
-                ),
-        ],
-      ),
-    );
-  }
-
   // ---------------- COMPANIES SECTION ----------------
   Widget _buildCompaniesSection(BuildContext context, bool isDesktop) {
     final companies = [
-      'assets/job_bgr.png',
-      'assets/job_bgr.png',
-      'assets/job_bgr.png',
-      'assets/job_bgr.png',
-      'assets/job_bgr.png',
-      'assets/job_bgr.png',
-      'assets/job_bgr.png',
+      'assets/companies/Amazon.png',
+      'assets/companies/capgemini.png',
+      'assets/companies/dell.png',
+      'assets/companies/hcl.jpg',
+      'assets/companies/maruti.png',
+      'assets/companies/microsoft.jpg',
+      'assets/companies/quanta.png',
     ];
 
     return Column(
@@ -488,7 +306,7 @@ class OnboardingPage extends StatelessWidget {
                 children: [
                   Icon(
                     e["icon"] as IconData,
-                    color: AppColors.primary,
+                    color: AppColors.secondary,
                     size: 30,
                   ),
                   const SizedBox(height: 10),
@@ -497,7 +315,7 @@ class OnboardingPage extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.primary,
+                      color: AppColors.secondary,
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -518,17 +336,17 @@ class OnboardingPage extends StatelessWidget {
   Widget _buildStepsSection(BuildContext context, bool isDesktop) {
     final steps = [
       {
-        "img": "assets/job_bgr.png",
+        "img": "assets/hire.jpg",
         "title": "Post a Job",
         "desc": "Tell us what you need in a candidate in just 5-minutes.",
       },
       {
-        "img": "assets/job_bgr.png",
+        "img": "assets/verify.jpg",
         "title": "Get Verified",
         "desc": "Our team will call to verify your employer account",
       },
       {
-        "img": "assets/job_bgr.png",
+        "img": "assets/calls.png",
         "title": "Get calls. Hire.",
         "desc":
             "You will get calls from relevant candidates within one hour or call them directly from our candidate database.",
@@ -597,7 +415,7 @@ class OnboardingPage extends StatelessWidget {
   // ---------------- HELPERS ----------------
   Widget _blueButton(String text, VoidCallback onTap) => ElevatedButton(
     style: ElevatedButton.styleFrom(
-      backgroundColor: AppColors.primary,
+      backgroundColor: AppColors.secondary,
       padding: const EdgeInsets.symmetric(horizontal: 68, vertical: 18),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
     ),
@@ -620,18 +438,6 @@ class OnboardingPage extends StatelessWidget {
       ),
     ),
   );
-
-  Widget _searchButton() => ElevatedButton(
-    style: ElevatedButton.styleFrom(
-      backgroundColor: AppColors.primary,
-      padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 18),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadiusGeometry.circular(8),
-      ),
-    ),
-    onPressed: () {},
-    child: const Icon(Icons.search, color: Colors.white),
-  );
 }
 
 // import 'package:flutter/material.dart';
@@ -645,7 +451,7 @@ class WhatMakesWorkIndiaBetterSection extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      color: AppColors.primary, // deep indigo background
+      color: AppColors.secondary, // deep indigo background
       padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -672,7 +478,7 @@ class WhatMakesWorkIndiaBetterSection extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               _featureCard(
-                image: 'assets/job_bgr.png',
+                image: 'assets/hire.jpg',
                 title: 'Simple Hiring',
                 desc:
                     'Receive calls from qualified candidates in under an hour of posting a job',
@@ -680,7 +486,7 @@ class WhatMakesWorkIndiaBetterSection extends StatelessWidget {
               ),
               SizedBox(width: isDesktop ? 40 : 0, height: isDesktop ? 0 : 40),
               _featureCard(
-                image: 'assets/job_bgr.png',
+                image: 'assets/verify.jpg',
                 title: 'Intelligent Recommendations',
                 desc:
                     'Only the best candidates are recommended by our ML as per your requirement',
@@ -688,7 +494,7 @@ class WhatMakesWorkIndiaBetterSection extends StatelessWidget {
               ),
               SizedBox(width: isDesktop ? 40 : 0, height: isDesktop ? 0 : 40),
               _featureCard(
-                image: 'assets/job_bgr.png',
+                image: 'assets/calls.png',
                 title: 'Priority customer support',
                 desc: 'Prioritized customer support for the paid plan users',
                 isDesktop: isDesktop,
@@ -872,7 +678,7 @@ class _EmployerReviewsSectionState extends State<EmployerReviewsSection> {
                   ),
                 ),
                 const SizedBox(height: 6),
-                Container(width: 80, height: 3, color: AppColors.primary),
+                Container(width: 80, height: 3, color: AppColors.secondary),
               ],
             ),
           ),
@@ -951,8 +757,8 @@ class _EmployerReviewsSectionState extends State<EmployerReviewsSection> {
                 width: _page == i ? 20 : 8,
                 decoration: BoxDecoration(
                   color: _page == i
-                      ? AppColors.primary
-                      : AppColors.primary.withOpacity(0.25),
+                      ? AppColors.secondary
+                      : AppColors.secondary.withOpacity(0.25),
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
@@ -1093,7 +899,9 @@ class _NavButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: enabled ? AppColors.primary : AppColors.primary.withOpacity(0.3),
+      color: enabled
+          ? AppColors.secondary
+          : AppColors.secondary.withOpacity(0.3),
       shape: const CircleBorder(),
       child: InkWell(
         customBorder: const CircleBorder(),
@@ -1177,7 +985,7 @@ class _HireFromCategoriesSectionState extends State<HireFromCategoriesSection> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           _sectionHeading('Hire from 50+ Job Categories'),
           const SizedBox(height: 16),
@@ -1197,7 +1005,7 @@ class _HireFromCategoriesSectionState extends State<HireFromCategoriesSection> {
               label: Text(
                 _showAll ? 'Show less' : 'Show all',
                 style: const TextStyle(
-                  color: AppColors.primary,
+                  color: AppColors.secondary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1211,13 +1019,13 @@ class _HireFromCategoriesSectionState extends State<HireFromCategoriesSection> {
   Widget _pillChip(String text) => Container(
     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
     decoration: BoxDecoration(
-      color: AppColors.primary.withOpacity(0.12),
+      color: AppColors.secondary.withOpacity(0.12),
       borderRadius: BorderRadius.circular(100),
     ),
     child: Text(
       text,
       style: const TextStyle(
-        color: AppColors.primary,
+        color: AppColors.secondary,
         fontWeight: FontWeight.w600,
       ),
     ),
@@ -1272,7 +1080,7 @@ class _HireFromCitiesSectionState extends State<HireFromCitiesSection> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           _sectionHeading('Hire from 750+ Cities'),
           const SizedBox(height: 16),
@@ -1287,12 +1095,12 @@ class _HireFromCitiesSectionState extends State<HireFromCitiesSection> {
               onPressed: () => setState(() => _showAll = !_showAll),
               icon: Icon(
                 _showAll ? Icons.expand_less : Icons.expand_more,
-                color: AppColors.primary,
+                color: AppColors.secondary,
               ),
               label: Text(
                 _showAll ? 'Show less' : 'Show all',
                 style: const TextStyle(
-                  color: AppColors.primary,
+                  color: AppColors.secondary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -1304,9 +1112,9 @@ class _HireFromCitiesSectionState extends State<HireFromCitiesSection> {
   }
 
   Widget _cityChip(String text, {bool outlined = false, VoidCallback? onTap}) {
-    final bg = outlined ? Colors.white : AppColors.primary.withOpacity(0.12);
-    final br = outlined ? AppColors.primary : Colors.transparent;
-    final fg = AppColors.primary;
+    final bg = outlined ? Colors.white : AppColors.secondary.withOpacity(0.12);
+    final br = outlined ? AppColors.secondary : Colors.transparent;
+    final fg = AppColors.secondary;
 
     final chip = Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
@@ -1341,7 +1149,7 @@ class DownloadRecruiterAppSection extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      color: AppColors.primary, // deep indigo background
+      color: AppColors.secondary, // deep indigo background
       padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 1200),
@@ -1430,7 +1238,7 @@ class DownloadRecruiterAppSection extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Image.asset('assets/job_bgr.png', fit: BoxFit.contain),
+        child: Image.asset('assets/scan.png', fit: BoxFit.contain),
       ),
     ],
   );
@@ -1492,13 +1300,13 @@ class EmployerFaqSection extends StatelessWidget {
     child: ExpansionTile(
       tilePadding: const EdgeInsets.symmetric(horizontal: 0),
       childrenPadding: const EdgeInsets.only(left: 0, right: 0, bottom: 12),
-      iconColor: AppColors.primary,
-      collapsedIconColor: AppColors.primary,
+      iconColor: AppColors.secondary,
+      collapsedIconColor: AppColors.secondary,
       title: Text(
         q,
         style: const TextStyle(
           fontSize: 16,
-          color: AppColors.primary,
+          color: AppColors.secondary,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -1537,7 +1345,7 @@ class WorkIndiaFooter extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      color: AppColors.primary,
+      color: AppColors.secondary,
       padding: EdgeInsets.symmetric(
         horizontal: isMobile ? 16 : 24,
         vertical: isMobile ? 28 : 40,
@@ -1595,22 +1403,22 @@ class WorkIndiaFooter extends StatelessWidget {
           SizedBox(height: isMobile ? 20 : 28),
 
           // CTA cards (responsive)
-          Wrap(
-            spacing: isMobile ? 12 : 24,
-            runSpacing: 16,
-            children: const [
-              _CtaCard(
-                title: 'I want to\nHire',
-                subtitle: 'Post a New Job',
-                icon: Icons.open_in_new,
-              ),
-              _CtaCard(
-                title: 'I want a\nJob',
-                subtitle: 'Download the App',
-                icon: Icons.file_download,
-              ),
-            ],
-          ),
+          // Wrap(
+          //   spacing: isMobile ? 12 : 24,
+          //   runSpacing: 16,
+          //   children: const [
+          //     _CtaCard(
+          //       title: 'I want to\nHire',
+          //       subtitle: 'Post a New Job',
+          //       icon: Icons.open_in_new,
+          //     ),
+          //     _CtaCard(
+          //       title: 'I want a\nJob',
+          //       subtitle: 'Download the App',
+          //       icon: Icons.file_download,
+          //     ),
+          //   ],
+          // ),
           SizedBox(height: isMobile ? 24 : 36),
 
           // Link columns (responsive)
@@ -1766,9 +1574,7 @@ Widget _linksGridNarrow() => Column(
         'Engineer (Mech/Civil etc.)',
         'Finance',
         'Field Sales',
-        'Nursing',
-        'Office Boy',
-        'Peon',
+        
       ],
     ),
     SizedBox(height: 20),
@@ -1786,12 +1592,7 @@ Widget _linksGridNarrow() => Column(
         'Bangalore',
         'Kolkata',
         'Ahmedabad',
-        'Chennai',
-        'Hyderabad',
-        'Surat',
-        'Jaipur',
-        'Lucknow',
-        'Chandigarh',
+        
       ],
     ),
     SizedBox(height: 20),
@@ -1839,7 +1640,7 @@ class _CtaCard extends StatelessWidget {
         padding: EdgeInsets.all(isMobile ? 16 : 20),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [AppColors.primary, AppColors.primary],
+            colors: [AppColors.secondary, AppColors.secondary],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -1899,7 +1700,7 @@ class _CtaCard extends StatelessWidget {
                         backgroundColor: Colors.white,
                         child: Icon(
                           Icons.arrow_forward,
-                          color: AppColors.primary,
+                          color: AppColors.secondary,
                         ),
                       ),
                     ],
@@ -1959,264 +1760,6 @@ class _LinkColumn extends StatelessWidget {
   }
 }
 
-// class _AccentUnderline extends StatelessWidget {
-//   const _AccentUnderline();
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final isMobile = MediaQuery.of(context).size.width < 600;
-//     return Container(
-//       margin: EdgeInsets.only(top: isMobile ? 6 : 8),
-//       width: isMobile ? 50 : 60,
-//       height: 3,
-//       color: Colors.white,
-//     );
-//   }
-// }
-
-// Widget _footerLink(String t) => InkWell(
-//   onTap: () {},
-//   child: Text(
-//     t,
-//     style: const TextStyle(
-//       color: Colors.white,
-//       decoration: TextDecoration.underline,
-//     ),
-//   ),
-// );
-
-// Widget _linksGridWide() => Row(
-//   crossAxisAlignment: CrossAxisAlignment.start,
-//   children: const [
-//     Expanded(
-//       child: _LinkColumn(
-//         title: 'Find Jobs By Type',
-//         items: [
-//           'Accountant',
-//           'Articleship',
-//           'Back Office',
-//           'Engineer (Mech/Civil etc.)',
-//           'Finance',
-//           'Field Sales',
-//         ],
-//       ),
-//     ),
-//     Expanded(
-//       child: _LinkColumn(
-//         title: 'Find Jobs for Women',
-//         items: ['Women career opportunities'],
-//       ),
-//     ),
-//     Expanded(
-//       child: _LinkColumn(
-//         title: 'Post Jobs In City',
-//         items: [
-//           'Mumbai',
-//           'Delhi',
-//           'Pune',
-//           'Bangalore',
-//           'Kolkata',
-//           'Ahmedabad',
-//           'Chennai',
-//           'Hyderabad',
-//         ],
-//       ),
-//     ),
-//     Expanded(
-//       child: _LinkColumn(
-//         title: 'Post Jobs In Sector',
-//         items: ['Telecalling', 'Cook'],
-//       ),
-//     ),
-//   ],
-// );
-
-// Widget _linksGridNarrow() => Column(
-//   crossAxisAlignment: CrossAxisAlignment.start,
-//   children: const [
-//     _LinkColumn(
-//       title: 'Find Jobs By Type',
-//       items: [
-//         'Accountant',
-//         'Articleship',
-//         'Back Office',
-//         'Engineer (Mech/Civil etc.)',
-//         'Finance',
-//         'Field Sales',
-//         'Nursing',
-//         'Office Boy',
-//         'Peon',
-//       ],
-//     ),
-//     SizedBox(height: 24),
-//     _LinkColumn(
-//       title: 'Find Jobs for Women',
-//       items: ['Women career opportunities'],
-//     ),
-//     SizedBox(height: 24),
-//     _LinkColumn(
-//       title: 'Post Jobs In City',
-//       items: [
-//         'Mumbai',
-//         'Delhi',
-//         'Pune',
-//         'Bangalore',
-//         'Kolkata',
-//         'Ahmedabad',
-//         'Chennai',
-//         'Hyderabad',
-//         'Surat',
-//         'Jaipur',
-//         'Lucknow',
-//         'Chandigarh',
-//       ],
-//     ),
-//     SizedBox(height: 24),
-//     _LinkColumn(title: 'Post Jobs In Sector', items: ['Telecalling', 'Cook']),
-//   ],
-// );
-
-// class _SocialIcon extends StatelessWidget {
-//   const _SocialIcon({required this.icon});
-//   final IconData icon;
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return CircleAvatar(
-//       radius: 22,
-//       backgroundColor: Colors.white24,
-//       child: Icon(icon, color: Colors.white, size: 22),
-//     );
-//   }
-// }
-
-// class _CtaCard extends StatelessWidget {
-//   const _CtaCard({
-//     required this.title,
-//     required this.subtitle,
-//     required this.icon,
-//   });
-
-//   final String title;
-//   final String subtitle;
-//   final IconData icon;
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Container(
-//       width: 460,
-//       padding: const EdgeInsets.all(20),
-//       decoration: BoxDecoration(
-//         gradient: const LinearGradient(
-//           colors: [AppColors.primary, AppColors.primary],
-//           begin: Alignment.topLeft,
-//           end: Alignment.bottomRight,
-//         ),
-//         borderRadius: BorderRadius.circular(16),
-//         boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 10)],
-//       ),
-//       child: Row(
-//         children: [
-//           // placeholder image area (left)
-//           Expanded(
-//             child: Container(
-//               height: 120,
-//               decoration: BoxDecoration(
-//                 color: Colors.white10,
-//                 borderRadius: BorderRadius.circular(12),
-//               ),
-//               child: const Icon(
-//                 Icons.person_outline,
-//                 color: Colors.white54,
-//                 size: 48,
-//               ),
-//             ),
-//           ),
-//           const SizedBox(width: 16),
-//           // text + arrow
-//           Expanded(
-//             child: Column(
-//               crossAxisAlignment: CrossAxisAlignment.start,
-//               children: [
-//                 Text(
-//                   title,
-//                   style: const TextStyle(
-//                     color: Colors.white,
-//                     fontSize: 24,
-//                     fontWeight: FontWeight.w700,
-//                     height: 1.05,
-//                   ),
-//                 ),
-//                 const SizedBox(height: 12),
-//                 Row(
-//                   children: [
-//                     Icon(icon, color: Colors.white, size: 18),
-//                     const SizedBox(width: 8),
-//                     Text(
-//                       subtitle,
-//                       style: const TextStyle(color: Colors.white70),
-//                     ),
-//                     const Spacer(),
-//                     const CircleAvatar(
-//                       radius: 16,
-//                       backgroundColor: Colors.white,
-//                       child: Icon(
-//                         Icons.arrow_forward,
-//                         color: AppColors.primary,
-//                       ),
-//                     ),
-//                   ],
-//                 ),
-//               ],
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
-
-// class _LinkColumn extends StatelessWidget {
-//   const _LinkColumn({required this.title, required this.items});
-
-//   final String title;
-//   final List<String> items;
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Column(
-//       crossAxisAlignment: CrossAxisAlignment.start,
-//       children: [
-//         Text(
-//           title,
-//           style: const TextStyle(
-//             color: Colors.white,
-//             fontSize: 18,
-//             fontWeight: FontWeight.w700,
-//           ),
-//         ),
-//         const _AccentUnderline(),
-//         const SizedBox(height: 10),
-//         ...items.map(
-//           (e) => Padding(
-//             padding: const EdgeInsets.symmetric(vertical: 6),
-//             child: InkWell(
-//               onTap: () {},
-//               child: Text(
-//                 e,
-//                 style: const TextStyle(
-//                   color: Colors.white,
-//                   decoration: TextDecoration.underline,
-//                 ),
-//               ),
-//             ),
-//           ),
-//         ),
-//       ],
-//     );
-//   }
-// }
-
 Widget _sectionHeading(String text) => Column(
   crossAxisAlignment: CrossAxisAlignment.start,
   children: [
@@ -2245,7 +1788,7 @@ class _MobileNavDrawer extends StatelessWidget {
           children: [
             // header
             Container(
-              color: AppColors.primary.withOpacity(0.06),
+              color: AppColors.secondary.withOpacity(0.06),
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
               child: Row(
                 children: [
@@ -2254,7 +1797,7 @@ class _MobileNavDrawer extends StatelessWidget {
                   Text(
                     "Badhyata",
                     style: TextStyle(
-                      color: AppColors.primary,
+                      color: AppColors.secondary,
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
                     ),
@@ -2264,7 +1807,7 @@ class _MobileNavDrawer extends StatelessWidget {
             ),
             // links
             ListTile(
-              leading: Icon(Icons.person_search, color: AppColors.primary),
+              leading: Icon(Icons.person_search, color: AppColors.secondary),
               title: const Text("Find a job"),
               onTap: () {
                 Navigator.pop(context);
@@ -2275,7 +1818,7 @@ class _MobileNavDrawer extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: Icon(Icons.badge, color: AppColors.primary),
+              leading: Icon(Icons.badge, color: AppColors.secondary),
               title: const Text("HR"),
               onTap: () {
                 Navigator.pop(context);
@@ -2288,20 +1831,20 @@ class _MobileNavDrawer extends StatelessWidget {
             ListTile(
               leading: Icon(
                 Icons.group_work_outlined,
-                color: AppColors.primary,
+                color: AppColors.secondary,
               ),
               title: const Text("Team Lead"),
               onTap: () => Navigator.pop(context),
             ),
             ListTile(
-              leading: Icon(Icons.domain, color: AppColors.primary),
+              leading: Icon(Icons.domain, color: AppColors.secondary),
               title: const Text("Company"),
               onTap: () => Navigator.pop(context),
             ),
             ListTile(
               leading: Icon(
                 Icons.admin_panel_settings_outlined,
-                color: AppColors.primary,
+                color: AppColors.secondary,
               ),
               title: const Text("Admin"),
               onTap: () {
@@ -2319,7 +1862,7 @@ class _MobileNavDrawer extends StatelessWidget {
                 height: 44,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
+                    backgroundColor: AppColors.secondary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
