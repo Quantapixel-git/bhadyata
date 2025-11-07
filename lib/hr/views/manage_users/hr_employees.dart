@@ -1,8 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-
-import 'package:jobshub/admin/views/side_bar_dashboard/admin_sidebar.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
 import 'package:jobshub/common/constants/constants.dart';
 import 'package:jobshub/hr/views/sidebar_dashboard/hr_side_bar.dart'; // for ApiConstants.baseUrl
@@ -138,12 +136,13 @@ class _HrEmployeeUsersPageState extends State<HrEmployeeUsersPage>
             backgroundColor: AppColors.primary,
             bottom: const TabBar(
               labelColor: Colors.white,
+              unselectedLabelColor: Colors.white70, // ✅ whitish grey
               indicatorColor: Colors.white,
+
               tabs: [
                 Tab(text: "Pending"),
                 Tab(text: "Approved"),
                 Tab(text: "Rejected"),
-               
               ],
             ),
           ),
@@ -152,7 +151,7 @@ class _HrEmployeeUsersPageState extends State<HrEmployeeUsersPage>
               Expanded(
                 child: TabBarView(
                   children: [
-                      _buildList(
+                    _buildList(
                       _pending,
                       _loadingPending,
                       _errPending,
@@ -173,7 +172,6 @@ class _HrEmployeeUsersPageState extends State<HrEmployeeUsersPage>
                       color: Colors.red,
                       onRetry: () => _fetchUsers('rejected'),
                     ),
-                  
                   ],
                 ),
               ),
@@ -207,7 +205,7 @@ class _HrEmployeeUsersPageState extends State<HrEmployeeUsersPage>
       );
     }
     if (items.isEmpty) {
-      return const Center(child: Text('No users found'));
+      return const Center(child: Text('No users', style: TextStyle(fontSize: 16),));
     }
 
     return RefreshIndicator(

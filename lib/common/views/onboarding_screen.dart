@@ -13,9 +13,9 @@ class OnboardingPage extends StatelessWidget {
     final isDesktop = MediaQuery.of(context).size.width > 800;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4F6FF),
+       backgroundColor: AppColors.white,
       appBar: PreferredSize(
-        
+        //  backgroundColor: AppColors.white,
         preferredSize: Size.fromHeight(isDesktop ? 72 : 60),
         child: _buildStickyHeader(context, isDesktop),
       ),
@@ -69,7 +69,11 @@ class OnboardingPage extends StatelessWidget {
                 // 👇 burger button for mobile
                 Builder(
                   builder: (ctx) => IconButton(
-                    icon: Icon(Icons.menu, size: 40, color: AppColors.secondary),
+                    icon: Icon(
+                      Icons.menu,
+                      size: 40,
+                      color: AppColors.secondary,
+                    ),
                     onPressed: () => Scaffold.of(ctx).openDrawer(),
                     tooltip: "Menu",
                   ),
@@ -94,20 +98,6 @@ class OnboardingPage extends StatelessWidget {
                 Row(
                   children: [
                     TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const HrLoginPage(),
-                          ),
-                        );
-                      },
-                      child: Text(
-                        "HR",
-                        style: TextStyle(color: AppColors.secondary),
-                      ),
-                    ),
-                    TextButton(
                       onPressed: () {},
                       child: Text(
                         "Team Lead",
@@ -118,6 +108,20 @@ class OnboardingPage extends StatelessWidget {
                       onPressed: () {},
                       child: Text(
                         "Company",
+                        style: TextStyle(color: AppColors.secondary),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const HrLoginPage(),
+                          ),
+                        );
+                      },
+                      child: Text(
+                        "HR",
                         style: TextStyle(color: AppColors.secondary),
                       ),
                     ),
@@ -192,7 +196,7 @@ class OnboardingPage extends StatelessWidget {
   Widget _buildHeroSection(BuildContext context, bool isDesktop) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 60),
-      color: const Color(0xFFF4F6FF),
+      // color: const Color(0xFFF4F6FF),
       child: Column(
         children: [
           Text(
@@ -1574,7 +1578,6 @@ Widget _linksGridNarrow() => Column(
         'Engineer (Mech/Civil etc.)',
         'Finance',
         'Field Sales',
-        
       ],
     ),
     SizedBox(height: 20),
@@ -1585,15 +1588,7 @@ Widget _linksGridNarrow() => Column(
     SizedBox(height: 20),
     _LinkColumn(
       title: 'Post Jobs In City',
-      items: [
-        'Mumbai',
-        'Delhi',
-        'Pune',
-        'Bangalore',
-        'Kolkata',
-        'Ahmedabad',
-        
-      ],
+      items: ['Mumbai', 'Delhi', 'Pune', 'Bangalore', 'Kolkata', 'Ahmedabad'],
     ),
     SizedBox(height: 20),
     _LinkColumn(title: 'Post Jobs In Sector', items: ['Telecalling', 'Cook']),
@@ -1817,17 +1812,7 @@ class _MobileNavDrawer extends StatelessWidget {
                 );
               },
             ),
-            ListTile(
-              leading: Icon(Icons.badge, color: AppColors.secondary),
-              title: const Text("HR"),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const HrLoginPage()),
-                );
-              },
-            ),
+
             ListTile(
               leading: Icon(
                 Icons.group_work_outlined,
@@ -1840,6 +1825,17 @@ class _MobileNavDrawer extends StatelessWidget {
               leading: Icon(Icons.domain, color: AppColors.secondary),
               title: const Text("Company"),
               onTap: () => Navigator.pop(context),
+            ),
+            ListTile(
+              leading: Icon(Icons.badge, color: AppColors.secondary),
+              title: const Text("HR"),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const HrLoginPage()),
+                );
+              },
             ),
             ListTile(
               leading: Icon(

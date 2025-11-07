@@ -3,37 +3,30 @@ import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/common/views/onboarding_screen.dart';
 import 'package:jobshub/hr/views/employee_salary_management.dart';
 import 'package:jobshub/hr/views/employee_to_employer_ratings_page.dart';
-// import 'package:jobshub/hr/views/hr_admin_query_page.dart';
-import 'package:jobshub/hr/views/commission_based_job/hr_commission_based_job_approval.dart';
 import 'package:jobshub/hr/views/hr_companies.dart';
 import 'package:jobshub/hr/views/hr_details/hr_detail.dart';
 import 'package:jobshub/hr/views/hr_details/hr_profile.dart';
+import 'package:jobshub/hr/views/job_applicants/hr_one_time_job_applicants_page.dart';
+import 'package:jobshub/hr/views/job_applicants/hr_salary_based_job_applicants_page.dart';
+import 'package:jobshub/hr/views/job_approval/hr_commission_based_job_approval.dart';
+import 'package:jobshub/hr/views/job_approval/hr_one_time_job_approval.dart';
+import 'package:jobshub/hr/views/job_approval/hr_salary_based_job_approval.dart';
 import 'package:jobshub/hr/views/manage_users/hr_employees.dart';
 import 'package:jobshub/hr/views/manage_users/hr_employer_list.dart';
-import 'package:jobshub/hr/views/one_time_job/hr_one_time_job_approval.dart';
-import 'package:jobshub/hr/views/project/project_approval.dart';
+import 'package:jobshub/hr/views/project_approval/project_approval.dart';
 import 'package:jobshub/hr/views/query/hr_admin_query_page.dart';
 import 'package:jobshub/hr/views/query/hr_employee_query_page.dart';
-import 'package:jobshub/hr/views/salary_based_job/hr_salary_based_job_approval.dart';
 import 'package:jobshub/hr/views/sidebar_dashboard/hr_dashboard.dart';
-// import 'package:jobshub/hr/views/hr_employee_query_page.dart';
-// import 'package:jobshub/hr/views/hr_employees.dart';
 import 'package:jobshub/hr/views/hr_employees_attendance_page.dart';
-// import 'package:jobshub/hr/views/hr_employer_list.dart';
 import 'package:jobshub/hr/views/hr_employer_to_employee_ratings_page.dart';
-import 'package:jobshub/hr/views/hr_job_applicants_page.dart';
-// import 'package:jobshub/hr/views/hr_job_approval_page.dart';
 import 'package:jobshub/hr/views/hr_revenue_employer_profit.dart';
 import 'package:jobshub/hr/views/hr_revenue_employer_total.dart';
 import 'package:jobshub/hr/views/hr_salary_management.dart';
 import 'package:jobshub/hr/views/notification/hr_send_notification_page.dart';
 import 'package:jobshub/hr/views/notification/hr_view_notifications_page.dart';
 import 'package:jobshub/hr/views/upload_kyc_hr.dart';
-// import 'package:jobshub/users/views/auth/login_screen.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
-// import 'package:shared_preferences/shared_preferences.dart';
 
-/// ✅ MAIN WRAPPER that decides which sidebar to show
 class HrSidebar extends StatelessWidget {
   final bool isWeb;
   final bool isCollapsed;
@@ -205,18 +198,14 @@ class HrSidebarMobile extends StatelessWidget {
                           ),
                         );
                       }),
-                      _expTileChild(
-                        context,
-                        "Commission-based Lead generator job",
-                        () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => HrCommissionBasedJobsApproval(),
-                            ),
-                          );
-                        },
-                      ),
+                      _expTileChild(context, "Commission-based jobs", () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => HrCommissionBasedJobsApproval(),
+                          ),
+                        );
+                      }),
                       _expTileChild(context, "Projects", () {
                         Navigator.push(
                           context,
@@ -242,9 +231,7 @@ class HrSidebarMobile extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const JobApplicantsPage(
-                              title: "Salary-based Job Applicants",
-                            ),
+                            builder: (_) => HrSalaryBasedJobApplicantsPage(),
                           ),
                         );
                       }),
@@ -252,33 +239,23 @@ class HrSidebarMobile extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const JobApplicantsPage(
-                              title: "One-time Recruitment Applicants",
-                            ),
+                            builder: (_) => OneTimeJobsWithApplicantsPage(),
                           ),
                         );
                       }),
-                      _expTileChild(
-                        context,
-                        "Commission-based Lead generator job",
-                        () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const JobApplicantsPage(
-                                title: "Commission-based Job Applicants",
-                              ),
-                            ),
-                          );
-                        },
-                      ),
+                      _expTileChild(context, "Commission-based jobs", () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => OneTimeJobsWithApplicantsPage(),
+                          ),
+                        );
+                      }),
                       _expTileChild(context, "Projects", () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const JobApplicantsPage(
-                              title: "Project Applicants",
-                            ),
+                            builder: (_) => OneTimeJobsWithApplicantsPage(),
                           ),
                         );
                       }),
@@ -690,18 +667,14 @@ class HrSidebarWeb extends StatelessWidget {
                           ),
                         );
                       }),
-                      _expTileChild(
-                        context,
-                        "Commission-based Lead generator job",
-                        () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => HrCommissionBasedJobsApproval(),
-                            ),
-                          );
-                        },
-                      ),
+                      _expTileChild(context, "Commission-based jobs", () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => HrCommissionBasedJobsApproval(),
+                          ),
+                        );
+                      }),
                       _expTileChild(context, "Projects", () {
                         Navigator.push(
                           context,
@@ -721,9 +694,7 @@ class HrSidebarWeb extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const JobApplicantsPage(
-                              title: "Salary-based Job Applicants",
-                            ),
+                            builder: (_) => HrSalaryBasedJobApplicantsPage(),
                           ),
                         );
                       }),
@@ -731,33 +702,23 @@ class HrSidebarWeb extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const JobApplicantsPage(
-                              title: "One-time Recruitment Applicants",
-                            ),
+                            builder: (_) => OneTimeJobsWithApplicantsPage(),
                           ),
                         );
                       }),
-                      _expTileChild(
-                        context,
-                        "Commission-based Lead generator job",
-                        () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const JobApplicantsPage(
-                                title: "Commission-based Job Applicants",
-                              ),
-                            ),
-                          );
-                        },
-                      ),
+                      _expTileChild(context, "Commission-based jobs", () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => OneTimeJobsWithApplicantsPage(),
+                          ),
+                        );
+                      }),
                       _expTileChild(context, "Projects", () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const JobApplicantsPage(
-                              title: "Project Applicants",
-                            ),
+                            builder: (_) => OneTimeJobsWithApplicantsPage(),
                           ),
                         );
                       }),

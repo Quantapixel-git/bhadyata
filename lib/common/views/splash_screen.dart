@@ -5,10 +5,7 @@ import 'package:jobshub/common/views/onboarding_screen.dart';
 import 'package:jobshub/employer/views/sidebar_dashboard/employer_dashboard.dart';
 import 'package:jobshub/hr/views/sidebar_dashboard/hr_dashboard.dart';
 import 'package:jobshub/users/views/bottomnav_drawer_dashboard/bottom_nav.dart';
-// import 'package:shared_preferences/shared_preferences.dart';
-
 import 'package:jobshub/common/utils/session_manager.dart';
-import 'package:jobshub/users/views/auth/login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -121,22 +118,12 @@ class _SplashScreenState extends State<SplashScreen>
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isWeb = MediaQuery.of(context).size.width > 800;
 
-    return Scaffold(
+    return Scaffold(backgroundColor: Colors.white,
       body: Container(
         width: double.infinity,
         height: double.infinity,
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: isDark
-                ? [
-                    const Color(0xff0f2027),
-                    const Color(0xff203a43),
-                    const Color(0xff2c5364),
-                  ]
-                : [const Color(0xffe0eafc), const Color(0xfff7f8fc)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+         
         ),
         child: Center(
           child: Padding(

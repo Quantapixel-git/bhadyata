@@ -158,7 +158,9 @@ class _HrCompleteProfileState extends State<HrCompleteProfile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.white,
       appBar: AppBar(
+        backgroundColor: AppColors.white,
         automaticallyImplyLeading: true,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
@@ -311,11 +313,11 @@ class _HrCompleteProfileState extends State<HrCompleteProfile> {
           width: double.infinity,
           height: constraints.maxHeight,
           decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFFFFE6EC), Color(0xFFF8D8E7)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            // gradient: LinearGradient(
+            //   colors: [Color.fromARGB(255, 155, 155, 155), Color.fromARGB(255, 118, 116, 117)],
+            //   begin: Alignment.topLeft,
+            //   end: Alignment.bottomRight,
+            // ),
           ),
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
@@ -343,7 +345,7 @@ class _HrCompleteProfileState extends State<HrCompleteProfile> {
                                     style: TextStyle(
                                       fontSize: 30,
                                       fontWeight: FontWeight.bold,
-                                      color: Color(0xFFE91E63),
+                                      color: AppColors.primary,
                                     ),
                                   ),
                                   SizedBox(height: 12),

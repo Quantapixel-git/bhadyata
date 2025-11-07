@@ -129,7 +129,7 @@ class _HROtpScreenState extends State<HROtpScreen> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text("OTP Verified Successfully"),
+            content: Text("OTP Verified Successfully!"),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -317,7 +317,9 @@ class _HROtpScreenState extends State<HROtpScreen> {
         );
 
         return Scaffold(
+          backgroundColor: AppColors.white,
           appBar: AppBar(
+            backgroundColor: AppColors.white,
             elevation: 0.5,
             iconTheme: const IconThemeData(color: Colors.black87),
           ),

@@ -113,20 +113,25 @@ class _HrDetailsPageState extends State<HrDetailsPage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               // 👤 HR Avatar Placeholder
-              const CircleAvatar(
-                radius: 55,
-                backgroundImage: AssetImage('assets/job_bgr.png'),
+              Row(
+                children: [
+                  const CircleAvatar(
+                    radius: 55,
+                    backgroundImage: AssetImage('assets/job_bgr.png'),
+                  ),
+                    const SizedBox(width: 16),
+                  Text(
+                    "HR Profile",
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
 
-              Text(
-                "HR Profile",
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
+              // const SizedBox(height: 24),
 
               // 🧾 HR Info Card
               Container(
@@ -167,6 +172,18 @@ class _HrDetailsPageState extends State<HrDetailsPage> {
                         value: hr['bank_name'] ?? "-",
                       ),
                       const Divider(),
+                      InfoRow(title: "Branch", value: hr['bank_branch'] ?? "-"),
+                      const Divider(),
+                      InfoRow(
+                        title: "Account Holder",
+                        value: hr['bank_account_name'] ?? "-",
+                      ),
+                      const Divider(),
+                      InfoRow(
+                        title: "Account Number",
+                        value: hr['bank_account_number'] ?? "-",
+                      ),
+                      const Divider(),
                       InfoRow(
                         title: "Account No.",
                         value: hr['bank_account_number'] ?? "-",
@@ -176,42 +193,34 @@ class _HrDetailsPageState extends State<HrDetailsPage> {
                         title: "IFSC Code",
                         value: hr['bank_ifsc'] ?? "-",
                       ),
-                      // const Divider(),
-                      // InfoRow(
-                      //   title: "KYC PAN",
-                      //   value: hr['kyc_pan'] ?? "Not Uploaded",
-                      // ),
-                      // const Divider(),
-                      // InfoRow(
-                      //   title: "KYC Aadhaar",
-                      //   value: hr['kyc_aadhaar'] ?? "Not Uploaded",
-                      // ),
+
+                      // "bank_branch": "dfghj",
                     ],
                   ),
                 ),
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 10),
 
               // ✏️ Edit Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  icon: const Icon(Icons.edit),
-                  label: const Text("Edit HR Details"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 2,
-                  ),
-                  onPressed: () {
-                    // TODO: Navigate to HR Edit Page
-                  },
-                ),
-              ),
+              // SizedBox(
+              //   width: double.infinity,
+              //   child: ElevatedButton.icon(
+              //     icon: const Icon(Icons.edit),
+              //     label: const Text("Edit HR Details"),
+              //     style: ElevatedButton.styleFrom(
+              //       backgroundColor: AppColors.primary,
+              //       foregroundColor: Colors.white,
+              //       padding: const EdgeInsets.symmetric(vertical: 14),
+              //       shape: RoundedRectangleBorder(
+              //         borderRadius: BorderRadius.circular(12),
+              //       ),
+              //       elevation: 2,
+              //     ),
+              //     onPressed: () {
+              //       // TODO: Navigate to HR Edit Page
+              //     },
+              //   ),
+              // ),
             ],
           ),
         ),

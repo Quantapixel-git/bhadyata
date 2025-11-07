@@ -25,10 +25,40 @@ class _HrKycUploadPageState extends State<HrKycUploadPage> {
   String? existingAadharUrl;
   String? existingPanUrl;
 
+  // NEW: kyc status from server (1 approved, 2 pending, 3 rejected)
+  int? kycApproval;
+
   @override
   void initState() {
     super.initState();
     _fetchHrKycStatus();
+  }
+
+  // NEW: helpers for chip text/color
+  String kycLabel(int? v) {
+    switch (v) {
+      case 1:
+        return 'Approved';
+      case 2:
+        return 'Pending';
+      case 3:
+        return 'Rejected';
+      default:
+        return 'Not submitted';
+    }
+  }
+
+  Color kycColor(int? v) {
+    switch (v) {
+      case 1:
+        return Colors.green;
+      case 2:
+        return Colors.orange;
+      case 3:
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
   }
 
   Future<void> _fetchHrKycStatus() async {
@@ -49,6 +79,8 @@ class _HrKycUploadPageState extends State<HrKycUploadPage> {
           setState(() {
             existingAadharUrl = data['data']['kyc_aadhaar'];
             existingPanUrl = data['data']['kyc_pan'];
+            // NEW: capture status
+            kycApproval = data['data']['kyc_approval'] as int?;
           });
         }
       }
@@ -68,7 +100,10 @@ class _HrKycUploadPageState extends State<HrKycUploadPage> {
       withData: kIsWeb,
     );
 
-    if (result != null && result.files.single.path != null) {
+    if (result != null &&
+        (kIsWeb
+            ? result.files.single.bytes != null
+            : result.files.single.path != null)) {
       setState(() {
         if (type == 'aadhar') {
           aadharFile = result.files.single;
@@ -131,14 +166,15 @@ class _HrKycUploadPageState extends State<HrKycUploadPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             behavior: SnackBarBehavior.floating,
-            content: Text("✅ HR KYC uploaded successfully!"),
+            content: Text("HR KYC uploaded successfully!"),
           ),
         );
         setState(() {
           aadharFile = null;
           panFile = null;
-          _fetchHrKycStatus(); // refresh
         });
+        // refresh (this will also fetch kyc_approval)
+        await _fetchHrKycStatus();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -167,27 +203,31 @@ class _HrKycUploadPageState extends State<HrKycUploadPage> {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Cannot open PDF link")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: Text("Cannot open PDF link"),
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final hasUploaded =
+        (existingAadharUrl != null && existingAadharUrl!.isNotEmpty) &&
+        (existingPanUrl != null && existingPanUrl!.isNotEmpty);
+
     return HrDashboardWrapper(
       child: Scaffold(
         backgroundColor: Colors.grey.shade100,
         appBar: AppBar(
           automaticallyImplyLeading: false,
-          backgroundColor: Colors.white,
+          backgroundColor: Colors.black,
           elevation: 1,
           title: const Text(
             "KYC Verification",
-            style: TextStyle(
-              color: Colors.black87,
-              fontWeight: FontWeight.w600,
-            ),
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
           ),
         ),
         body: isFetching
@@ -200,6 +240,10 @@ class _HrKycUploadPageState extends State<HrKycUploadPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // NEW: Status banner (always visible)
+                    _statusBanner(hasUploaded),
+
+                    const SizedBox(height: 16),
                     _sectionTitle("Upload or View Your KYC Documents"),
                     const SizedBox(height: 12),
 
@@ -230,7 +274,8 @@ class _HrKycUploadPageState extends State<HrKycUploadPage> {
 
                     const SizedBox(height: 30),
 
-                    if (existingAadharUrl == null || existingPanUrl == null)
+                    // Submit button visible if any doc missing OR if rejected (allow re-upload)
+                    if (!hasUploaded)
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton.icon(
@@ -244,13 +289,20 @@ class _HrKycUploadPageState extends State<HrKycUploadPage> {
                                     color: Colors.white,
                                   ),
                                 )
-                              : const Icon(Icons.upload, color: Colors.white),
-                          label: Text(
-                            isLoading ? "Uploading..." : "Submit KYC",
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
+                              : const Icon(
+                                  Icons.upload,
+                                  color: Colors.white,
+                                  size: 22,
+                                ),
+                          label: Padding(
+                            padding: const EdgeInsets.all(6.0),
+                            child: Text(
+                              isLoading ? "Uploading..." : "Submit KYC",
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                           style: ElevatedButton.styleFrom(
@@ -263,18 +315,61 @@ class _HrKycUploadPageState extends State<HrKycUploadPage> {
                         ),
                       )
                     else
-                      const Center(
-                        child: Text(
-                          "✅ KYC documents already uploaded.",
-                          style: TextStyle(
-                            color: Colors.green,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
+                      // When both docs exist and not rejected, just show a compact note under status banner
+                      const SizedBox.shrink(),
                   ],
                 ),
               ),
+      ),
+    );
+  }
+
+  // NEW: Status banner widget
+  Widget _statusBanner(bool hasUploaded) {
+    final color = kycColor(kycApproval);
+    final label = kycLabel(kycApproval);
+    final showHelp = (kycApproval == 3); // rejected -> show hint
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.35)),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            kycApproval == 1
+                ? Icons.verified_user
+                : kycApproval == 2
+                ? Icons.hourglass_bottom
+                : kycApproval == 3
+                ? Icons.error_outline
+                : Icons.info_outline,
+            color: color,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              hasUploaded
+                  ? "KYC Status: $label"
+                  : "KYC Status: ${kycLabel(null)}",
+              style: TextStyle(
+                // color: color
+                // .shade900, // works for MaterialColor like green/orange/red
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          if (showHelp) const SizedBox(width: 8),
+          if (showHelp)
+            const Text(
+              "Please re-upload clear PDFs",
+              style: TextStyle(fontSize: 12, color: Colors.black54),
+            ),
+        ],
       ),
     );
   }
@@ -309,11 +404,7 @@ class _HrKycUploadPageState extends State<HrKycUploadPage> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 6,
-            offset: const Offset(2, 2),
-          ),
+          BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(2, 2)),
         ],
       ),
       child: Column(
