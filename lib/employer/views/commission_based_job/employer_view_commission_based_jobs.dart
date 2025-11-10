@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jobshub/common/utils/AppColor.dart';
-import 'package:jobshub/employer/views/sidebar_dashboard/employer_side_bar.dart';
+import 'package:jobshub/employer/views/sidebar_dashboard/employer_sidebar.dart';
 
 class CommissionBasedViewPostedJobsPage extends StatelessWidget {
   const CommissionBasedViewPostedJobsPage({super.key});
@@ -34,6 +34,8 @@ class CommissionBasedViewPostedJobsPage extends StatelessWidget {
                 backgroundColor: AppColors.primary,
                 elevation: 2,
                 bottom: const TabBar(
+                  labelColor: Colors.white,
+                  unselectedLabelColor: Colors.white70, // ✅ whitish grey
                   indicatorColor: Colors.white,
                   labelStyle: TextStyle(fontWeight: FontWeight.w600),
                   tabs: [
@@ -136,80 +138,76 @@ class _JobsListState extends State<JobsList> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 700),
-          child: isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: jobs.length,
-                  itemBuilder: (context, index) {
-                    final job = jobs[index];
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 14),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.shade200,
-                            blurRadius: 6,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.all(16),
-                        title: Text(
-                          job["title"] ?? "Unknown Title",
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 15,
-                          ),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(height: 4),
-                            Text(
-                              "${job["job_type"] ?? "N/A"} | ₹${job["salary_min"]} - ₹${job["salary_max"]}",
-                            ),
-                            const SizedBox(height: 2),
-                            Text("Location: ${job["location"] ?? "N/A"}"),
-                            const SizedBox(height: 2),
-                            Text("Posted on: ${job["created_at"] ?? "N/A"}"),
-                            const SizedBox(height: 4),
-                            Text(
-                              "Status: ${widget.status}",
-                              style: TextStyle(
-                                fontWeight: FontWeight.w500,
-                                color: widget.status == "Approved"
-                                    ? Colors.green
-                                    : widget.status == "Rejected"
-                                    ? Colors.red
-                                    : Colors.orange,
-                              ),
-                            ),
-                          ],
-                        ),
-                        trailing: IconButton(
-                          icon: const Icon(
-                            Icons.visibility,
-                            color: AppColors.primary,
-                          ),
-                          onPressed: () {
-                            // TODO: Navigate to job detail page
-                          },
-                        ),
-                      ),
-                    );
-                  },
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return Container(
+      color: Colors.grey.shade100,
+      // ListView directly — no Center/ConstrainedBox — so it spans full width
+      child: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: jobs.length,
+        itemBuilder: (context, index) {
+          final job = jobs[index];
+
+          return Container(
+            margin: const EdgeInsets.only(bottom: 14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.shade200,
+                  blurRadius: 6,
+                  offset: const Offset(0, 3),
                 ),
-        ),
+              ],
+            ),
+            child: ListTile(
+              // stretches across available width now
+              contentPadding: const EdgeInsets.all(16),
+              title: Text(
+                job["title"] ?? "Unknown Title",
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                ),
+              ),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 4),
+                  Text(
+                    "${job["job_type"] ?? "N/A"} | ₹${job["salary_min"]} - ₹${job["salary_max"]}",
+                  ),
+                  const SizedBox(height: 2),
+                  Text("Location: ${job["location"] ?? "N/A"}"),
+                  const SizedBox(height: 2),
+                  Text("Posted on: ${job["created_at"] ?? "N/A"}"),
+                  const SizedBox(height: 4),
+                  Text(
+                    "Status: ${widget.status}",
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      color: widget.status == "Approved"
+                          ? Colors.green
+                          : widget.status == "Rejected"
+                          ? Colors.red
+                          : Colors.orange,
+                    ),
+                  ),
+                ],
+              ),
+              trailing: IconButton(
+                icon: const Icon(Icons.visibility, color: AppColors.primary),
+                onPressed: () {
+                  // TODO: Navigate to job detail page
+                },
+              ),
+            ),
+          );
+        },
       ),
     );
   }

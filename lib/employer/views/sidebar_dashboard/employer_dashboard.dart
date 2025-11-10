@@ -1,48 +1,100 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
+import 'package:jobshub/common/constants/constants.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
-import 'package:jobshub/employer/views/sidebar_dashboard/employer_side_bar.dart';
-import 'package:jobshub/users/views/project_model.dart';
+import 'package:jobshub/common/utils/session_manager.dart';
+import 'package:jobshub/employer/views/sidebar_dashboard/employer_sidebar.dart';
 
-class EmployerDashboardPage extends StatelessWidget {
-  EmployerDashboardPage({super.key});
+class EmployerDashboardPage extends StatefulWidget {
+  const EmployerDashboardPage({super.key});
 
-  // Example Data
-  final int totalSalaryJobs = 5;
-  final int totalCommissionJobs = 3;
-  final int assignedEmployees = 7;
-  final double totalDeposits = 25000.75;
-  final double walletBalance = 12500.50;
+  @override
+  State<EmployerDashboardPage> createState() => _EmployerDashboardPageState();
+}
 
-  final List<ProjectModel> projects = [
-    ProjectModel(
-      title: 'Website Design',
-      description: 'Landing page project',
-      budget: 5000,
-      category: 'Design',
-      paymentType: 'Salary',
-      paymentValue: 5000,
-      status: 'In Progress',
-      deadline: DateTime.now().add(const Duration(days: 7)),
-      applicants: [
-        {'name': 'Alice Johnson', 'proposal': 'I can complete this in 3 days.'},
-        {'name': 'Bob Smith', 'proposal': 'I’ll deliver in 2 days.'},
-      ],
-    ),
-    ProjectModel(
-      title: 'Sales Partner',
-      description: 'Earn commission per sale',
-      budget: 0,
-      category: 'Marketing',
-      paymentType: 'Commission',
-      paymentValue: 15,
-      status: 'In Progress',
-      deadline: DateTime.now().add(const Duration(days: 15)),
-      applicants: [
-        {'name': 'Charlie Brown', 'proposal': 'Experienced in sales.'},
-        {'name': 'Daisy Miller', 'proposal': 'Wide network, quick results.'},
-      ],
-    ),
-  ];
+class _EmployerDashboardPageState extends State<EmployerDashboardPage> {
+  bool loading = true;
+  String? error;
+
+  int salaryJobs = 0;
+  int commissionJobs = 0;
+  int oneTimeJobs = 0;
+  int totalJobs = 0;
+
+  int projects = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchEmployerStats();
+  }
+
+  Future<void> _fetchEmployerStats() async {
+    setState(() {
+      loading = true;
+      error = null;
+    });
+
+    try {
+      // Build endpoint: {baseUrl}statsEmployer
+      final uri = Uri.parse("${ApiConstants.baseUrl}statsEmployer");
+
+      // read employer_id from session
+      final employerId = await SessionManager.getValue('employer_id');
+      if (employerId == null || employerId.toString().isEmpty) {
+        setState(() {
+          error = "Employer ID not found. Please log in again.";
+          loading = false;
+        });
+        return;
+      }
+
+      final res = await http.post(
+        uri,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"employer_id": employerId}),
+      );
+
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        final decoded = jsonDecode(res.body);
+
+        if (decoded["success"] == true) {
+          final d = decoded["data"] ?? {};
+          final j = d["jobs"] ?? {};
+
+          setState(() {
+            salaryJobs = (j["salary_based"] ?? 0) as int;
+            commissionJobs = (j["commission_based"] ?? 0) as int;
+            oneTimeJobs = (j["one_time"] ?? 0) as int;
+            totalJobs =
+                (j["total"] ?? (salaryJobs + commissionJobs + oneTimeJobs))
+                    as int;
+
+            projects = (d["projects"] ?? 0) as int;
+
+            loading = false;
+          });
+        } else {
+          setState(() {
+            error = decoded["message"]?.toString() ?? "Something went wrong";
+            loading = false;
+          });
+        }
+      } else {
+        setState(() {
+          error = "Failed (${res.statusCode})";
+          loading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        error = e.toString();
+        loading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,10 +105,9 @@ class EmployerDashboardPage extends StatelessWidget {
         return EmployerDashboardWrapper(
           child: Column(
             children: [
-              // ✅ AppBar (same as AdminDashboard)
               AppBar(
                 iconTheme: const IconThemeData(color: Colors.white),
-                automaticallyImplyLeading: !isWeb, // hide drawer icon on web
+                automaticallyImplyLeading: !isWeb,
                 title: const Text(
                   "Employer Dashboard",
                   style: TextStyle(
@@ -65,10 +116,20 @@ class EmployerDashboardPage extends StatelessWidget {
                   ),
                 ),
                 backgroundColor: AppColors.primary,
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.refresh, color: Colors.white),
+                    onPressed: _fetchEmployerStats,
+                  ),
+                ],
               ),
-
-              // ✅ Dashboard Content
-              Expanded(child: _buildDashboardContent(isWeb)),
+              Expanded(
+                child: loading
+                    ? const Center(child: CircularProgressIndicator())
+                    : (error != null)
+                    ? _errorView()
+                    : _buildDashboardContent(isWeb),
+              ),
             ],
           ),
         );
@@ -76,44 +137,60 @@ class EmployerDashboardPage extends StatelessWidget {
     );
   }
 
-  // ---------- DASHBOARD CONTENT ----------
+  Widget _errorView() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.error_outline, color: Colors.red, size: 40),
+          const SizedBox(height: 10),
+          Text(
+            error!,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.black87, fontSize: 14),
+          ),
+          const SizedBox(height: 10),
+          ElevatedButton(
+            onPressed: _fetchEmployerStats,
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary),
+            child: const Text("Retry"),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildDashboardContent(bool isWeb) {
     final stats = [
       {
         "title": "Salary-Based Jobs",
-        "value": totalSalaryJobs.toString(),
+        "value": salaryJobs.toString(),
         "color": Colors.blue.shade400,
         "icon": Icons.attach_money,
       },
       {
         "title": "Commission Jobs",
-        "value": totalCommissionJobs.toString(),
+        "value": commissionJobs.toString(),
         "color": Colors.orange.shade400,
         "icon": Icons.bar_chart,
       },
       {
-        "title": "Employees",
-        "value": assignedEmployees.toString(),
-        "color": Colors.green.shade400,
-        "icon": Icons.people_alt,
+        "title": "One-Time Jobs",
+        "value": oneTimeJobs.toString(),
+        "color": Colors.indigo.shade400,
+        "icon": Icons.task_alt_outlined,
       },
       {
-        "title": "Wallet Balance",
-        "value": "₹${walletBalance.toStringAsFixed(2)}",
+        "title": "Total Jobs",
+        "value": totalJobs.toString(),
         "color": Colors.purple.shade400,
-        "icon": Icons.account_balance_wallet,
-      },
-      {
-        "title": "Deposits",
-        "value": "₹${totalDeposits.toStringAsFixed(2)}",
-        "color": Colors.teal.shade400,
-        "icon": Icons.payments_outlined,
+        "icon": Icons.work_outline,
       },
       {
         "title": "Projects",
-        "value": projects.length.toString(),
-        "color": Colors.indigo.shade400,
-        "icon": Icons.work_outline,
+        "value": projects.toString(),
+        "color": Colors.teal.shade400,
+        "icon": Icons.folder_copy_outlined,
       },
     ];
 
@@ -121,72 +198,31 @@ class EmployerDashboardPage extends StatelessWidget {
       color: Colors.grey[100],
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 👋 Greeting (Mobile only)
-            if (!isWeb)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text(
-                      "Welcome Back 👋",
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    SizedBox(height: 5),
-                    Text(
-                      "Here’s an overview of your work and balance.",
-                      style: TextStyle(color: Colors.black54, fontSize: 14),
-                    ),
-                  ],
-                ),
-              ),
-
-            // 📊 Stats Grid
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final crossAxisCount = isWeb ? 4 : 2;
-                return GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: crossAxisCount,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                    childAspectRatio: isWeb ? 1.8 : 1.4,
-                  ),
-                  itemCount: stats.length,
-                  itemBuilder: (context, index) {
-                    final stat = stats[index];
-                    return _statCard(
-                      stat['title'] as String,
-                      stat['value'] as String,
-                      stat['color'] as Color,
-                      stat['icon'] as IconData,
-                      isWeb,
-                    );
-                  },
-                );
-              },
-            ),
-
-            const SizedBox(height: 30),
-
-            // 💼 Projects Section (shown only on web)
-            if (isWeb) _buildProjectsSection(),
-          ],
+        child: GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: stats.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: isWeb ? 4 : 2,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            childAspectRatio: isWeb ? 1.8 : 1.4,
+          ),
+          itemBuilder: (context, index) {
+            final s = stats[index];
+            return _statCard(
+              s["title"] as String,
+              s["value"] as String,
+              s["color"] as Color,
+              s["icon"] as IconData,
+              isWeb,
+            );
+          },
         ),
       ),
     );
   }
 
-  // ---------- STAT CARD ----------
   Widget _statCard(
     String title,
     String value,
@@ -194,94 +230,48 @@ class EmployerDashboardPage extends StatelessWidget {
     IconData icon,
     bool isWeb,
   ) {
-    return GestureDetector(
-      onTap: () {},
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        padding: EdgeInsets.all(isWeb ? 18 : 16),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [color.withOpacity(0.9), color],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      padding: EdgeInsets.all(isWeb ? 18 : 16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [color.withOpacity(0.9), color],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
           ),
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: color.withOpacity(0.3),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, color: Colors.white, size: isWeb ? 36 : 30),
-            const Spacer(),
-            Text(
-              value,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: isWeb ? 24 : 22,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              title,
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: isWeb ? 15 : 13,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
+        ],
       ),
-    );
-  }
-
-  // ---------- PROJECTS SECTION (Web only) ----------
-  Widget _buildProjectsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          "Active Projects",
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
-        ),
-        const SizedBox(height: 12),
-        ...projects.map(
-          (p) => Card(
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: ListTile(
-              leading: CircleAvatar(
-                backgroundColor: Colors.indigo.shade50,
-                child: const Icon(Icons.work_outline, color: Colors.indigo),
-              ),
-              title: Text(p.title),
-              subtitle: Text(p.description),
-              trailing: Text(
-                p.status,
-                style: TextStyle(
-                  color: p.status == 'In Progress'
-                      ? Colors.orange
-                      : Colors.green,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: Colors.white, size: isWeb ? 36 : 30),
+          const Spacer(),
+          Text(
+            value,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: isWeb ? 24 : 22,
+              fontWeight: FontWeight.bold,
             ),
           ),
-        ),
-      ],
+          const SizedBox(height: 6),
+          Text(
+            title,
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: isWeb ? 15 : 13,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

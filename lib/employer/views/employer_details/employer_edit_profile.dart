@@ -7,25 +7,24 @@ import 'package:file_picker/file_picker.dart';
 import 'package:jobshub/common/constants/constants.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
-import 'package:jobshub/hr/views/sidebar_dashboard/hr_sidebar.dart';
-// import 'package:jobshub/hr/views/Sidebar_dashboard/hr_side_bar.dart';
+import 'package:jobshub/employer/views/sidebar_dashboard/employer_sidebar.dart';
 
-class HrEditProfilePage extends StatefulWidget {
-  const HrEditProfilePage({super.key});
+class EmployerEditProfilePage extends StatefulWidget {
+  const EmployerEditProfilePage({super.key});
 
   @override
-  State<HrEditProfilePage> createState() => _HrEditProfilePageState();
+  State<EmployerEditProfilePage> createState() => _EmployerEditProfilePageState();
 }
 
-class _HrEditProfilePageState extends State<HrEditProfilePage> {
+class _EmployerEditProfilePageState extends State<EmployerEditProfilePage> {
   final _formKey = GlobalKey<FormState>();
 
   final _firstController = TextEditingController();
   final _lastController = TextEditingController();
 
-  Map<String, dynamic>? _profile; // current profile for prefills
-  PlatformFile? _pickedImage; // new file chosen
-  bool _removeImage = false; // remove_image=1
+  Map<String, dynamic>? _profile;     // current profile for prefills
+  PlatformFile? _pickedImage;         // new file chosen
+  bool _removeImage = false;          // remove_image=1
   bool _loading = true;
   bool _saving = false;
 
@@ -37,30 +36,19 @@ class _HrEditProfilePageState extends State<HrEditProfilePage> {
     map.forEach((k, v) => debugPrint('  $k: $v'));
   }
 
-  void _debugHttpResponse(
-    String label,
-    http.Response resp, {
-    int bodyMax = 4000,
-  }) {
+  void _debugHttpResponse(String label, http.Response resp, {int bodyMax = 4000}) {
     if (!kDebugMode) return;
     debugPrint('[$label] Status: ${resp.statusCode}');
     debugPrint('[$label] Headers: ${resp.headers}');
     final body = resp.body;
     if (body.length > bodyMax) {
-      debugPrint(
-        '[$label] Body (${body.length} chars, truncated): ${body.substring(0, bodyMax)}...',
-      );
+      debugPrint('[$label] Body (${body.length} chars, truncated): ${body.substring(0, bodyMax)}...');
     } else {
       debugPrint('[$label] Body: $body');
     }
   }
 
-  /// Read the streamed response ONCE, log it (in debug), and return the Response.
-  Future<http.Response> _streamToResponse(
-    String label,
-    http.StreamedResponse sResp, {
-    int bodyMax = 4000,
-  }) async {
+  Future<http.Response> _streamToResponse(String label, http.StreamedResponse sResp, {int bodyMax = 4000}) async {
     final resp = await http.Response.fromStream(sResp);
     if (kDebugMode) _debugHttpResponse(label, resp, bodyMax: bodyMax);
     return resp;
@@ -90,8 +78,8 @@ class _HrEditProfilePageState extends State<HrEditProfilePage> {
   Future<void> _loadProfile() async {
     try {
       setState(() => _loading = true);
-      final userId = await SessionManager.getValue('hr_id');
-      if (kDebugMode) debugPrint('➡️ loadProfile for user_id: $userId');
+      final userId = await SessionManager.getValue('employer_id');
+      if (kDebugMode) debugPrint('➡️ loadProfile for employer_id: $userId');
 
       final url = Uri.parse("${ApiConstants.baseUrl}getProfileById");
       final resp = await http.post(
@@ -112,19 +100,13 @@ class _HrEditProfilePageState extends State<HrEditProfilePage> {
           return;
         }
 
-        if (decoded is Map &&
-            decoded['success'] == true &&
-            decoded['data'] != null) {
+        if (decoded is Map && decoded['success'] == true && decoded['data'] != null) {
           _profile = Map<String, dynamic>.from(decoded['data'] as Map);
           _firstController.text = (_profile?['first_name'] ?? '').toString();
-          _lastController.text = (_profile?['last_name'] ?? '').toString();
+          _lastController.text  = (_profile?['last_name'] ?? '').toString();
           if (kDebugMode) _debugPrintMap('Loaded profile', _profile!);
         } else {
-          _snack(
-            decoded is Map
-                ? (decoded['message'] ?? "Failed to load profile")
-                : "Failed to load profile",
-          );
+          _snack(decoded is Map ? (decoded['message'] ?? "Failed to load profile") : "Failed to load profile");
         }
       } else {
         _snack("HTTP ${resp.statusCode} while loading profile");
@@ -145,9 +127,7 @@ class _HrEditProfilePageState extends State<HrEditProfilePage> {
     if (res != null && res.files.isNotEmpty) {
       final f = res.files.first;
       if (kDebugMode) {
-        debugPrint(
-          '📸 Picked image: name=${f.name}, size=${f.size}, ext=${f.extension}, hasBytes=${f.bytes != null}',
-        );
+        debugPrint('📸 Picked image: name=${f.name}, size=${f.size}, ext=${f.extension}, hasBytes=${f.bytes != null}');
       }
       setState(() {
         _pickedImage = f;
@@ -163,7 +143,7 @@ class _HrEditProfilePageState extends State<HrEditProfilePage> {
 
     try {
       setState(() => _saving = true);
-      final userId = await SessionManager.getValue('hr_id');
+      final userId = await SessionManager.getValue('employer_id');
       if (userId == null || userId.toString().isEmpty) {
         _snack("User ID not found. Please log in again.");
         return;
@@ -193,17 +173,13 @@ class _HrEditProfilePageState extends State<HrEditProfilePage> {
         );
       }
 
-      // 🔎 Log outgoing request
       if (kDebugMode) {
         debugPrint('— edit-user-profile REQUEST —');
         _debugPrintMap('fields', req.fields.map((k, v) => MapEntry(k, v)));
-        debugPrint(
-          'files: ${req.files.map((f) => '${f.field}: ${f.filename} (${f.length} bytes)').join(', ')}',
-        );
+        debugPrint('files: ${req.files.map((f) => '${f.field}: ${f.filename} (${f.length} bytes)').join(', ')}');
         debugPrint('url: $url');
       }
 
-      // Send + read ONCE
       final streamed = await req.send();
       final resp = await _streamToResponse('edit-user-profile', streamed);
 
@@ -212,15 +188,11 @@ class _HrEditProfilePageState extends State<HrEditProfilePage> {
         decoded = jsonDecode(resp.body);
       } catch (e, st) {
         _logError(e, st, where: 'jsonDecode(edit-user-profile)');
-        _snack(
-          "Server returned non-JSON (HTTP ${resp.statusCode}). See console.",
-        );
+        _snack("Server returned non-JSON (HTTP ${resp.statusCode}). See console.");
         return;
       }
 
-      if (resp.statusCode == 200 &&
-          decoded is Map &&
-          decoded['success'] == true) {
+      if (resp.statusCode == 200 && decoded is Map && decoded['success'] == true) {
         _snack(decoded['message'] ?? "Profile updated");
         await _loadProfile(); // refresh
         setState(() {
@@ -228,7 +200,6 @@ class _HrEditProfilePageState extends State<HrEditProfilePage> {
           _removeImage = false;
         });
       } else {
-        // bubble backend validation errors if present
         String msg = "Failed to update profile (HTTP ${resp.statusCode})";
         if (decoded is Map) {
           if (decoded['message'] != null) msg = decoded['message'].toString();
@@ -258,7 +229,7 @@ class _HrEditProfilePageState extends State<HrEditProfilePage> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final bool isWeb = constraints.maxWidth >= 900;
-        return HrDashboardWrapper(
+        return EmployerDashboardWrapper(
           child: Column(
             children: [
               AppBar(
@@ -266,10 +237,7 @@ class _HrEditProfilePageState extends State<HrEditProfilePage> {
                 iconTheme: const IconThemeData(color: Colors.white),
                 title: const Text(
                   "Edit Profile",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
                 ),
                 backgroundColor: AppColors.primary,
                 elevation: 2,
@@ -314,12 +282,10 @@ class _HrEditProfilePageState extends State<HrEditProfilePage> {
                     radius: 44,
                     backgroundImage:
                         _pickedImage != null && _pickedImage!.bytes != null
-                        ? MemoryImage(_pickedImage!.bytes!)
-                        : (avatarUrl != null &&
-                              avatarUrl.isNotEmpty &&
-                              !_removeImage)
-                        ? NetworkImage(avatarUrl) as ImageProvider
-                        : const AssetImage('assets/job_bgr.png'),
+                            ? MemoryImage(_pickedImage!.bytes!)
+                            : (avatarUrl != null && avatarUrl.isNotEmpty && !_removeImage)
+                                ? NetworkImage(avatarUrl) as ImageProvider
+                                : const AssetImage('assets/job_bgr.png'),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -332,50 +298,36 @@ class _HrEditProfilePageState extends State<HrEditProfilePage> {
                           icon: const Icon(Icons.photo_library),
                           label: const Padding(
                             padding: EdgeInsets.all(6.0),
-                            child: Text(
-                              "Change Photo",
-                              style: TextStyle(fontSize: 18),
-                            ),
+                            child: Text("Change Photo", style: TextStyle(fontSize: 18)),
                           ),
                           style: ElevatedButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                             backgroundColor: AppColors.primary,
                             foregroundColor: Colors.white,
                           ),
                         ),
                         OutlinedButton.icon(
                           onPressed: () {
-                            if (kDebugMode)
-                              debugPrint('🗑️ Marking photo for removal');
+                            if (kDebugMode) debugPrint('🗑️ Marking photo for removal');
                             setState(() {
                               _pickedImage = null; // discard picked
                               _removeImage = true; // mark for delete
                             });
                           },
                           style: OutlinedButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           ),
                           icon: const Icon(Icons.delete_outline),
                           label: const Padding(
                             padding: EdgeInsets.all(6.0),
-                            child: Text(
-                              "Remove Photo",
-                              style: TextStyle(fontSize: 18),
-                            ),
+                            child: Text("Remove Photo", style: TextStyle(fontSize: 18)),
                           ),
                         ),
                         if (_pickedImage != null && !_removeImage)
                           Text(
                             _pickedImage!.name,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              fontSize: 12,
-                              color: Colors.black54,
-                            ),
+                            style: const TextStyle(fontSize: 12, color: Colors.black54),
                           ),
                       ],
                     ),
@@ -391,9 +343,7 @@ class _HrEditProfilePageState extends State<HrEditProfilePage> {
                     child: _buildTextField(
                       controller: _firstController,
                       label: "First Name",
-                      validator: (v) => (v == null || v.trim().isEmpty)
-                          ? "First name is required"
-                          : null,
+                      validator: (v) => (v == null || v.trim().isEmpty) ? "First name is required" : null,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -401,9 +351,7 @@ class _HrEditProfilePageState extends State<HrEditProfilePage> {
                     child: _buildTextField(
                       controller: _lastController,
                       label: "Last Name",
-                      validator: (v) => (v == null || v.trim().isEmpty)
-                          ? "Last name is required"
-                          : null,
+                      validator: (v) => (v == null || v.trim().isEmpty) ? "Last name is required" : null,
                     ),
                   ),
                 ],
@@ -411,10 +359,7 @@ class _HrEditProfilePageState extends State<HrEditProfilePage> {
               const SizedBox(height: 24),
 
               if (_removeImage)
-                const Text(
-                  "Photo will be removed",
-                  style: TextStyle(fontSize: 12, color: Colors.red),
-                ),
+                const Text("Photo will be removed", style: TextStyle(fontSize: 12, color: Colors.red)),
               const SizedBox(height: 10),
 
               // Save button
@@ -426,27 +371,19 @@ class _HrEditProfilePageState extends State<HrEditProfilePage> {
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   child: _saving
                       ? const SizedBox(
                           height: 22,
                           width: 22,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                         )
                       : const Padding(
                           padding: EdgeInsets.all(6.0),
                           child: Text(
                             "Save Changes",
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                            ),
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                           ),
                         ),
                 ),

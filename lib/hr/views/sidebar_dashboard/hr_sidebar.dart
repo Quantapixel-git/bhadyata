@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/common/views/onboarding_screen.dart';
-import 'package:jobshub/hr/views/employee_salary_management.dart';
-import 'package:jobshub/hr/views/employee_to_employer_ratings_page.dart';
+import 'package:jobshub/hr/views/attendance/hr_employees_attendance_page.dart';
 import 'package:jobshub/hr/views/hr_companies.dart';
 import 'package:jobshub/hr/views/hr_details/hr_detail.dart';
 import 'package:jobshub/hr/views/hr_details/hr_profile.dart';
-import 'package:jobshub/hr/views/job_applicants/hr_one_time_job_applicants_page.dart';
-import 'package:jobshub/hr/views/job_applicants/hr_salary_based_job_applicants_page.dart';
+import 'package:jobshub/hr/views/job_applicants/hr_commission_based_job_with_applicants.dart';
+import 'package:jobshub/hr/views/job_applicants/hr_one_time_job_with_applicants.dart';
+import 'package:jobshub/hr/views/job_applicants/hr_project_with_applicants.dart';
+import 'package:jobshub/hr/views/job_applicants/hr_salary_based_job_with_applicants.dart';
 import 'package:jobshub/hr/views/job_approval/hr_commission_based_job_approval.dart';
 import 'package:jobshub/hr/views/job_approval/hr_one_time_job_approval.dart';
 import 'package:jobshub/hr/views/job_approval/hr_salary_based_job_approval.dart';
@@ -16,12 +17,9 @@ import 'package:jobshub/hr/views/manage_users/hr_employer_list.dart';
 import 'package:jobshub/hr/views/project_approval/project_approval.dart';
 import 'package:jobshub/hr/views/query/hr_admin_query_page.dart';
 import 'package:jobshub/hr/views/query/hr_employee_query_page.dart';
+import 'package:jobshub/hr/views/ratings/employee_to_employer_ratings.dart';
+import 'package:jobshub/hr/views/ratings/employer_to_employee_ratings.dart';
 import 'package:jobshub/hr/views/sidebar_dashboard/hr_dashboard.dart';
-import 'package:jobshub/hr/views/hr_employees_attendance_page.dart';
-import 'package:jobshub/hr/views/hr_employer_to_employee_ratings_page.dart';
-import 'package:jobshub/hr/views/hr_revenue_employer_profit.dart';
-import 'package:jobshub/hr/views/hr_revenue_employer_total.dart';
-import 'package:jobshub/hr/views/hr_salary_management.dart';
 import 'package:jobshub/hr/views/notification/hr_send_notification_page.dart';
 import 'package:jobshub/hr/views/notification/hr_view_notifications_page.dart';
 import 'package:jobshub/hr/views/upload_kyc_hr.dart';
@@ -247,7 +245,7 @@ class HrSidebarMobile extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => OneTimeJobsWithApplicantsPage(),
+                            builder: (_) => HrCommissionBasedJobApplicants(),
                           ),
                         );
                       }),
@@ -255,94 +253,94 @@ class HrSidebarMobile extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => OneTimeJobsWithApplicantsPage(),
+                            builder: (_) => HrProjectApplicants(),
                           ),
                         );
                       }),
                     ],
                   ),
-                  ExpansionTile(
-                    leading: Icon(Icons.money, color: AppColors.primary),
-                    title: const Text("Revenue Generated"),
-                    childrenPadding: const EdgeInsets.only(left: 20, bottom: 8),
-                    iconColor: AppColors.primary,
-                    collapsedIconColor: AppColors.primary,
-                    children: [
-                      ListTile(
-                        title: const Text(
-                          "From Employer (profit amount)",
-                          style: TextStyle(fontSize: 13.5),
-                        ),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => HrRevenueEmployerProfit(),
-                            ),
-                          );
-                        },
-                      ),
-                      ListTile(
-                        title: const Text(
-                          "From Employer (sum of employee salary & profit)",
-                          style: TextStyle(fontSize: 13.5),
-                        ),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => HrRevenueEmployerTotal(),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
 
-                  ExpansionTile(
-                    leading: Icon(Icons.payment, color: AppColors.primary),
-                    title: const Text("Salary Management"),
-                    childrenPadding: const EdgeInsets.only(left: 20, bottom: 8),
-                    iconColor: AppColors.primary,
-                    collapsedIconColor: AppColors.primary,
-                    children: [
-                      ListTile(
-                        title: const Text(
-                          "HR Salary (to be paid to hr)",
-                          style: TextStyle(fontSize: 13.5),
-                        ),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => HrSalaryManagement(),
-                            ),
-                          );
-                        },
-                      ),
-                      ListTile(
-                        title: const Text(
-                          "Employee Salary (to be paid to employees for their work)",
-                          style: TextStyle(fontSize: 13.5),
-                        ),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => EmployeeSalaryManagement(),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
+                  // ExpansionTile(
+                  //   leading: Icon(Icons.money, color: AppColors.primary),
+                  //   title: const Text("Revenue Generated"),
+                  //   childrenPadding: const EdgeInsets.only(left: 20, bottom: 8),
+                  //   iconColor: AppColors.primary,
+                  //   collapsedIconColor: AppColors.primary,
+                  //   children: [
+                  //     ListTile(
+                  //       title: const Text(
+                  //         "From Employer (profit amount)",
+                  //         style: TextStyle(fontSize: 13.5),
+                  //       ),
+                  //       onTap: () {
+                  //         Navigator.push(
+                  //           context,
+                  //           MaterialPageRoute(
+                  //             builder: (_) => HrRevenueEmployerProfit(),
+                  //           ),
+                  //         );
+                  //       },
+                  //     ),
+                  //     ListTile(
+                  //       title: const Text(
+                  //         "From Employer (sum of employee salary & profit)",
+                  //         style: TextStyle(fontSize: 13.5),
+                  //       ),
+                  //       onTap: () {
+                  //         Navigator.push(
+                  //           context,
+                  //           MaterialPageRoute(
+                  //             builder: (_) => HrRevenueEmployerTotal(),
+                  //           ),
+                  //         );
+                  //       },
+                  //     ),
+                  //   ],
+                  // ),
 
+                  // ExpansionTile(
+                  //   leading: Icon(Icons.payment, color: AppColors.primary),
+                  //   title: const Text("Salary Management"),
+                  //   childrenPadding: const EdgeInsets.only(left: 20, bottom: 8),
+                  //   iconColor: AppColors.primary,
+                  //   collapsedIconColor: AppColors.primary,
+                  //   children: [
+                  //     ListTile(
+                  //       title: const Text(
+                  //         "Your Salary",
+                  //         style: TextStyle(fontSize: 13.5),
+                  //       ),
+                  //       onTap: () {
+                  //         Navigator.push(
+                  //           context,
+                  //           MaterialPageRoute(
+                  //             builder: (_) => HrSalaryManagement(),
+                  //           ),
+                  //         );
+                  //       },
+                  //     ),
+                  // ListTile(
+                  //   title: const Text(
+                  //     "Employee Salary",
+                  //     style: TextStyle(fontSize: 13.5),
+                  //   ),
+                  //   onTap: () {
+                  //     Navigator.push(
+                  //       context,
+                  //       MaterialPageRoute(
+                  //         builder: (_) => EmployeeSalaryManagement(),
+                  //       ),
+                  //     );
+                  //   },
+                  // ),
+                  //   ],
+                  // ),
                   ExpansionTile(
                     leading: Icon(
                       Icons.calendar_month_outlined,
                       color: AppColors.primary,
                     ),
-                    title: const Text("Employees Attendance"),
+                    title: const Text("Attendance"),
                     childrenPadding: const EdgeInsets.only(left: 20, bottom: 8),
                     iconColor: AppColors.primary,
                     collapsedIconColor: AppColors.primary,
@@ -710,7 +708,7 @@ class HrSidebarWeb extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => OneTimeJobsWithApplicantsPage(),
+                            builder: (_) => HrCommissionBasedJobApplicants(),
                           ),
                         );
                       }),
@@ -718,58 +716,58 @@ class HrSidebarWeb extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => OneTimeJobsWithApplicantsPage(),
+                            builder: (_) => HrProjectApplicants(),
                           ),
                         );
                       }),
                     ],
                   ),
-                  _expansionGroup(context, Icons.money, "Revenue Generated", [
-                    _expTileChild(context, "From Employer (profit amount)", () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => HrRevenueEmployerProfit(),
-                        ),
-                      );
-                    }),
-                    _expTileChild(
-                      context,
-                      "From Employer (sum of employee salary & profit)",
-                      () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => HrRevenueEmployerTotal(),
-                          ),
-                        );
-                      },
-                    ),
-                  ]),
-                  _expansionGroup(context, Icons.payment, "Salary Management", [
-                    _expTileChild(context, "HR Salary (to be paid to hr)", () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => HrSalaryManagement()),
-                      );
-                    }),
-                    _expTileChild(
-                      context,
-                      "Employee Salary (to be paid to employees for their work)",
-                      () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => EmployeeSalaryManagement(),
-                          ),
-                        );
-                      },
-                    ),
-                  ]),
+                  // _expansionGroup(context, Icons.money, "Revenue Generated", [
+                  //   _expTileChild(context, "From Employer (profit amount)", () {
+                  //     Navigator.push(
+                  //       context,
+                  //       MaterialPageRoute(
+                  //         builder: (_) => HrRevenueEmployerProfit(),
+                  //       ),
+                  //     );
+                  //   }),
+                  //   _expTileChild(
+                  //     context,
+                  //     "From Employer (sum of employee salary & profit)",
+                  //     () {
+                  //       Navigator.push(
+                  //         context,
+                  //         MaterialPageRoute(
+                  //           builder: (_) => HrRevenueEmployerTotal(),
+                  //         ),
+                  //       );
+                  //     },
+                  //   ),
+                  // ]),
+                  // _expansionGroup(context, Icons.payment, "Salary Management", [
+                  //   _expTileChild(context, "Your Salary", () {
+                  //     Navigator.push(
+                  //       context,
+                  //       MaterialPageRoute(builder: (_) => HrSalaryManagement()),
+                  //     );
+                  //   }),
+                  // _expTileChild(
+                  //   context,
+                  //   "Employee Salary (to be paid to employees for their work)",
+                  //   () {
+                  //     Navigator.push(
+                  //       context,
+                  //       MaterialPageRoute(
+                  //         builder: (_) => EmployeeSalaryManagement(),
+                  //       ),
+                  //     );
+                  //   },
+                  // ),
+                  // ]),
                   _expansionGroup(
                     context,
                     Icons.calendar_month_outlined,
-                    "Employees Attendance",
+                    "Attendance",
                     [
                       _expTileChild(context, "Salary-based Employees", () {
                         Navigator.push(
@@ -790,7 +788,7 @@ class HrSidebarWeb extends StatelessWidget {
                         ),
                       );
                     }),
-                    _expTileChild(context, "Employer → Project Employees", () {
+                    _expTileChild(context, "Employer → Employees", () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(

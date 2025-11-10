@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:jobshub/admin/views/auth/admin_login.dart';
 import 'package:jobshub/common/constants/constants.dart';
-import 'package:jobshub/employer/views/auth/employer_login.dart';
-import 'package:jobshub/hr/views/auth/hr_login_screen.dart';
 import 'package:jobshub/users/views/auth/otp_screen.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
 import 'dart:convert';
@@ -213,7 +210,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // backgroundColor: const Color(0xfff8f9fb),
+      backgroundColor: AppColors.white,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {

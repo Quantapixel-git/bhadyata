@@ -1,28 +1,32 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:jobshub/common/utils/AppColor.dart';
-import 'package:jobshub/hr/views/job_applicants/one_time_job_applicant.dart';
-import 'package:jobshub/hr/views/sidebar_dashboard/hr_side_bar.dart';
 
-class OneTimeJobsWithApplicantsPage extends StatefulWidget {
-  const OneTimeJobsWithApplicantsPage({super.key});
+import 'package:jobshub/common/utils/AppColor.dart';
+import 'package:jobshub/common/utils/session_manager.dart';
+import 'package:jobshub/common/constants/constants.dart';
+import 'package:jobshub/employer/views/sidebar_dashboard/employer_sidebar.dart';
+
+class EmployerCommissionBasedJobsWithApplicantsPage extends StatefulWidget {
+  const EmployerCommissionBasedJobsWithApplicantsPage({super.key});
 
   @override
-  State<OneTimeJobsWithApplicantsPage> createState() =>
-      _OneTimeJobsWithApplicantsPageState();
+  State<EmployerCommissionBasedJobsWithApplicantsPage> createState() =>
+      _EmployerCommissionBasedJobsWithApplicantsPageState();
 }
 
-class _OneTimeJobsWithApplicantsPageState
-    extends State<OneTimeJobsWithApplicantsPage> {
+class _EmployerCommissionBasedJobsWithApplicantsPageState
+    extends State<EmployerCommissionBasedJobsWithApplicantsPage> {
   bool _loading = true;
   String? _error;
   List<Map<String, dynamic>> _jobs = [];
 
-  // 👉 Update this to your actual endpoint for {{bhadyata}}oneTimeJobsWithApplicants
-  // Example based on your existing pattern:
+  // API endpoint (matches your controller route)
   final String apiUrl =
-      'https://dialfirst.in/quantapixel/badhyata/api/oneTimeJobsWithApplicants';
+      '${ApiConstants.baseUrl}commissionBasedJobsWithApplicants';
+
+  // Always fetch with hr_approval = 1 for this screen
+  static const int _hrApproval = 1;
 
   @override
   void initState() {
@@ -37,18 +41,39 @@ class _OneTimeJobsWithApplicantsPageState
     });
 
     try {
+      // Read employer_id from session (avoid hardcoding 14)
+      final employerIdStr = await SessionManager.getValue('employer_id');
+      if (employerIdStr == null || employerIdStr.isEmpty) {
+        setState(() {
+          _error = "Employer ID not found. Please log in again.";
+          _loading = false;
+        });
+        return;
+      }
+
+      final body = {
+        "employer_id": int.tryParse(employerIdStr) ?? employerIdStr,
+        "hr_approval": _hrApproval,
+      };
+
       final res = await http.post(
         Uri.parse(apiUrl),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({}), // no filters initially
+        body: jsonEncode(body),
       );
 
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body) as Map<String, dynamic>;
-        final List data = (json['data'] as List?) ?? [];
-        setState(() {
-          _jobs = data.cast<Map<String, dynamic>>();
-        });
+        if (json['success'] == true) {
+          final List data = (json['data'] as List?) ?? [];
+          setState(() {
+            _jobs = data.cast<Map<String, dynamic>>();
+          });
+        } else {
+          setState(
+            () => _error = (json['message'] ?? 'Failed to load').toString(),
+          );
+        }
       } else {
         setState(() => _error = "Error ${res.statusCode}");
       }
@@ -69,28 +94,24 @@ class _OneTimeJobsWithApplicantsPageState
     if (raw == null) return '—';
     try {
       final dt = DateTime.parse(raw.toString());
-      return "${dt.day.toString().padLeft(2, '0')} ${_month(dt.month)} ${dt.year}";
+      final months = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+      ];
+      return "${dt.day.toString().padLeft(2, '0')} ${months[dt.month - 1]} ${dt.year}";
     } catch (_) {
       return raw.toString();
     }
-  }
-
-  String _month(int m) {
-    const months = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ];
-    return months[(m.clamp(1, 12)) - 1];
   }
 
   Widget _countPill(int count) => Container(
@@ -116,7 +137,7 @@ class _OneTimeJobsWithApplicantsPageState
       builder: (context, constraints) {
         final bool isWeb = constraints.maxWidth >= 900;
 
-        return HrDashboardWrapper(
+        return EmployerDashboardWrapper(
           child: Scaffold(
             backgroundColor: Colors.grey.shade100,
             appBar: AppBar(
@@ -124,7 +145,7 @@ class _OneTimeJobsWithApplicantsPageState
               iconTheme: const IconThemeData(color: Colors.white),
               backgroundColor: AppColors.primary,
               title: const Text(
-                "One-Time Recruitment • With Applicants",
+                "Jobs With Applicants",
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
@@ -142,6 +163,7 @@ class _OneTimeJobsWithApplicantsPageState
                         Text(
                           _error!,
                           style: const TextStyle(color: Colors.red),
+                          textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 8),
                         OutlinedButton(
@@ -175,17 +197,32 @@ class _OneTimeJobsWithApplicantsPageState
                             itemBuilder: (context, i) {
                               final j = _jobs[i];
 
+                              // Common fields from your controller mapping
                               final title = _safe(j['title']);
                               final category = _safe(j['category']);
                               final location = _safe(j['location']);
-                              final payment = _safe(j['payment_amount']);
-                              final paymentType = _safe(j['payment_type']);
-                              final jobDate = _formatDate(j['job_date']);
-                              final startTime = _safe(j['start_time']);
-                              final endTime = _safe(j['end_time']);
-                              final count =
-                                  int.tryParse(_safe(j['applicants_count'])) ??
-                                  0;
+                              final createdAt = _formatDate(j['created_at']);
+                              final count = (j['applicants_count'] is int)
+                                  ? (j['applicants_count'] as int)
+                                  : int.tryParse(
+                                          _safe(j['applicants_count']),
+                                        ) ??
+                                        0;
+
+                              // Salary-based friendly bits (optional, if present)
+                              final jobType = _safe(
+                                j['job_type'],
+                              ); // may not exist
+                              final salaryMin = _safe(
+                                j['salary_min'],
+                              ); // may not exist
+                              final salaryMax = _safe(
+                                j['salary_max'],
+                              ); // may not exist
+
+                              // If salary fields are missing, we won’t show salary line.
+                              final hasSalaryRange =
+                                  salaryMin != '—' || salaryMax != '—';
 
                               return Container(
                                 margin: const EdgeInsets.only(bottom: 14),
@@ -223,19 +260,22 @@ class _OneTimeJobsWithApplicantsPageState
                                     children: [
                                       const SizedBox(height: 4),
                                       Text(
-                                        "$category • ₹$payment ($paymentType)",
+                                        jobType != '—'
+                                            ? "$category • $jobType"
+                                            : "$category",
                                       ),
+                                      if (hasSalaryRange) ...[
+                                        const SizedBox(height: 2),
+                                        Text("₹$salaryMin - ₹$salaryMax"),
+                                      ],
                                       const SizedBox(height: 2),
                                       Text("Location: $location"),
                                       const SizedBox(height: 2),
-                                      Text(
-                                        "Job Date: $jobDate • $startTime – $endTime",
-                                      ),
+                                      Text("Posted on: $createdAt"),
                                       const SizedBox(height: 8),
                                       _countPill(count),
                                     ],
                                   ),
-                                  // 👉 trailing button with placeholder action
                                   trailing: IconButton(
                                     tooltip: "View applicants",
                                     icon: const Icon(
@@ -243,12 +283,8 @@ class _OneTimeJobsWithApplicantsPageState
                                       color: Colors.black87,
                                     ),
                                     onPressed: () {
-                                      // Placeholder: replace with navigation to applicants list
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(builder: (context)=>OneTimeApplicantsPage(jobId: 2,)),
-                                      );
-                                     
+                                      // TODO: Navigate to applicant list for this job ID
+                                      // final jobId = j['id'];
                                     },
                                   ),
                                 ),

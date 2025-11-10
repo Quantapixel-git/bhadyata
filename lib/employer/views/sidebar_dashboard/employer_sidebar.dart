@@ -3,6 +3,8 @@ import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/common/views/onboarding_screen.dart';
 import 'package:jobshub/employer/views/commission_based_job/employer_post_commission_based_job.dart';
 import 'package:jobshub/employer/views/commission_based_job/employer_view_commission_based_jobs.dart';
+import 'package:jobshub/employer/views/employer_commission_based_jobs_with_applicants.dart';
+import 'package:jobshub/employer/views/employer_salary_jobs_with_applicants.dart';
 import 'package:jobshub/employer/views/one_time_job/employer_view_ome_time_jobs.dart';
 import 'package:jobshub/employer/views/project_job/emnployer_post_project.dart';
 import 'package:jobshub/employer/views/one_time_job/employer_post_one_time_job.dart';
@@ -147,7 +149,7 @@ class EmployerSidebarMobile extends StatelessWidget {
                     iconColor: AppColors.primary,
                     collapsedIconColor: AppColors.primary,
                     children: [
-                      _expTileChild(context, "Salary Based Recruitment", () {
+                      _expTileChild(context, "Salary-Based Recruitment", () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -155,7 +157,7 @@ class EmployerSidebarMobile extends StatelessWidget {
                           ),
                         );
                       }),
-                      _expTileChild(context, "One-Time Recruitment only", () {
+                      _expTileChild(context, "One-Time Recruitment", () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -173,7 +175,7 @@ class EmployerSidebarMobile extends StatelessWidget {
                       }),
                       _expTileChild(
                         context,
-                        "Commission Based Recruitment",
+                        "Commission-Based Recruitment",
                         () {
                           Navigator.push(
                             context,
@@ -208,7 +210,7 @@ class EmployerSidebarMobile extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => SendNotificationPage(),
+                            builder: (_) => EmployerSendNotificationPage(),
                           ),
                         );
                       }),
@@ -217,7 +219,7 @@ class EmployerSidebarMobile extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const AllNotificationsPage(),
+                            builder: (_) => const EmployerNotificationsPage(),
                           ),
                         );
                       }),
@@ -261,7 +263,7 @@ class EmployerSidebarMobile extends StatelessWidget {
                       Icons.person_add_alt_1_outlined,
                       color: AppColors.primary,
                     ),
-                    title: const Text("Post One-time Recruitment Jobs"),
+                    title: const Text("Post One-time Jobs"),
                     iconColor: AppColors.primary,
                     collapsedIconColor: AppColors.primary,
                     childrenPadding: const EdgeInsets.only(left: 20, bottom: 8),
@@ -290,7 +292,7 @@ class EmployerSidebarMobile extends StatelessWidget {
                       Icons.cached_outlined,
                       color: AppColors.primary,
                     ),
-                    title: const Text("Commission-based Lead Generator Job"),
+                    title: const Text("Post Commission-based Job"),
                     iconColor: AppColors.primary,
                     collapsedIconColor: AppColors.primary,
                     childrenPadding: const EdgeInsets.only(left: 20, bottom: 8),
@@ -319,23 +321,19 @@ class EmployerSidebarMobile extends StatelessWidget {
                       Icons.schedule_outlined,
                       color: AppColors.primary,
                     ),
-                    title: const Text("Scheduled Interviews"),
+                    title: const Text("Schedule Interviews"),
                     iconColor: AppColors.primary,
                     collapsedIconColor: AppColors.primary,
                     childrenPadding: const EdgeInsets.only(left: 20, bottom: 8),
                     children: [
-                      _expTileChild(
-                        context,
-                        "Commission-based Lead Generator",
-                        () {
-                          // Navigator.push(
-                          //   context,
-                          //   MaterialPageRoute(
-                          //     builder: (_) => EmployerDashboardPage(),
-                          //   ),
-                          // );
-                        },
-                      ),
+                      _expTileChild(context, "Commission-based Jobs", () {
+                        // Navigator.push(
+                        //   context,
+                        //   MaterialPageRoute(
+                        //     builder: (_) => EmployerDashboardPage(),
+                        //   ),
+                        // );
+                      }),
                       _expTileChild(context, "One-time Recruitment", () {
                         // Navigator.push(
                         //   context,
@@ -344,15 +342,16 @@ class EmployerSidebarMobile extends StatelessWidget {
                         //   ),
                         // );
                       }),
-                      _expTileChild(context, "Salary-based", () {
-                        // Navigator.push(
-                        //   context,
-                        //   MaterialPageRoute(
-                        //     builder: (_) => EmployerDashboardPage(),
-                        //   ),
-                        // );
+                      _expTileChild(context, "Salary-based Jobs", () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                EmployerSalaryBasedJobsWithApplicantsPage(),
+                          ),
+                        );
                       }),
-                      _expTileChild(context, "Project", () {
+                      _expTileChild(context, "Projects", () {
                         // Navigator.push(
                         //   context,
                         //   MaterialPageRoute(
@@ -803,7 +802,7 @@ class EmployerSidebarWeb extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => SendNotificationPage(),
+                            builder: (_) => EmployerSendNotificationPage(),
                           ),
                         );
                       }),
@@ -811,7 +810,7 @@ class EmployerSidebarWeb extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const AllNotificationsPage(),
+                            builder: (_) => const EmployerNotificationsPage(),
                           ),
                         );
                         // AllNotificationsPage();
@@ -892,15 +891,15 @@ class EmployerSidebarWeb extends StatelessWidget {
                   _expansionGroup(
                     context,
                     Icons.schedule_outlined,
-                    "Scheduled Interviews",
+                    "Schedule Interviews",
                     [
-                      _expTileChild(context, "Commission-based", () {
-                        // Navigator.push(
-                        //   context,
-                        //   MaterialPageRoute(
-                        //     builder: (_) => EmployerDashboardPage(),
-                        //   ),
-                        // );
+                      _expTileChild(context, "Commission-based Jobs", () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => EmployerCommissionBasedJobsWithApplicantsPage(),
+                          ),
+                        );
                       }),
                       _expTileChild(context, "One-time Recruitment", () {
                         // Navigator.push(
@@ -910,15 +909,16 @@ class EmployerSidebarWeb extends StatelessWidget {
                         //   ),
                         // );
                       }),
-                      _expTileChild(context, "Salary-based", () {
-                        // Navigator.push(
-                        //   context,
-                        //   MaterialPageRoute(
-                        //     builder: (_) => EmployerDashboardPage(),
-                        //   ),
-                        // );
+                      _expTileChild(context, "Salary-based Jobs", () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                EmployerSalaryBasedJobsWithApplicantsPage(),
+                          ),
+                        );
                       }),
-                      _expTileChild(context, "Project-based", () {
+                      _expTileChild(context, "Projects", () {
                         // Navigator.push(
                         //   context,
                         //   MaterialPageRoute(

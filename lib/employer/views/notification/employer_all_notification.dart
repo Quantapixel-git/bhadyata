@@ -1,33 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
-import 'package:jobshub/employer/views/sidebar_dashboard/employer_side_bar.dart';
+import 'package:jobshub/employer/views/sidebar_dashboard/employer_sidebar.dart';
 
-class AllNotificationsPage extends StatelessWidget {
-  const AllNotificationsPage({super.key});
+class EmployerNotificationsPage extends StatelessWidget {
+  const EmployerNotificationsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // Demo notifications
-    final List<Map<String, String>> notifications = [
+    // TODO: Replace with your API payload (employees only)
+    final List<Map<String, dynamic>> notifications = [
       {
         "title": "New Job Post Alert",
         "message": "A new Flutter Developer position is open.",
-        "date": "21 Oct 2025",
+        "time": "10:30 AM, Oct 21, 2025",
+        "recipients": [
+          {"name": "John Doe", "role": "Employee"},
+          {"name": "Priya Sharma", "role": "Employee"},
+        ],
       },
       {
         "title": "Profile Verification",
         "message": "Your company profile has been verified successfully.",
-        "date": "20 Oct 2025",
+        "time": "5:10 PM, Oct 20, 2025",
+        "recipients": [
+          {"name": "Amit Verma", "role": "Employee"},
+        ],
       },
       {
         "title": "Application Update",
         "message": "2 candidates have applied for your latest job post.",
-        "date": "18 Oct 2025",
-      },
-      {
-        "title": "Maintenance Notice",
-        "message": "System maintenance scheduled for 25 Oct, 2 AM - 5 AM.",
-        "date": "17 Oct 2025",
+        "time": "9:05 AM, Oct 18, 2025",
+        "recipients": [
+          {"name": "Sara Khan", "role": "Employee"},
+          {"name": "David Roy", "role": "Employee"},
+        ],
       },
     ];
 
@@ -38,95 +44,265 @@ class AllNotificationsPage extends StatelessWidget {
         return EmployerDashboardWrapper(
           child: Column(
             children: [
-              // ✅ Responsive AppBar
               AppBar(
                 iconTheme: const IconThemeData(color: Colors.white),
                 automaticallyImplyLeading: !isWeb,
                 title: const Text(
-                  "All Notifications",
+                  "Sent Notifications",
                   style: TextStyle(
-                    fontWeight: FontWeight.w600,
                     color: Colors.white,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 backgroundColor: AppColors.primary,
                 elevation: 2,
               ),
-
-              // ✅ Main Body
               Expanded(
                 child: Container(
                   color: Colors.grey.shade100,
-                  child: notifications.isEmpty
-                      ? const Center(
-                          child: Text(
-                            "No notifications found.",
-                            style: TextStyle(fontSize: 15, color: Colors.grey),
-                          ),
-                        )
-                      : ListView.builder(
-                          padding: const EdgeInsets.all(16),
-                          itemCount: notifications.length,
-                          itemBuilder: (context, index) {
-                            final item = notifications[index];
-                            return Container(
-                              margin: const EdgeInsets.only(bottom: 14),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.grey.shade200,
-                                    blurRadius: 6,
-                                    offset: const Offset(0, 3),
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(12),
+                    itemCount: notifications.length,
+                    itemBuilder: (context, index) {
+                      final notif = notifications[index];
+                      final List recips = (notif["recipients"] as List?) ?? [];
+
+                      // Only employees are considered
+                      final employees = recips
+                          .where(
+                            (r) =>
+                                (r["role"]?.toString().toLowerCase() ?? "") ==
+                                "employee",
+                          )
+                          .toList();
+
+                      return Card(
+                        elevation: 2,
+                        margin: const EdgeInsets.symmetric(vertical: 8),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(14),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Title row
+                              Row(
+                                children: [
+                                  CircleAvatar(
+                                    backgroundColor: AppColors.primary
+                                        .withOpacity(0.15),
+                                    child: Icon(
+                                      Icons.notifications,
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      (notif["title"] ?? "").toString(),
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                  Text(
+                                    (notif["time"] ?? "").toString(),
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                    ),
                                   ),
                                 ],
                               ),
-                              child: ListTile(
-                                leading: CircleAvatar(
-                                  backgroundColor: AppColors.primary
-                                      .withOpacity(0.15),
-                                  child: Icon(
-                                    Icons.notifications_active,
-                                    color: AppColors.primary,
-                                  ),
+                              const SizedBox(height: 10),
+
+                              // Message
+                              if ((notif["message"] ?? "")
+                                  .toString()
+                                  .isNotEmpty) ...[
+                                Text(
+                                  (notif["message"] ?? "").toString(),
+                                  style: const TextStyle(fontSize: 14),
                                 ),
-                                title: Text(
-                                  item["title"]!,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 15.5,
-                                    color: Colors.black87,
+                                const SizedBox(height: 12),
+                              ],
+
+                              // Count + View Recipients (Employees only)
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  _CountPill(
+                                    label: "Employees",
+                                    count: employees.length,
+                                    color: Colors.teal,
                                   ),
-                                ),
-                                subtitle: Padding(
-                                  padding: const EdgeInsets.only(top: 4),
-                                  child: Text(
-                                    item["message"]!,
-                                    style: const TextStyle(
-                                      color: Colors.black87,
-                                      fontSize: 14,
-                                      height: 1.3,
+                                  Align(
+                                    alignment: Alignment.centerRight,
+                                    child: OutlinedButton.icon(
+                                      onPressed: () {
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                            builder: (_) =>
+                                                EmployerNotificationRecipientsPage(
+                                                  title: (notif["title"] ?? "")
+                                                      .toString(),
+                                                  employees: employees
+                                                      .cast<
+                                                        Map<String, dynamic>
+                                                      >(),
+                                                ),
+                                          ),
+                                        );
+                                      },
+                                      icon: const Icon(
+                                        Icons.list_alt,
+                                        size: 18,
+                                      ),
+                                      label: const Text("View Recipients"),
+                                      style: OutlinedButton.styleFrom(
+                                        side: BorderSide(
+                                          color: Colors.grey.shade300,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
+                                        ),
+                                      ),
                                     ),
                                   ),
-                                ),
-                                trailing: Text(
-                                  item["date"]!,
-                                  style: TextStyle(
-                                    color: Colors.grey.shade600,
-                                    fontSize: 12,
-                                  ),
-                                ),
+                                ],
                               ),
-                            );
-                          },
+                            ],
+                          ),
                         ),
+                      );
+                    },
+                  ),
                 ),
               ),
             ],
           ),
         );
       },
+    );
+  }
+}
+
+class EmployerNotificationRecipientsPage extends StatelessWidget {
+  final String title;
+  final List<Map<String, dynamic>> employees;
+
+  const EmployerNotificationRecipientsPage({
+    super.key,
+    required this.title,
+    required this.employees,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return EmployerDashboardWrapper(
+      child: Scaffold(
+        backgroundColor: Colors.grey.shade100,
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          iconTheme: const IconThemeData(color: Colors.white),
+          title: const Text(
+            'Recipients',
+            style: TextStyle(color: Colors.white),
+          ),
+          backgroundColor: AppColors.primary,
+          elevation: 2,
+        ),
+        body: _RecipientList(
+          items: employees,
+          emptyText: "No employees received this notification.",
+          icon: Icons.person,
+          color: Colors.teal,
+        ),
+      ),
+    );
+  }
+}
+
+class _RecipientList extends StatelessWidget {
+  final List<Map<String, dynamic>> items;
+  final String emptyText;
+  final IconData icon;
+  final Color color;
+
+  const _RecipientList({
+    required this.items,
+    required this.emptyText,
+    required this.icon,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (items.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Text(emptyText, style: const TextStyle(color: Colors.grey)),
+        ),
+      );
+    }
+
+    return ListView.separated(
+      padding: const EdgeInsets.all(12),
+      itemCount: items.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 6),
+      itemBuilder: (_, i) {
+        final r = items[i];
+        return Card(
+          elevation: 1,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: color.withOpacity(0.15),
+              child: Icon(icon, color: color),
+            ),
+            title: Text(
+              (r["name"] ?? "").toString(),
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+            subtitle: const Text("Employee"),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _CountPill extends StatelessWidget {
+  final String label;
+  final int count;
+  final Color color;
+  const _CountPill({
+    required this.label,
+    required this.count,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Text(
+        "$label: $count",
+        style: TextStyle(fontWeight: FontWeight.w600, color: color),
+      ),
     );
   }
 }

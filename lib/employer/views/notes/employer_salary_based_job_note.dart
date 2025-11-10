@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:jobshub/employer/views/sidebar_dashboard/employer_side_bar.dart';
+import 'package:jobshub/employer/views/sidebar_dashboard/employer_sidebar.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
 
 class SalaryBasedRecruitmentPage extends StatelessWidget {

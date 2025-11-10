@@ -2,8 +2,10 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
+
 import 'package:jobshub/common/utils/AppColor.dart';
-import 'package:jobshub/hr/views/sidebar_dashboard/hr_side_bar.dart';
+import 'package:jobshub/hr/views/sidebar_dashboard/hr_sidebar.dart';
+import 'package:jobshub/common/utils/session_manager.dart';
 
 class HrQueryToAdminPage extends StatefulWidget {
   const HrQueryToAdminPage({super.key});
@@ -13,31 +15,76 @@ class HrQueryToAdminPage extends StatefulWidget {
 }
 
 class _HrQueryToAdminPageState extends State<HrQueryToAdminPage> {
+  final _formKey = GlobalKey<FormState>();
+  final TextEditingController _subjectController = TextEditingController();
+  final TextEditingController _messageController = TextEditingController();
+
+  bool _isLoading = false;
+  bool _bootLoading = true; // while we read hr_id from session
+  String? _bootError;
+
+  int? _hrId; // <-- from session
+  final String baseUrl = "https://dialfirst.in/quantapixel/badhyata/api/";
+
+  List<dynamic> _queries = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _initSessionAndLoad();
+  }
+
+  Future<void> _initSessionAndLoad() async {
+    try {
+      final userIdStr = await SessionManager.getValue('hr_id');
+      final parsed = int.tryParse(userIdStr?.toString() ?? '');
+      if (parsed == null) {
+        setState(() {
+          _bootError = 'Could not read a valid hr_id from session.';
+          _bootLoading = false;
+        });
+        return;
+      }
+      setState(() {
+        _hrId = parsed;
+        _bootLoading = false;
+      });
+      await _fetchQueries();
+    } catch (e) {
+      setState(() {
+        _bootError = 'Failed to read session: $e';
+        _bootLoading = false;
+      });
+    }
+  }
+
   String _formatDate(String? dateStr) {
     if (dateStr == null || dateStr.isEmpty) return "N/A";
     try {
       final date = DateTime.parse(dateStr);
       return DateFormat('MMM dd, yyyy • hh:mm a').format(date);
-    } catch (e) {
-      return dateStr; // fallback if parsing fails
+    } catch (_) {
+      return dateStr;
     }
   }
 
-  final _formKey = GlobalKey<FormState>();
-  final TextEditingController _subjectController = TextEditingController();
-  final TextEditingController _messageController = TextEditingController();
-  bool _isLoading = false;
-
-  List<dynamic> _queries = [];
-  final String baseUrl = "https://dialfirst.in/quantapixel/badhyata/api/";
-
   // 📨 Submit Query API
   Future<void> _submitQuery() async {
+    if (_hrId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: Text("hr_id missing in session"),
+        ),
+      );
+      return;
+    }
     if (!_formKey.currentState!.validate()) return;
+
     setState(() => _isLoading = true);
 
     final body = {
-      "sender_id": 15,
+      "sender_id": _hrId, // <-- from session
       "sender_role": "hr",
       "subject": _subjectController.text.trim(),
       "message": _messageController.text.trim(),
@@ -51,6 +98,8 @@ class _HrQueryToAdminPageState extends State<HrQueryToAdminPage> {
       );
 
       final data = jsonDecode(response.body);
+      if (!mounted) return;
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           behavior: SnackBarBehavior.floating,
@@ -65,41 +114,43 @@ class _HrQueryToAdminPageState extends State<HrQueryToAdminPage> {
       if (data['success'] == true) {
         _subjectController.clear();
         _messageController.clear();
-        _fetchQueries(); // refresh list
+        await _fetchQueries(); // refresh list
       }
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           behavior: SnackBarBehavior.floating,
           content: Text("Error: $e"),
         ),
       );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
-    setState(() => _isLoading = false);
   }
 
   // 📋 Fetch Queries API
   Future<void> _fetchQueries() async {
+    if (_hrId == null) return;
     try {
       final response = await http.post(
         Uri.parse("${baseUrl}GeneralQueryList"),
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"sender_role": "hr"}),
+        body: jsonEncode({
+          "sender_role": "hr",
+          "sender_id": _hrId, // <-- filter for this HR’s queries
+        }),
       );
 
       final data = jsonDecode(response.body);
       if (data['success'] == true) {
         setState(() => _queries = data['data']);
+      } else {
+        // Optional: surface message
       }
     } catch (e) {
-      debugPrint("Error fetching queries: $e");
+      // Optional: surface error
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _fetchQueries();
   }
 
   @override
@@ -115,6 +166,61 @@ class _HrQueryToAdminPageState extends State<HrQueryToAdminPage> {
       builder: (context, constraints) {
         final bool isWeb = constraints.maxWidth >= 900;
 
+        if (_bootLoading) {
+          return HrDashboardWrapper(
+            child: Scaffold(
+              appBar: AppBar(
+                iconTheme: const IconThemeData(color: Colors.white),
+                automaticallyImplyLeading: !isWeb,
+                title: const Text(
+                  "Query to Admin",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                backgroundColor: AppColors.primary,
+              ),
+              body: const Center(child: CircularProgressIndicator()),
+            ),
+          );
+        }
+
+        if (_bootError != null) {
+          return HrDashboardWrapper(
+            child: Scaffold(
+              appBar: AppBar(
+                iconTheme: const IconThemeData(color: Colors.white),
+                automaticallyImplyLeading: !isWeb,
+                title: const Text(
+                  "Query to Admin",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                backgroundColor: AppColors.primary,
+              ),
+              body: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _bootError!,
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                    const SizedBox(height: 8),
+                    OutlinedButton(
+                      onPressed: _initSessionAndLoad,
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
+
         return HrDashboardWrapper(
           child: DefaultTabController(
             length: 2,
@@ -123,7 +229,6 @@ class _HrQueryToAdminPageState extends State<HrQueryToAdminPage> {
               appBar: AppBar(
                 iconTheme: const IconThemeData(color: Colors.white),
                 automaticallyImplyLeading: !isWeb,
-                centerTitle: true,
                 title: const Text(
                   "Query to Admin",
                   style: TextStyle(
@@ -134,6 +239,8 @@ class _HrQueryToAdminPageState extends State<HrQueryToAdminPage> {
                 backgroundColor: AppColors.primary,
                 elevation: 2,
                 bottom: const TabBar(
+                  labelColor: Colors.white,
+                  unselectedLabelColor: Colors.white70,
                   indicatorColor: Colors.white,
                   labelStyle: TextStyle(fontWeight: FontWeight.w600),
                   tabs: [
@@ -189,15 +296,13 @@ class _HrQueryToAdminPageState extends State<HrQueryToAdminPage> {
                               SizedBox(
                                 width: double.infinity,
                                 child: ElevatedButton.icon(
-                                  onPressed: _isLoading
-                                      ? null
-                                      : () => _submitQuery(),
+                                  onPressed: _isLoading ? null : _submitQuery,
                                   icon: const Icon(Icons.send, size: 25),
                                   label: Padding(
                                     padding: const EdgeInsets.all(6.0),
                                     child: Text(
                                       _isLoading ? "Sending..." : "Send Query",
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -246,15 +351,17 @@ class _HrQueryToAdminPageState extends State<HrQueryToAdminPage> {
                                   top: 4,
                                 ),
                                 child: ListTile(
-                                  title: Text(q['subject']),
+                                  title: Text(q['subject'] ?? '—'),
                                   subtitle: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
                                       const SizedBox(height: 4),
-                                      Text(q['message']),
+                                      Text(q['message'] ?? '—'),
                                       const SizedBox(height: 6),
-                                      if (q['reply_message'] != null)
+                                      if ((q['reply_message'] ?? '')
+                                          .toString()
+                                          .isNotEmpty)
                                         Container(
                                           padding: const EdgeInsets.all(10),
                                           margin: const EdgeInsets.only(
@@ -276,7 +383,7 @@ class _HrQueryToAdminPageState extends State<HrQueryToAdminPage> {
                                         ),
                                       const SizedBox(height: 4),
                                       Text(
-                                        "Created: ${_formatDate(q['created_at'])}",
+                                        "Created: ${_formatDate(q['created_at']?.toString())}",
                                         style: const TextStyle(
                                           fontSize: 12,
                                           color: Colors.grey,
@@ -285,10 +392,12 @@ class _HrQueryToAdminPageState extends State<HrQueryToAdminPage> {
                                     ],
                                   ),
                                   trailing: Text(
-                                    q['status'].toString().toUpperCase(),
+                                    (q['status'] ?? 'open')
+                                        .toString()
+                                        .toUpperCase(),
                                     style: TextStyle(
                                       fontWeight: FontWeight.w600,
-                                      color: q['status'] == 'open'
+                                      color: (q['status'] ?? 'open') == 'open'
                                           ? Colors.orange
                                           : Colors.green,
                                     ),

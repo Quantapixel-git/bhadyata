@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jobshub/common/utils/AppColor.dart';
-import 'package:jobshub/hr/views/sidebar_dashboard/hr_side_bar.dart';
+import 'package:jobshub/hr/views/sidebar_dashboard/hr_sidebar.dart';
 
 class OneTimeApplicantsPage extends StatefulWidget {
   final int jobId;

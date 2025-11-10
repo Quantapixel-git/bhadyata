@@ -11,8 +11,7 @@ import 'package:jobshub/common/utils/AppColor.dart';
 import 'package:jobshub/common/constants/constants.dart';
 
 class SignUpPage extends StatefulWidget {
-  final String mobile; // ✅ Accept mobile from previous screen
-
+  final String mobile;
   const SignUpPage({super.key, required this.mobile});
 
   @override
@@ -35,8 +34,7 @@ class _SignUpPageState extends State<SignUpPage> {
   @override
   void initState() {
     super.initState();
-    // ✅ Prefill mobile and make it read-only
-    _mobileController.text = widget.mobile;
+    _mobileController.text = widget.mobile; // prefill & lock
   }
 
   @override
@@ -49,11 +47,9 @@ class _SignUpPageState extends State<SignUpPage> {
     super.dispose();
   }
 
-  // 🖼 Pick image — works for both web & mobile
   Future<void> _pickImage() async {
     try {
       final picked = await _picker.pickImage(source: ImageSource.gallery);
-
       if (picked != null) {
         if (kIsWeb) {
           final bytes = await picked.readAsBytes();
@@ -69,17 +65,14 @@ class _SignUpPageState extends State<SignUpPage> {
         }
       }
     } catch (e) {
-      print("❌ Image pick error: $e");
+      debugPrint("❌ Image pick error: $e");
     }
   }
 
-  // 🔹 Submit updateProfile API
   Future<void> _signUp() async {
     if (!_formKey.currentState!.validate()) return;
 
     try {
-      // final prefs = await SharedPreferences.getInstance();
-      // final userId = prefs.getInt('user_id');
       final userIdStr = await SessionManager.getValue('user_id');
       final userId = userIdStr != null && userIdStr.isNotEmpty
           ? int.tryParse(userIdStr)
@@ -96,19 +89,19 @@ class _SignUpPageState extends State<SignUpPage> {
       }
 
       final url = Uri.parse("${ApiConstants.baseUrl}updateProfile");
-      var request = http.MultipartRequest('POST', url);
+      final request = http.MultipartRequest('POST', url);
 
       request.fields['user_id'] = userId.toString();
-      request.fields['role'] = '1'; // ✅ Fixed role = 1 (User)
+      request.fields['role'] = '1'; // role = user
       request.fields['first_name'] = _firstNameController.text.trim();
       request.fields['last_name'] = _lastNameController.text.trim();
       request.fields['email'] = _emailController.text.trim();
       request.fields['mobile'] = _mobileController.text.trim();
+
       if (_referralController.text.trim().isNotEmpty) {
         request.fields['referred_by'] = _referralController.text.trim();
       }
 
-      // 🖼 Add image (works for both web & mobile)
       if (_pickedImageFile != null) {
         request.files.add(
           await http.MultipartFile.fromPath(
@@ -126,32 +119,19 @@ class _SignUpPageState extends State<SignUpPage> {
         );
       }
 
-      // 🔹 Show loader
+      // loader
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (_) => const Center(child: CircularProgressIndicator()),
       );
 
-      // 🚀 Send request
-      var response = await request.send();
+      final response = await request.send();
       Navigator.pop(context);
 
       final respStr = await response.stream.bytesToString();
       final data = jsonDecode(respStr);
 
-      // 🧾 Pretty Print API Response
-      const encoder = JsonEncoder.withIndent('  ');
-      final pretty = encoder.convert(data);
-      print("\n═══════════════════════════════════════════");
-      print("🔹 API Endpoint: $url");
-      print("🔹 Status Code: ${response.statusCode}");
-      print("🔹 Form Data Sent:");
-      print(request.fields);
-      print("🔹 Response Body:\n$pretty");
-      print("═══════════════════════════════════════════\n");
-
-      // ✅ Handle Response
       if (response.statusCode == 200 && data['success'] == true) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -173,7 +153,6 @@ class _SignUpPageState extends State<SignUpPage> {
       }
     } catch (e) {
       Navigator.pop(context);
-      print("Exception while updating profile: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Error: $e"),
@@ -185,8 +164,11 @@ class _SignUpPageState extends State<SignUpPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Match HR screen: white scaffold + white app bar
     return Scaffold(
+      backgroundColor: AppColors.white,
       appBar: AppBar(
+        backgroundColor: AppColors.white,
         automaticallyImplyLeading: true,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
@@ -194,9 +176,9 @@ class _SignUpPageState extends State<SignUpPage> {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            bool isWeb = constraints.maxWidth > 800;
+            final isWeb = constraints.maxWidth > 800;
 
-            Widget formContent = Form(
+            final formContent = Form(
               key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -212,7 +194,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    "Join Badhyata and get started",
+                    "Join Badhyata as a User",
                     style: TextStyle(
                       fontSize: isWeb ? 16 : 14,
                       color: Colors.black54,
@@ -220,7 +202,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   ),
                   const SizedBox(height: 30),
 
-                  // 🖼 Profile Image
+                  // Avatar (same size/feel)
                   GestureDetector(
                     onTap: _pickImage,
                     child: CircleAvatar(
@@ -230,7 +212,7 @@ class _SignUpPageState extends State<SignUpPage> {
                           ? FileImage(_pickedImageFile!)
                           : _webImageBytes != null
                           ? MemoryImage(_webImageBytes!)
-                          : null,
+                          : null as ImageProvider<Object>?,
                       child: _pickedImageFile == null && _webImageBytes == null
                           ? const Icon(
                               Icons.camera_alt,
@@ -242,21 +224,18 @@ class _SignUpPageState extends State<SignUpPage> {
                   ),
                   const SizedBox(height: 25),
 
-                  // 🧍‍♂ First Name
                   _buildTextField(
                     _firstNameController,
                     "First Name",
                     icon: Icons.person,
                   ),
                   const SizedBox(height: 15),
-
                   _buildTextField(
                     _lastNameController,
                     "Last Name",
                     icon: Icons.person_outline,
                   ),
                   const SizedBox(height: 15),
-
                   _buildTextField(
                     _emailController,
                     "Email",
@@ -265,10 +244,10 @@ class _SignUpPageState extends State<SignUpPage> {
                   ),
                   const SizedBox(height: 15),
 
-                  // 📱 Mobile (prefilled & locked)
+                  // Mobile (locked)
                   TextFormField(
                     controller: _mobileController,
-                    readOnly: true, // ✅ make it uneditable
+                    readOnly: true,
                     decoration: InputDecoration(
                       labelText: "Mobile Number",
                       prefixIcon: Icon(
@@ -291,16 +270,16 @@ class _SignUpPageState extends State<SignUpPage> {
                   ),
                   const SizedBox(height: 15),
 
+                  // Referral (optional) — styled the same
                   _buildTextField(
                     _referralController,
                     "Referral Code (Optional)",
                     icon: Icons.card_giftcard_outlined,
-                    isRequired: false, // ✅ optional now
+                    isRequired: false,
                   ),
 
                   const SizedBox(height: 30),
 
-                  // 🔘 Save & Continue
                   SizedBox(
                     width: double.infinity,
                     height: 50,
@@ -336,7 +315,7 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
-  // 📱 Mobile Layout
+  // Mobile layout (same paddings as HR)
   Widget _buildMobileLayout(Widget formContent) {
     return Center(
       child: SingleChildScrollView(
@@ -348,38 +327,27 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
-  // 💻 Web Layout
+  // Web layout — mirrors HR Complete Profile (no gradient, two columns, card with shadow)
   Widget _buildWebLayout(Widget formContent) {
     return LayoutBuilder(
       builder: (context, constraints) {
         return Container(
           width: double.infinity,
           height: constraints.maxHeight,
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFFFFE6EC), Color(0xFFF8D8E7)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
             child: ConstrainedBox(
               constraints: BoxConstraints(minHeight: constraints.maxHeight),
               child: IntrinsicHeight(
                 child: Padding(
-                  padding: const EdgeInsets.only(
-                    bottom: 8,
-                    top: 10,
-                    // horizontal: 0,
-                  ),
+                  padding: const EdgeInsets.only(bottom: 8, top: 10),
                   child: Center(
                     child: ConstrainedBox(
                       constraints: const BoxConstraints(maxWidth: 1100),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          // 🩷 Left content
+                          // Left side text (match HR style; tailored for user copy)
                           Expanded(
                             flex: 1,
                             child: Padding(
@@ -393,13 +361,12 @@ class _SignUpPageState extends State<SignUpPage> {
                                     style: TextStyle(
                                       fontSize: 30,
                                       fontWeight: FontWeight.bold,
-                                      color: Color(0xFFE91E63),
+                                      color: AppColors.primary,
                                     ),
                                   ),
                                   SizedBox(height: 12),
                                   Text(
-                                    "Create your professional profile and unlock opportunities. "
-                                    "It only takes a minute to get started!",
+                                    "Create your professional profile and start discovering opportunities.",
                                     style: TextStyle(
                                       fontSize: 16,
                                       color: Colors.black87,
@@ -411,15 +378,12 @@ class _SignUpPageState extends State<SignUpPage> {
                             ),
                           ),
 
-                          // 🩷 Right form container
+                          // Right: form card (same look as HR)
                           Expanded(
                             flex: 2,
                             child: Align(
                               alignment: Alignment.center,
                               child: Container(
-                                margin: const EdgeInsets.symmetric(
-                                  horizontal: 0,
-                                ),
                                 padding: const EdgeInsets.symmetric(
                                   horizontal: 30,
                                   vertical: 30,
@@ -452,12 +416,13 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
+  // Shared text field builder (mirrors HR styles)
   Widget _buildTextField(
     TextEditingController controller,
     String label, {
     IconData? icon,
     TextInputType keyboardType = TextInputType.text,
-    bool isRequired = true, // ✅ Default: required unless specified
+    bool isRequired = true,
   }) {
     return TextFormField(
       controller: controller,
@@ -475,7 +440,7 @@ class _SignUpPageState extends State<SignUpPage> {
         if (isRequired && (value == null || value.isEmpty)) {
           return "$label is required";
         }
-        return null; // ✅ No validation if optional
+        return null;
       },
     );
   }

@@ -6,7 +6,7 @@ import 'package:jobshub/admin/views/side_bar_dashboard/admin_sidebar.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
 import 'package:jobshub/common/constants/constants.dart';
 // import 'package:jobshub/hr/views/hr_comapy_detail.dart';
-import 'package:jobshub/hr/views/sidebar_dashboard/hr_side_bar.dart';
+import 'package:jobshub/hr/views/sidebar_dashboard/hr_sidebar.dart';
 
 class CompaniesPage extends StatefulWidget {
   const CompaniesPage({super.key});

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
-import 'package:jobshub/employer/views/sidebar_dashboard/employer_side_bar.dart';
+import 'package:jobshub/employer/views/sidebar_dashboard/employer_sidebar.dart';
 
 class OneTimeRecruitmentPage extends StatelessWidget {
   const OneTimeRecruitmentPage({super.key});

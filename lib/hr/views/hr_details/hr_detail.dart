@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:jobshub/common/constants/constants.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
-import 'package:jobshub/hr/views/sidebar_dashboard/hr_side_bar.dart';
+import 'package:jobshub/hr/views/sidebar_dashboard/hr_sidebar.dart';
 
 class HrDetailsPage extends StatefulWidget {
   const HrDetailsPage({super.key});

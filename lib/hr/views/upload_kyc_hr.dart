@@ -6,7 +6,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:jobshub/common/constants/constants.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
-import 'package:jobshub/hr/views/sidebar_dashboard/hr_side_bar.dart';
+import 'package:jobshub/hr/views/sidebar_dashboard/hr_sidebar.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class HrKycUploadPage extends StatefulWidget {
@@ -315,8 +315,15 @@ class _HrKycUploadPageState extends State<HrKycUploadPage> {
                         ),
                       )
                     else
-                      // When both docs exist and not rejected, just show a compact note under status banner
-                      const SizedBox.shrink(),
+                      const Center(
+                        child: Text(
+                          "✅ KYC documents already uploaded.",
+                          style: TextStyle(
+                            color: Colors.green,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
                   ],
                 ),
               ),

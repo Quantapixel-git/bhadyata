@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+
 import 'package:jobshub/common/constants/constants.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
-import 'package:jobshub/employer/views/sidebar_dashboard/employer_side_bar.dart';
+import 'package:jobshub/employer/views/sidebar_dashboard/employer_sidebar.dart';
 
 class CompanyDetailsPage extends StatefulWidget {
   const CompanyDetailsPage({super.key});
@@ -37,7 +38,7 @@ class _CompanyDetailsPageState extends State<CompanyDetailsPage> {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['success'] == true && data['data'] != null) {
-          return data['data'];
+          return Map<String, dynamic>.from(data['data'] as Map);
         } else {
           debugPrint("⚠️ API returned error: ${data['message']}");
           return null;
@@ -106,6 +107,8 @@ class _CompanyDetailsPageState extends State<CompanyDetailsPage> {
   }
 
   Widget _buildCompanyDetails(bool isWeb, Map<String, dynamic> company) {
+    final logoUrl = company['company_logo_url']?.toString(); // optional
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Center(
@@ -114,24 +117,27 @@ class _CompanyDetailsPageState extends State<CompanyDetailsPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // 🏢 Company Logo (Static Placeholder)
-              const CircleAvatar(
-                radius: 55,
-                backgroundImage: AssetImage('assets/job_bgr.png'),
+              // 🏢 Header avatar + title (matches HRDetailsPage style)
+              Row(
+                children: [
+                  CircleAvatar(
+                    radius: 55,
+                    backgroundImage: (logoUrl != null && logoUrl.isNotEmpty)
+                        ? NetworkImage(logoUrl)
+                        : const AssetImage('assets/job_bgr.png')
+                              as ImageProvider,
+                  ),
+                  const SizedBox(width: 16),
+                  const Text(
+                    "Company Profile",
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+                  ),
+                ],
               ),
+
               const SizedBox(height: 16),
 
-              // 🧾 Company Name
-              Text(
-                company['company_name'] ?? "Not Available",
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // 🗂️ Company Info Card
+              // 🗂️ Details Card (same visual language as HR)
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -189,7 +195,17 @@ class _CompanyDetailsPageState extends State<CompanyDetailsPage> {
                       ),
                       const Divider(),
                       InfoRow(
-                        title: "Account No.",
+                        title: "Branch",
+                        value: company['bank_branch'] ?? "-",
+                      ),
+                      const Divider(),
+                      InfoRow(
+                        title: "Account Holder",
+                        value: company['bank_account_name'] ?? "-",
+                      ),
+                      const Divider(),
+                      InfoRow(
+                        title: "Account Number",
                         value: company['bank_account_number'] ?? "-",
                       ),
                       const Divider(),
@@ -197,42 +213,33 @@ class _CompanyDetailsPageState extends State<CompanyDetailsPage> {
                         title: "IFSC Code",
                         value: company['bank_ifsc'] ?? "-",
                       ),
-                      // const Divider(),
-                      // InfoRow(
-                      //   title: "KYC PAN",
-                      //   value: company['kyc_pan'] ?? "Not Uploaded",
-                      // ),
-                      // const Divider(),
-                      // InfoRow(
-                      //   title: "KYC Aadhaar",
-                      //   value: company['kyc_aadhaar'] ?? "Not Uploaded",
-                      // ),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(height: 30),
 
-              // ✏️ Edit Button
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  icon: const Icon(Icons.edit),
-                  label: const Text("Edit Company Details"),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 2,
-                  ),
-                  onPressed: () {
-                    // TODO: Navigate to edit company details
-                  },
-                ),
-              ),
+              const SizedBox(height: 10),
+
+              // (Optional) Edit Button — uncomment and wire when ready
+              // SizedBox(
+              //   width: double.infinity,
+              //   child: ElevatedButton.icon(
+              //     icon: const Icon(Icons.edit),
+              //     label: const Text("Edit Company Details"),
+              //     style: ElevatedButton.styleFrom(
+              //       backgroundColor: AppColors.primary,
+              //       foregroundColor: Colors.white,
+              //       padding: const EdgeInsets.symmetric(vertical: 14),
+              //       shape: RoundedRectangleBorder(
+              //         borderRadius: BorderRadius.circular(12),
+              //       ),
+              //       elevation: 2,
+              //     ),
+              //     onPressed: () {
+              //       // TODO: Navigate to edit company details
+              //     },
+              //   ),
+              // ),
             ],
           ),
         ),
@@ -241,6 +248,7 @@ class _CompanyDetailsPageState extends State<CompanyDetailsPage> {
   }
 }
 
+// Same row widget style/spacing as HRDetailsPage
 class InfoRow extends StatelessWidget {
   final String title;
   final String value;
@@ -255,7 +263,7 @@ class InfoRow extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 130,
+            width: 150, // match HR page label width for perfect alignment
             child: Text(
               title,
               style: TextStyle(

@@ -4,10 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:jobshub/common/constants/constants.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/users/views/bottomnav_drawer_dashboard/bottom_nav.dart';
-import 'package:jobshub/users/views/info_collector/sign_up_screen.dart';
+import 'package:jobshub/users/views/info_collector/user_complete_profile.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 
 class OtpScreen extends StatefulWidget {
   final String mobile;
@@ -118,9 +117,6 @@ class _OtpScreenState extends State<OtpScreen> {
         final userId = userData?['id'];
         final isNewUser = data['is_new_user'] ?? false;
 
-        // final prefs = await SharedPreferences.getInstance();
-        // await prefs.setInt('user_id', userId ?? 0);
-        // await prefs.setBool('is_new_user', isNewUser);
         await SessionManager.setValue('user_id', userId?.toString() ?? '');
         await SessionManager.setValue('is_new_user', isNewUser.toString());
 
@@ -327,7 +323,9 @@ class _OtpScreenState extends State<OtpScreen> {
 
         // 🔹 Responsive Layout
         return Scaffold(
+          backgroundColor: AppColors.white,
           appBar: AppBar(
+            backgroundColor: AppColors.white,
             elevation: 0.5,
             iconTheme: const IconThemeData(color: Colors.black87),
           ),

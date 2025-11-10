@@ -163,7 +163,9 @@ class _EmployerCompleteProfileState extends State<EmployerCompleteProfile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.white,
       appBar: AppBar(
+        backgroundColor: AppColors.white,
         automaticallyImplyLeading: true,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
@@ -316,11 +318,11 @@ class _EmployerCompleteProfileState extends State<EmployerCompleteProfile> {
           width: double.infinity,
           height: constraints.maxHeight,
           decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFFFFE6EC), Color(0xFFF8D8E7)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+            // gradient: LinearGradient(
+            //   colors: [Color(0xFFFFE6EC), Color(0xFFF8D8E7)],
+            //   begin: Alignment.topLeft,
+            //   end: Alignment.bottomRight,
+            // ),
           ),
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
@@ -348,7 +350,7 @@ class _EmployerCompleteProfileState extends State<EmployerCompleteProfile> {
                                     style: TextStyle(
                                       fontSize: 30,
                                       fontWeight: FontWeight.bold,
-                                      color: Color(0xFFE91E63),
+                                      color: AppColors.primary,
                                     ),
                                   ),
                                   SizedBox(height: 12),

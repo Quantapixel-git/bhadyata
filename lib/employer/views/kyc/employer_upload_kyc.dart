@@ -6,8 +6,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:jobshub/common/constants/constants.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
-import 'package:jobshub/employer/views/sidebar_dashboard/employer_side_bar.dart';
-import 'package:url_launcher/url_launcher.dart'; 
+import 'package:jobshub/employer/views/sidebar_dashboard/employer_sidebar.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class EmployerKycUploadPage extends StatefulWidget {
   const EmployerKycUploadPage({super.key});
@@ -26,17 +26,49 @@ class _EmployerKycUploadPageState extends State<EmployerKycUploadPage> {
   String? existingAadharUrl;
   String? existingPanUrl;
 
+  // KYC status (1 approved, 2 pending, 3 rejected) — parity with HR page
+  int? kycApproval;
+
   @override
   void initState() {
     super.initState();
     _fetchEmployerKycStatus();
   }
 
+  // ---- Status helpers (same behavior/labels as HR page) ----
+  String kycLabel(int? v) {
+    switch (v) {
+      case 1:
+        return 'Approved';
+      case 2:
+        return 'Pending';
+      case 3:
+        return 'Rejected';
+      default:
+        return 'Not submitted';
+    }
+  }
+
+  Color kycColor(int? v) {
+    switch (v) {
+      case 1:
+        return Colors.green;
+      case 2:
+        return Colors.orange;
+      case 3:
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+
   Future<void> _fetchEmployerKycStatus() async {
     try {
       final userIdStr = await SessionManager.getValue('employer_id');
       final userId = userIdStr?.toString() ?? '0';
-      final url = Uri.parse("${ApiConstants.baseUrl}getEmployerProfileByUserId");
+      final url = Uri.parse(
+        "${ApiConstants.baseUrl}getEmployerProfileByUserId",
+      );
 
       final response = await http.post(
         url,
@@ -48,17 +80,19 @@ class _EmployerKycUploadPageState extends State<EmployerKycUploadPage> {
         final data = jsonDecode(response.body);
         if (data['success'] == true && data['data'] != null) {
           setState(() {
-            existingAadharUrl = data['data']['kyc_aadhaar'];
-            existingPanUrl = data['data']['kyc_pan'];
+            final map = Map<String, dynamic>.from(data['data'] as Map);
+            existingAadharUrl = map['kyc_aadhaar']?.toString();
+            existingPanUrl = map['kyc_pan']?.toString();
+            kycApproval = map['kyc_approval'] as int?;
           });
         }
       }
     } catch (e) {
-      debugPrint("❌ Error fetching KYC status: $e");
+      debugPrint("❌ Error fetching Employer KYC status: $e");
     } finally {
-      setState(() {
-        isFetching = false;
-      });
+      if (mounted) {
+        setState(() => isFetching = false);
+      }
     }
   }
 
@@ -66,10 +100,13 @@ class _EmployerKycUploadPageState extends State<EmployerKycUploadPage> {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf'],
-      withData: kIsWeb,
+      withData: true, // important for web
     );
 
-    if (result != null && result.files.single.path != null) {
+    if (result != null &&
+        (kIsWeb
+            ? result.files.single.bytes != null
+            : result.files.single.path != null)) {
       setState(() {
         if (type == 'aadhar') {
           aadharFile = result.files.single;
@@ -98,7 +135,7 @@ class _EmployerKycUploadPageState extends State<EmployerKycUploadPage> {
       final userId = userIdStr?.toString() ?? '0';
       final url = Uri.parse("${ApiConstants.baseUrl}employerUpload-kyc");
 
-      var request = http.MultipartRequest('POST', url);
+      final request = http.MultipartRequest('POST', url);
       request.fields['user_id'] = userId;
 
       if (kIsWeb) {
@@ -125,8 +162,9 @@ class _EmployerKycUploadPageState extends State<EmployerKycUploadPage> {
         );
       }
 
-      var response = await request.send();
-      var responseBody = await response.stream.bytesToString();
+      final response = await request.send();
+      final responseBody = await response.stream.bytesToString();
+      debugPrint("Employer KYC upload response: $responseBody");
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -138,8 +176,8 @@ class _EmployerKycUploadPageState extends State<EmployerKycUploadPage> {
         setState(() {
           aadharFile = null;
           panFile = null;
-          _fetchEmployerKycStatus(); // refresh to reflect new links
         });
+        await _fetchEmployerKycStatus(); // refresh links and status
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -148,10 +186,8 @@ class _EmployerKycUploadPageState extends State<EmployerKycUploadPage> {
           ),
         );
       }
-
-      debugPrint("Response Body: $responseBody");
     } catch (e) {
-      debugPrint("🟥 Error during KYC upload: $e");
+      debugPrint("🟥 Error during Employer KYC upload: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           behavior: SnackBarBehavior.floating,
@@ -159,7 +195,7 @@ class _EmployerKycUploadPageState extends State<EmployerKycUploadPage> {
         ),
       );
     } finally {
-      setState(() => isLoading = false);
+      if (mounted) setState(() => isLoading = false);
     }
   }
 
@@ -169,43 +205,53 @@ class _EmployerKycUploadPageState extends State<EmployerKycUploadPage> {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Cannot open PDF link")),
+        const SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: Text("Cannot open PDF link"),
+        ),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final hasUploaded =
+        (existingAadharUrl != null && existingAadharUrl!.isNotEmpty) &&
+        (existingPanUrl != null && existingPanUrl!.isNotEmpty);
+
+    // Match HR page look: black app bar with white title
     return EmployerDashboardWrapper(
       child: Scaffold(
         backgroundColor: Colors.grey.shade100,
         appBar: AppBar(
           automaticallyImplyLeading: false,
-          backgroundColor: Colors.white,
+          backgroundColor: Colors.black,
           elevation: 1,
           title: const Text(
             "KYC Verification",
-            style: TextStyle(
-              color: Colors.black87,
-              fontWeight: FontWeight.w600,
-            ),
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
           ),
         ),
         body: isFetching
             ? const Center(child: CircularProgressIndicator())
             : SingleChildScrollView(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 24,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // Status banner (always visible)
+                    _statusBanner(hasUploaded),
+
+                    const SizedBox(height: 16),
                     _sectionTitle("Upload or View Your KYC Documents"),
                     const SizedBox(height: 12),
 
                     _uploadCard(
                       title: "Aadhaar Card (PDF)",
-                      subtitle:
-                          "Upload front and back in a single PDF file",
+                      subtitle: "Upload front and back in a single PDF file",
                       icon: Icons.picture_as_pdf,
                       fileName: aadharFile?.name,
                       existingUrl: existingAadharUrl,
@@ -214,7 +260,6 @@ class _EmployerKycUploadPageState extends State<EmployerKycUploadPage> {
                           ? () => _openPdf(existingAadharUrl!)
                           : null,
                     ),
-
                     const SizedBox(height: 16),
 
                     _uploadCard(
@@ -231,9 +276,8 @@ class _EmployerKycUploadPageState extends State<EmployerKycUploadPage> {
 
                     const SizedBox(height: 30),
 
-                    // Disable submit if both docs already exist
-                    if (existingAadharUrl == null ||
-                        existingPanUrl == null) ...[
+                    // Match HR intent: show button if any doc missing OR status is Rejected
+                    if (!hasUploaded || kycApproval == 3)
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton.icon(
@@ -247,13 +291,20 @@ class _EmployerKycUploadPageState extends State<EmployerKycUploadPage> {
                                     color: Colors.white,
                                   ),
                                 )
-                              : const Icon(Icons.upload, color: Colors.white),
-                          label: Text(
-                            isLoading ? "Uploading..." : "Submit KYC",
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
+                              : const Icon(
+                                  Icons.upload,
+                                  color: Colors.white,
+                                  size: 22,
+                                ),
+                          label: Padding(
+                            padding: const EdgeInsets.all(6.0),
+                            child: Text(
+                              isLoading ? "Uploading..." : "Submit KYC",
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                           style: ElevatedButton.styleFrom(
@@ -264,8 +315,8 @@ class _EmployerKycUploadPageState extends State<EmployerKycUploadPage> {
                             ),
                           ),
                         ),
-                      ),
-                    ] else
+                      )
+                    else
                       const Center(
                         child: Text(
                           "✅ KYC documents already uploaded.",
@@ -282,17 +333,63 @@ class _EmployerKycUploadPageState extends State<EmployerKycUploadPage> {
     );
   }
 
-  Widget _sectionTitle(String title) => Padding(
-        padding: const EdgeInsets.only(bottom: 8.0, left: 4),
-        child: Text(
-          title,
-          style: const TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
+  // Status banner identical to HR UX
+  Widget _statusBanner(bool hasUploaded) {
+    final color = kycColor(kycApproval);
+    final label = kycLabel(kycApproval);
+    final showHelp = (kycApproval == 3); // show hint when rejected
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.35)),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            kycApproval == 1
+                ? Icons.verified_user
+                : kycApproval == 2
+                ? Icons.hourglass_bottom
+                : kycApproval == 3
+                ? Icons.error_outline
+                : Icons.info_outline,
+            color: color,
           ),
-        ),
-      );
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              hasUploaded
+                  ? "KYC Status: $label"
+                  : "KYC Status: ${kycLabel(null)}",
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
+          if (showHelp) const SizedBox(width: 8),
+          if (showHelp)
+            const Text(
+              "Please re-upload clear PDFs",
+              style: TextStyle(fontSize: 12, color: Colors.black54),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _sectionTitle(String title) => Padding(
+    padding: const EdgeInsets.only(bottom: 8.0, left: 4),
+    child: Text(
+      title,
+      style: const TextStyle(
+        fontSize: 17,
+        fontWeight: FontWeight.w600,
+        color: Colors.black87,
+      ),
+    ),
+  );
 
   Widget _uploadCard({
     required String title,
@@ -311,12 +408,8 @@ class _EmployerKycUploadPageState extends State<EmployerKycUploadPage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 6,
-            offset: const Offset(2, 2),
-          ),
+        boxShadow: const [
+          BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(2, 2)),
         ],
       ),
       child: Column(
@@ -354,8 +447,10 @@ class _EmployerKycUploadPageState extends State<EmployerKycUploadPage> {
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),

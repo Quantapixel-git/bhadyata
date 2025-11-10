@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jobshub/common/utils/AppColor.dart';
 import 'package:jobshub/common/constants/constants.dart';
-import 'package:jobshub/hr/views/sidebar_dashboard/hr_side_bar.dart'; // for ApiConstants.baseUrl
+import 'package:jobshub/hr/views/sidebar_dashboard/hr_sidebar.dart'; // for ApiConstants.baseUrl
 
 class HrEmployeeUsersPage extends StatefulWidget {
   const HrEmployeeUsersPage({super.key});

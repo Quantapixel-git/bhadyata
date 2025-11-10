@@ -1,38 +1,89 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:jobshub/hr/views/sidebar_dashboard/hr_side_bar.dart';
+import 'package:http/http.dart' as http;
+
+import 'package:jobshub/hr/views/sidebar_dashboard/hr_sidebar.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
-import 'package:jobshub/users/views/project_model.dart';
 
-class HrDashboard extends StatelessWidget {
-  HrDashboard({super.key});
+const String kApiBase = "https://dialfirst.in/quantapixel/badhyata/api/";
 
-  // Example Data (Adapted for HR)
-  final int totalWorks = 12;
-  final int pendingApproval = 5;
-  final int completedWorks = 7;
-  final double walletBalance = 12500.50;
-  final double totalRevenue = 50000.00;
-  final int totalEmployees = 25;
+class HrDashboard extends StatefulWidget {
+  const HrDashboard({super.key});
 
-  final List<ProjectModel> projects = [
-    ProjectModel(
-      title: 'Website Design',
-      description: 'Landing page project',
-      budget: 5000,
-      category: 'Design',
-      paymentType: 'Salary',
-      paymentValue: 5000,
-      status: 'In Progress',
-      deadline: DateTime.now().add(const Duration(days: 7)),
-      applicants: [
-        {'name': 'Alice Johnson', 'proposal': 'I can complete this in 3 days.'},
-        {
-          'name': 'Bob Smith',
-          'proposal': 'I’ll deliver responsive design fast.',
-        },
-      ],
-    ),
-  ];
+  @override
+  State<HrDashboard> createState() => _HrDashboardState();
+}
+
+class _HrDashboardState extends State<HrDashboard> {
+  bool loading = true;
+  String? error;
+
+  int employees = 0;
+  int employers = 0;
+  int hrs = 0;
+
+  int salaryJobs = 0;
+  int commissionJobs = 0;
+  int oneTimeJobs = 0;
+
+  int projects = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchStats();
+  }
+
+  Future<void> _fetchStats() async {
+    setState(() {
+      loading = true;
+      error = null;
+    });
+
+    try {
+      final uri = Uri.parse("${kApiBase}statsOverview");
+
+      final res = await http.get(uri);
+
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        final data = jsonDecode(res.body);
+
+        if (data["success"] == true) {
+          final u = data["data"]["users"];
+          final j = data["data"]["jobs"];
+
+          setState(() {
+            employees = u["employees"] ?? 0;
+            employers = u["employers"] ?? 0;
+            hrs = u["hrs"] ?? 0;
+
+            salaryJobs = j["salary_based"] ?? 0;
+            commissionJobs = j["commission_based"] ?? 0;
+            oneTimeJobs = j["one_time"] ?? 0;
+
+            projects = data["data"]["projects"] ?? 0;
+
+            loading = false;
+          });
+        } else {
+          setState(() {
+            error = data["message"] ?? "Something went wrong";
+            loading = false;
+          });
+        }
+      } else {
+        setState(() {
+          error = "Failed (${res.statusCode})";
+          loading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        error = e.toString();
+        loading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,12 +94,9 @@ class HrDashboard extends StatelessWidget {
         return HrDashboardWrapper(
           child: Column(
             children: [
-              // ✅ Clean AppBar (no Scaffold)
               AppBar(
-                iconTheme: const IconThemeData(
-                  color: Colors.white, // ✅ white icons on mobile
-                ),
-                automaticallyImplyLeading: !isWeb, // ✅ Hide drawer icon on web
+                iconTheme: const IconThemeData(color: Colors.white),
+                automaticallyImplyLeading: !isWeb,
                 title: const Text(
                   "HR Dashboard",
                   style: TextStyle(
@@ -57,10 +105,49 @@ class HrDashboard extends StatelessWidget {
                   ),
                 ),
                 backgroundColor: AppColors.primary,
+                actions: [
+                  IconButton(
+                    icon: const Icon(Icons.refresh, color: Colors.white),
+                    onPressed: _fetchStats,
+                  ),
+                ],
               ),
 
-              // ✅ Main dashboard content
-              Expanded(child: _buildDashboardContent(isWeb)),
+              Expanded(
+                child: loading
+                    ? const Center(child: CircularProgressIndicator())
+                    : error != null
+                    ? Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.error_outline,
+                              color: Colors.red,
+                              size: 40,
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              error!,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                color: Colors.black87,
+                                fontSize: 14,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            ElevatedButton(
+                              onPressed: _fetchStats,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                              ),
+                              child: const Text("Retry"),
+                            ),
+                          ],
+                        ),
+                      )
+                    : _buildDashboardContent(isWeb),
+              ),
             ],
           ),
         );
@@ -68,44 +155,49 @@ class HrDashboard extends StatelessWidget {
     );
   }
 
-  // ---------- DASHBOARD CONTENT ----------
   Widget _buildDashboardContent(bool isWeb) {
     final stats = [
       {
-        "title": "Total Works",
-        "value": totalWorks.toString(),
+        "title": "Employees/Users",
+        "value": employees.toString(),
         "color": Colors.blue.shade400,
-        "icon": Icons.work,
+        "icon": Icons.people,
       },
       {
-        "title": "Pending Approval",
-        "value": pendingApproval.toString(),
+        "title": "Employers",
+        "value": employers.toString(),
         "color": Colors.orange.shade400,
-        "icon": Icons.pending_actions,
+        "icon": Icons.business_center,
       },
       {
-        "title": "Completed Works",
-        "value": completedWorks.toString(),
+        "title": "HRs",
+        "value": hrs.toString(),
         "color": Colors.green.shade400,
-        "icon": Icons.check_circle_outline,
+        "icon": Icons.admin_panel_settings,
       },
       {
-        "title": "Wallet Balance",
-        "value": "₹${walletBalance.toStringAsFixed(2)}",
+        "title": "Salary Jobs",
+        "value": salaryJobs.toString(),
         "color": Colors.purple.shade400,
-        "icon": Icons.account_balance_wallet,
+        "icon": Icons.work_outline,
       },
       {
-        "title": "Total Revenue",
-        "value": "₹${totalRevenue.toStringAsFixed(2)}",
+        "title": "Commission Jobs",
+        "value": commissionJobs.toString(),
         "color": Colors.teal.shade400,
-        "icon": Icons.attach_money,
+        "icon": Icons.monetization_on_outlined,
       },
       {
-        "title": "Total Employees",
-        "value": totalEmployees.toString(),
+        "title": "One-Time Jobs",
+        "value": oneTimeJobs.toString(),
         "color": Colors.indigo.shade400,
-        "icon": Icons.people_alt,
+        "icon": Icons.task_alt_outlined,
+      },
+      {
+        "title": "Projects",
+        "value": projects.toString(),
+        "color": Colors.red.shade400,
+        "icon": Icons.folder_copy_outlined,
       },
     ];
 
@@ -113,69 +205,31 @@ class HrDashboard extends StatelessWidget {
       color: Colors.grey[100],
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 👋 Greeting Section (Mobile only)
-            if (!isWeb)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text(
-                      "Welcome Back 👋",
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    SizedBox(height: 5),
-                    Text(
-                      "Here’s an overview of your HR dashboard.",
-                      style: TextStyle(color: Colors.black54, fontSize: 14),
-                    ),
-                  ],
-                ),
-              ),
-
-            // 📊 Stats Grid
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final crossAxisCount = isWeb ? 4 : 2;
-                return GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: crossAxisCount,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                    childAspectRatio: isWeb ? 1.8 : 1.4,
-                  ),
-                  itemCount: stats.length,
-                  itemBuilder: (context, index) {
-                    final stat = stats[index];
-                    return _statCard(
-                      stat['title'] as String,
-                      stat['value'] as String,
-                      stat['color'] as Color,
-                      stat['icon'] as IconData,
-                      isWeb,
-                    );
-                  },
-                );
-              },
-            ),
-
-            const SizedBox(height: 30),
-          ],
+        child: GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: stats.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: isWeb ? 4 : 2,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            childAspectRatio: isWeb ? 1.8 : 1.4,
+          ),
+          itemBuilder: (context, index) {
+            final s = stats[index];
+            return _statCard(
+              s["title"] as String,
+              s["value"] as String,
+              s["color"] as Color,
+              s["icon"] as IconData,
+              isWeb,
+            );
+          },
         ),
       ),
     );
   }
 
-  // ---------- STAT CARD ----------
   Widget _statCard(
     String title,
     String value,
@@ -183,50 +237,47 @@ class HrDashboard extends StatelessWidget {
     IconData icon,
     bool isWeb,
   ) {
-    return GestureDetector(
-      onTap: () {},
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        padding: EdgeInsets.all(isWeb ? 18 : 16),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [color.withOpacity(0.9), color],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      padding: EdgeInsets.all(isWeb ? 18 : 16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [color.withOpacity(0.9), color],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
           ),
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: color.withOpacity(0.3),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: Colors.white, size: isWeb ? 36 : 30),
+          const Spacer(),
+          Text(
+            value,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: isWeb ? 24 : 22,
+              fontWeight: FontWeight.bold,
             ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, color: Colors.white, size: isWeb ? 36 : 30),
-            const Spacer(),
-            Text(
-              value,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: isWeb ? 24 : 22,
-                fontWeight: FontWeight.bold,
-              ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            title,
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: isWeb ? 15 : 13,
+              fontWeight: FontWeight.w500,
             ),
-            const SizedBox(height: 6),
-            Text(
-              title,
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: isWeb ? 15 : 13,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

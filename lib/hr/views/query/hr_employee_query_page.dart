@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 
 import 'package:jobshub/common/utils/AppColor.dart';
 import 'package:jobshub/common/constants/constants.dart';
-import 'package:jobshub/hr/views/sidebar_dashboard/hr_side_bar.dart';
+import 'package:jobshub/hr/views/sidebar_dashboard/hr_sidebar.dart';
 
 class HrEmployeeQueryPage extends StatefulWidget {
   const HrEmployeeQueryPage({super.key});
@@ -47,7 +47,7 @@ class _HrEmployeeQueryPageState extends State<HrEmployeeQueryPage> {
       final res = await http.post(
         uri,
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({}), // add filters if your API supports
+        body: jsonEncode({}), 
       );
 
       if (res.statusCode == 200) {
@@ -187,7 +187,7 @@ class _HrEmployeeQueryPageState extends State<HrEmployeeQueryPage> {
                   ),
                 ),
                 backgroundColor: AppColors.primary,
-                centerTitle: true,
+                // centerTitle: true,
                 elevation: 2,
                 actions: [
                   IconButton(

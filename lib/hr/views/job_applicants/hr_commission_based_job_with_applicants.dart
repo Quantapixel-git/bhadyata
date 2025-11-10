@@ -2,18 +2,19 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jobshub/common/utils/AppColor.dart';
-import 'package:jobshub/hr/views/sidebar_dashboard/hr_side_bar.dart';
+import 'package:jobshub/hr/views/job_applicants/one_time_job_applicant.dart';
+import 'package:jobshub/hr/views/sidebar_dashboard/hr_sidebar.dart';
 
-class HrSalaryBasedJobApplicantsPage extends StatefulWidget {
-  const HrSalaryBasedJobApplicantsPage({super.key});
+class HrCommissionBasedJobApplicants extends StatefulWidget {
+  const HrCommissionBasedJobApplicants({super.key});
 
   @override
-  State<HrSalaryBasedJobApplicantsPage> createState() =>
-      _HrSalaryBasedJobApplicantsPageState();
+  State<HrCommissionBasedJobApplicants> createState() =>
+      _HrCommissionBasedJobApplicantsState();
 }
 
-class _HrSalaryBasedJobApplicantsPageState
-    extends State<HrSalaryBasedJobApplicantsPage> {
+class _HrCommissionBasedJobApplicantsState
+    extends State<HrCommissionBasedJobApplicants> {
   bool _loading = true;
   String? _error;
   List<Map<String, dynamic>> _jobs = [];
@@ -21,7 +22,7 @@ class _HrSalaryBasedJobApplicantsPageState
   // 👉 Update this to your actual endpoint for {{bhadyata}}oneTimeJobsWithApplicants
   // Example based on your existing pattern:
   final String apiUrl =
-      'https://dialfirst.in/quantapixel/badhyata/api/salaryBasedjobsWithApplicants';
+      'https://dialfirst.in/quantapixel/badhyata/api/commissionBasedJobsWithApplicants';
 
   @override
   void initState() {
@@ -123,7 +124,7 @@ class _HrSalaryBasedJobApplicantsPageState
               iconTheme: const IconThemeData(color: Colors.white),
               backgroundColor: AppColors.primary,
               title: const Text(
-                "Salary-Based Jobs • With Applicants",
+                "Commission-based jobs",
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
@@ -243,16 +244,13 @@ class _HrSalaryBasedJobApplicantsPageState
                                     ),
                                     onPressed: () {
                                       // Placeholder: replace with navigation to applicants list
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        const SnackBar(
-                                          behavior: SnackBarBehavior.floating,
-                                          content: Text(
-                                            'TODO: Navigate to applicants list for this job',
-                                          ),
-                                        ),
-                                      );
+                                      // Navigator.push(
+                                      //   context,
+                                      //   MaterialPageRoute(
+                                      //     builder: (context) =>
+                                      //         OneTimeApplicantsPage(jobId: 2),
+                                      //   ),
+                                      // );
                                     },
                                   ),
                                 ),
