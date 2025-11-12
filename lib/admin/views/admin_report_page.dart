@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:jobshub/admin/views/side_bar_dashboard/admin_sidebar.dart';
+import 'package:jobshub/admin/views/sidebar_dashboard/admin_sidebar.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
 
 class AdminReportsPage extends StatelessWidget {

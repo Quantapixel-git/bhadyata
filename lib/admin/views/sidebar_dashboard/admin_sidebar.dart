@@ -2,17 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:jobshub/admin/views/manage_users/admin_hr_users.dart';
 import 'package:jobshub/admin/views/admin_all_companies.dart';
 import 'package:jobshub/admin/views/admin_all_notification.dart';
-import 'package:jobshub/admin/views/admin_approved_comapniess_byhr.dart';
 import 'package:jobshub/admin/views/admin_category_job.dart';
-import 'package:jobshub/admin/views/side_bar_dashboard/admin_dashboard.dart';
+import 'package:jobshub/admin/views/ratings/employee_to_employer_ratings.dart';
+import 'package:jobshub/admin/views/ratings/employer_to_employee_ratings.dart';
+import 'package:jobshub/admin/views/sidebar_dashboard/admin_dashboard.dart';
 import 'package:jobshub/admin/views/manage_users/admin_employee_users.dart';
 import 'package:jobshub/admin/views/admin_employee_kyc.dart';
 import 'package:jobshub/admin/views/admin_employee_salary.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
-import 'package:jobshub/admin/views/admin_employee_to%20_employer_rating.dart';
 import 'package:jobshub/admin/views/manage_users/admin_employer_users.dart';
 import 'package:jobshub/admin/views/admin_employer_kyc.dart';
-import 'package:jobshub/admin/views/admin_employer_to_project_rating.dart';
 import 'package:jobshub/admin/views/admin_evenue_total.dart';
 import 'package:jobshub/admin/views/admin_hr_kyc.dart';
 import 'package:jobshub/admin/views/admin_hr_salary.dart';
@@ -320,23 +319,21 @@ class AdminSidebarMobile extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) =>
-                                  AdminEmployeeToEmployerRatingsPage(),
+                              builder: (_) => EmployeeToEmployerRatingsPage(),
                             ),
                           );
                         },
                       ),
                       ListTile(
                         title: const Text(
-                          "Employer → Project Employees",
+                          "Employer → Employees",
                           style: TextStyle(fontSize: 13.5),
                         ),
                         onTap: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) =>
-                                  AdminEmployerToEmployeeRatingsPage(),
+                              builder: (_) => EmployerToEmployeeRatingsPage(),
                             ),
                           );
                         },
@@ -698,15 +695,15 @@ class AdminSidebarWeb extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => AdminEmployeeToEmployerRatingsPage(),
+                          builder: (_) => EmployeeToEmployerRatingsPage(),
                         ),
                       );
                     }),
-                    _expTileChild(context, "Employer → Project Employees", () {
+                    _expTileChild(context, "Employer → Employees", () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => AdminEmployerToEmployeeRatingsPage(),
+                          builder: (_) => EmployerToEmployeeRatingsPage(),
                         ),
                       );
                     }),

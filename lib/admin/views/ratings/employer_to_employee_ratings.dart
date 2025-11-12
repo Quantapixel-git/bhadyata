@@ -1,26 +1,27 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:jobshub/admin/views/sidebar_dashboard/admin_sidebar.dart';
 
 import 'package:jobshub/common/utils/AppColor.dart';
-import 'package:jobshub/hr/views/ratings/raters_of_employee.dart';
-import 'package:jobshub/hr/views/sidebar_dashboard/hr_sidebar.dart';
+import 'package:jobshub/hr/views/ratings/raters_of_employer.dart';
+// import 'package:jobshub/hr/views/sidebar_dashboard/hr_sidebar.dart';
 
 const String kApiBase = 'https://dialfirst.in/quantapixel/badhyata/api/';
 
-class EmployeeToEmployerRatingsPage extends StatefulWidget {
-  const EmployeeToEmployerRatingsPage({super.key});
+class EmployerToEmployeeRatingsPage extends StatefulWidget {
+  const EmployerToEmployeeRatingsPage({super.key});
 
   @override
-  State<EmployeeToEmployerRatingsPage> createState() =>
-      _EmployeeToEmployerRatingsPageState();
+  State<EmployerToEmployeeRatingsPage> createState() =>
+      _EmployerToEmployeeRatingsPageState();
 }
 
-class _EmployeeToEmployerRatingsPageState
-    extends State<EmployeeToEmployerRatingsPage> {
+class _EmployerToEmployeeRatingsPageState
+    extends State<EmployerToEmployeeRatingsPage> {
   bool _loading = false;
   String? _error;
-  List<EmployerSummary> _items = [];
+  List<EmployeeSummary> _items = [];
   int _total = 0;
   int _currentPage = 1;
   final int _perPage = 20;
@@ -41,7 +42,7 @@ class _EmployeeToEmployerRatingsPageState
     });
 
     try {
-      final uri = Uri.parse('${kApiBase}employersWithRatings').replace(
+      final uri = Uri.parse('${kApiBase}employeesWithRatings').replace(
         queryParameters: {
           'per_page': _perPage.toString(),
           'page': page.toString(),
@@ -50,7 +51,7 @@ class _EmployeeToEmployerRatingsPageState
         },
       );
 
-      // POST with EMPTY body as requested
+      // POST with EMPTY body as required
       final res = await http.post(
         uri,
         headers: const {
@@ -63,7 +64,7 @@ class _EmployeeToEmployerRatingsPageState
       if (res.statusCode >= 200 && res.statusCode < 300) {
         final json = jsonDecode(res.body) as Map<String, dynamic>;
         final data = (json['data'] as List<dynamic>? ?? [])
-            .map((e) => EmployerSummary.fromJson(e as Map<String, dynamic>))
+            .map((e) => EmployeeSummary.fromJson(e as Map<String, dynamic>))
             .toList();
 
         setState(() {
@@ -104,15 +105,15 @@ class _EmployeeToEmployerRatingsPageState
       builder: (context, constraints) {
         final bool isWeb = constraints.maxWidth >= 900;
 
-        return HrDashboardWrapper(
+        return AdminDashboardWrapper(
           child: Column(
             children: [
-              // Sticky AppBar with quick actions
+              // AppBar
               AppBar(
                 iconTheme: const IconThemeData(color: Colors.white),
                 automaticallyImplyLeading: !isWeb,
                 title: const Text(
-                  "Employer Ratings",
+                  "Employee Ratings",
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
@@ -196,30 +197,29 @@ class _EmployeeToEmployerRatingsPageState
                   child: RefreshIndicator(
                     onRefresh: _onRefresh,
                     child: _loading && _items.isEmpty
-                        ? const _SkeletonList()
+                        ? const _EE_SkeletonList()
                         : _error != null
-                        ? _ErrorBox(
+                        ? _EE_ErrorBox(
                             message: _error!,
                             onRetry: () => _fetch(page: 1, q: _searchCtrl.text),
                           )
                         : _items.isEmpty
-                        ? const _EmptyState()
+                        ? const _EE_EmptyState()
                         : ListView.builder(
                             itemCount: _items.length,
                             itemBuilder: (context, index) {
                               final r = _items[index];
                               _loadMoreIfNeeded(index);
 
-                              return _EmployerCard(
+                              return _EE_EmployeeCard(
                                 data: r,
                                 onViewDetails: () {
                                   Navigator.of(context).push(
                                     MaterialPageRoute(
-                                      builder: (_) => EmployerRatingsDetailPage(
-                                        employerId: r.employerId,
-                                        employerName:
-                                            '${r.firstName} ${r.lastName}'
-                                                .trim(),
+                                      builder: (_) => EmployeeRatingsDetailPage(
+                                        employeeId: r.employeeId,
+                                        employeeName:
+                                            '${r.firstName} ${r.lastName}',
                                       ),
                                     ),
                                   );
@@ -240,8 +240,8 @@ class _EmployeeToEmployerRatingsPageState
 
 /// ======= Data model =======
 
-class EmployerSummary {
-  final int employerId;
+class EmployeeSummary {
+  final int employeeId;
   final String firstName;
   final String lastName;
   final String? email;
@@ -251,8 +251,8 @@ class EmployerSummary {
   final Map<int, int> distribution;
   final String? lastRatedAt;
 
-  EmployerSummary({
-    required this.employerId,
+  EmployeeSummary({
+    required this.employeeId,
     required this.firstName,
     required this.lastName,
     required this.email,
@@ -263,15 +263,15 @@ class EmployerSummary {
     required this.lastRatedAt,
   });
 
-  factory EmployerSummary.fromJson(Map<String, dynamic> j) {
+  factory EmployeeSummary.fromJson(Map<String, dynamic> j) {
     final distRaw = (j['distribution'] as Map<String, dynamic>? ?? {});
     final dist = <int, int>{};
     for (final k in distRaw.keys) {
       final ki = int.tryParse(k) ?? 0;
       dist[ki] = (distRaw[k] as num?)?.toInt() ?? 0;
     }
-    return EmployerSummary(
-      employerId: (j['employer_id'] as num).toInt(),
+    return EmployeeSummary(
+      employeeId: (j['employee_id'] as num).toInt(),
       firstName: (j['first_name'] ?? '').toString(),
       lastName: (j['last_name'] ?? '').toString(),
       email: j['email']?.toString(),
@@ -284,13 +284,13 @@ class EmployerSummary {
   }
 }
 
-/// ======= UI pieces =======
+/// ======= UI pieces (names prefixed with _EE_ to avoid collisions) =======
 
-class _EmployerCard extends StatelessWidget {
-  final EmployerSummary data;
+class _EE_EmployeeCard extends StatelessWidget {
+  final EmployeeSummary data;
   final VoidCallback onViewDetails;
 
-  const _EmployerCard({required this.data, required this.onViewDetails});
+  const _EE_EmployeeCard({required this.data, required this.onViewDetails});
 
   @override
   Widget build(BuildContext context) {
@@ -307,7 +307,7 @@ class _EmployerCard extends StatelessWidget {
             // Header
             Row(
               children: [
-                _AvatarInitials(name: fullName),
+                _EE_AvatarInitials(name: fullName),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -346,10 +346,10 @@ class _EmployerCard extends StatelessWidget {
             ),
             const SizedBox(height: 10),
 
-            // Rating Bar + Average
+            // Rating Bar + Average + Count
             Row(
               children: [
-                _StarBar(value: data.average),
+                _EE_StarBar(value: data.average),
                 const SizedBox(width: 8),
                 Text(
                   data.average.toStringAsFixed(1),
@@ -359,13 +359,13 @@ class _EmployerCard extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
-                _ChipStat(label: 'Total', value: data.count.toString()),
+                _EE_ChipStat(label: 'Total', value: data.count.toString()),
               ],
             ),
             const SizedBox(height: 8),
 
             // Distribution line
-            _DistributionBar(distribution: data.distribution),
+            _EE_DistributionBar(distribution: data.distribution),
             const SizedBox(height: 8),
 
             // Footer
@@ -383,13 +383,14 @@ class _EmployerCard extends StatelessWidget {
   }
 }
 
-class _DistributionBar extends StatelessWidget {
+class _EE_DistributionBar extends StatelessWidget {
   final Map<int, int> distribution; // 1..5
-  const _DistributionBar({required this.distribution});
+  const _EE_DistributionBar({required this.distribution});
 
   @override
   Widget build(BuildContext context) {
     final total = distribution.values.fold<int>(0, (a, b) => a + b);
+
     Widget bar(int star) {
       final val = distribution[star] ?? 0;
       final pct = total == 0 ? 0.0 : val / total;
@@ -442,9 +443,9 @@ class _DistributionBar extends StatelessWidget {
   }
 }
 
-class _AvatarInitials extends StatelessWidget {
+class _EE_AvatarInitials extends StatelessWidget {
   final String name;
-  const _AvatarInitials({required this.name});
+  const _EE_AvatarInitials({required this.name});
 
   @override
   Widget build(BuildContext context) {
@@ -466,9 +467,9 @@ class _AvatarInitials extends StatelessWidget {
   }
 }
 
-class _StarBar extends StatelessWidget {
+class _EE_StarBar extends StatelessWidget {
   final double value; // 0..5
-  const _StarBar({required this.value});
+  const _EE_StarBar({required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -489,10 +490,10 @@ class _StarBar extends StatelessWidget {
   }
 }
 
-class _ChipStat extends StatelessWidget {
+class _EE_ChipStat extends StatelessWidget {
   final String label;
   final String value;
-  const _ChipStat({required this.label, required this.value});
+  const _EE_ChipStat({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -518,8 +519,8 @@ class _ChipStat extends StatelessWidget {
   }
 }
 
-class _SkeletonList extends StatelessWidget {
-  const _SkeletonList();
+class _EE_SkeletonList extends StatelessWidget {
+  const _EE_SkeletonList();
 
   @override
   Widget build(BuildContext context) {
@@ -579,8 +580,8 @@ class _SkeletonList extends StatelessWidget {
   }
 }
 
-class _EmptyState extends StatelessWidget {
-  const _EmptyState();
+class _EE_EmptyState extends StatelessWidget {
+  const _EE_EmptyState();
 
   @override
   Widget build(BuildContext context) {
@@ -591,7 +592,7 @@ class _EmptyState extends StatelessWidget {
           Icon(Icons.inbox_outlined, size: 42, color: Colors.grey.shade400),
           const SizedBox(height: 8),
           const Text(
-            'No employers found.',
+            'No employees found.',
             style: TextStyle(fontSize: 14, color: Colors.black54),
           ),
         ],
@@ -600,10 +601,10 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
-class _ErrorBox extends StatelessWidget {
+class _EE_ErrorBox extends StatelessWidget {
   final String message;
   final VoidCallback onRetry;
-  const _ErrorBox({required this.message, required this.onRetry});
+  const _EE_ErrorBox({required this.message, required this.onRetry});
 
   @override
   Widget build(BuildContext context) {
