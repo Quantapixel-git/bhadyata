@@ -2,11 +2,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jobshub/common/utils/session_manager.dart';
-
-// import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jobshub/admin/views/sidebar_dashboard/admin_dashboard.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
-import 'package:jobshub/common/constants/constants.dart'; // ✅ for ApiConstants.baseUrl
+import 'package:jobshub/common/constants/constants.dart';
 
 class AdminLoginPage extends StatefulWidget {
   const AdminLoginPage({super.key});
@@ -85,7 +83,7 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             behavior: SnackBarBehavior.floating,
-            content: Text("Login successful ✅"),
+            content: Text("Login successful!"),
           ),
         );
 

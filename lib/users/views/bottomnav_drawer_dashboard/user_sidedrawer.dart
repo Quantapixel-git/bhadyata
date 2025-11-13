@@ -8,8 +8,8 @@ import 'package:jobshub/users/views/my_salary_based_job.dart';
 import 'package:jobshub/users/views/profile_screen.dart';
 import 'package:jobshub/users/views/user_attendance.dart';
 import 'package:jobshub/users/views/user_commision_based_jobs.dart';
-import 'package:jobshub/users/views/user_contact_page.dart';
-import 'package:jobshub/users/views/user_help_support_screen.dart';
+import 'package:jobshub/users/views/drawer_items/user_query.dart';
+import 'package:jobshub/users/views/drawer_items/faq.dart';
 import 'package:jobshub/users/views/user_leave_request.dart';
 import 'package:jobshub/users/views/projects_screen.dart';
 import 'package:jobshub/users/views/user_one_time_recruit.dart';
@@ -48,7 +48,7 @@ class AppDrawerMobile extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       child: ClipRRect(
-        borderRadius: const BorderRadius.only(topRight: Radius.circular(26)),
+        // borderRadius: const BorderRadius.only(topRight: Radius.circular(26)),
         child: Container(
           width: 240,
           decoration: BoxDecoration(
@@ -238,29 +238,22 @@ class AppDrawerMobile extends StatelessWidget {
                     _sidebarItem(
                       context,
                       Icons.contact_mail_outlined,
-                      "Contact Us",
+                      "Query Portal",
                       () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const UserContactUsPage(),
+                            builder: (_) => const UserQueryToAdminPage(),
                           ),
                         );
                       },
                     ),
-                    _sidebarItem(
-                      context,
-                      Icons.help_outline,
-                      "Help & Support",
-                      () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const UserHelpSupportPage(),
-                          ),
-                        );
-                      },
-                    ),
+                    _sidebarItem(context, Icons.help_outline, "FAQ", () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const Faq()),
+                      );
+                    }),
                     _sidebarItem(context, Icons.logout, "Logout", () async {
                       // final prefs = await SharedPreferences.getInstance();
                       await SessionManager.clearAll();
@@ -277,7 +270,9 @@ class AppDrawerMobile extends StatelessWidget {
 
                       Navigator.pushAndRemoveUntil(
                         context,
-                        MaterialPageRoute(builder: (_) => const OnboardingPage()),
+                        MaterialPageRoute(
+                          builder: (_) => const OnboardingPage(),
+                        ),
                         (route) => false,
                       );
                     }),
@@ -304,7 +299,7 @@ class AppDrawerMobile extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: const BorderRadius.only(topRight: Radius.circular(26)),
+        // borderRadius: const BorderRadius.only(topRight: Radius.circular(26)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -531,22 +526,20 @@ class AppDrawerWeb extends StatelessWidget {
                   _menuItem(
                     context,
                     Icons.contact_mail_outlined,
-                    "Contact Us",
+                    "Query Portal",
                     () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const UserContactUsPage(),
+                          builder: (_) => const UserQueryToAdminPage(),
                         ),
                       );
                     },
                   ),
-                  _menuItem(context, Icons.help_outline, "Help & Support", () {
+                  _menuItem(context, Icons.help_outline, "FAQ", () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => const UserHelpSupportPage(),
-                      ),
+                      MaterialPageRoute(builder: (_) => const Faq()),
                     );
                   }),
                   _menuItem(context, Icons.logout, "Logout", () async {
@@ -603,7 +596,7 @@ class AppDrawerWeb extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: const BorderRadius.only(topRight: Radius.circular(26)),
+        // borderRadius: const BorderRadius.only(topRight: Radius.circular(26)),
       ),
       child: ClipRect(
         child: Row(

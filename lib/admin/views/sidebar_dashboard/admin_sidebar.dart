@@ -1,28 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:jobshub/admin/views/kyc_status/admin_employer_kyc.dart';
+import 'package:jobshub/admin/views/kyc_status/admin_hr_kyc.dart';
 import 'package:jobshub/admin/views/manage_users/admin_hr_users.dart';
 import 'package:jobshub/admin/views/admin_all_companies.dart';
-import 'package:jobshub/admin/views/admin_all_notification.dart';
+import 'package:jobshub/admin/views/notification/admin_all_notification.dart';
 import 'package:jobshub/admin/views/admin_category_job.dart';
 import 'package:jobshub/admin/views/ratings/employee_to_employer_ratings.dart';
 import 'package:jobshub/admin/views/ratings/employer_to_employee_ratings.dart';
 import 'package:jobshub/admin/views/sidebar_dashboard/admin_dashboard.dart';
 import 'package:jobshub/admin/views/manage_users/admin_employee_users.dart';
-import 'package:jobshub/admin/views/admin_employee_kyc.dart';
+import 'package:jobshub/admin/views/kyc_status/admin_employee_kyc.dart';
 import 'package:jobshub/admin/views/admin_employee_salary.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/admin/views/manage_users/admin_employer_users.dart';
-import 'package:jobshub/admin/views/admin_employer_kyc.dart';
 import 'package:jobshub/admin/views/admin_evenue_total.dart';
-import 'package:jobshub/admin/views/admin_hr_kyc.dart';
 import 'package:jobshub/admin/views/admin_hr_salary.dart';
 import 'package:jobshub/admin/views/query/admin_query_from_employer_to_admin.dart';
 import 'package:jobshub/admin/views/query/admin_query_from_hr_to_admin.dart';
 import 'package:jobshub/admin/views/query/admin_query_from_user.dart';
 import 'package:jobshub/admin/views/admin_revenue_profit.dart';
-import 'package:jobshub/admin/views/admin_send_notification.dart';
+import 'package:jobshub/admin/views/notification/admin_send_notification.dart';
 import 'package:jobshub/admin/views/admin_stats.dart';
 import 'package:jobshub/common/views/onboarding_screen.dart';
-// import 'package:jobshub/users/views/auth/login_screen.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
 
 /// ✅ MAIN WRAPPER that decides which sidebar to show
@@ -93,20 +92,7 @@ class AdminSidebarMobile extends StatelessWidget {
                     iconColor: AppColors.primary,
                     collapsedIconColor: AppColors.primary,
                     children: [
-                      // ListTile(
-                      //   title: const Text(
-                      //     "Approved Company (by HR)",
-                      //     style: TextStyle(fontSize: 13.5),
-                      //   ),
-                      //   onTap: () {
-                      //     Navigator.push(
-                      //       context,
-                      //       MaterialPageRoute(
-                      //         builder: (_) => ApprovedCompaniesPage(),
-                      //       ),
-                      //     );
-                      //   },
-                      // ),
+                    
                       ListTile(
                         title: const Text(
                           "Companies",
@@ -268,7 +254,7 @@ class AdminSidebarMobile extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const UsersKYCPage(),
+                              builder: (_) => const EmployeeKYCPage(),
                             ),
                           );
                         },
@@ -282,7 +268,7 @@ class AdminSidebarMobile extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const EmployersKYCPage(),
+                              builder: (_) => const EmployerKYCPage(),
                             ),
                           );
                         },
@@ -296,7 +282,7 @@ class AdminSidebarMobile extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => const HRKYCPage(),
+                              builder: (_) => const HrKYCPage(),
                             ),
                           );
                         },
@@ -373,7 +359,7 @@ class AdminSidebarMobile extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => AdminAllNotificationsPage(),
+                              builder: (_) => AdminViewNotificationsPage(),
                             ),
                           );
                         },
@@ -631,7 +617,7 @@ class AdminSidebarWeb extends StatelessWidget {
                     ],
                   ),
                   _expansionGroup(context, Icons.money, "Revenue Generated", [
-                    _expTileChild(context, "From Employer (profit amount)", () {
+                    _expTileChild(context, "From Employer", () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (_) => RevenueProfitPage()),
@@ -639,7 +625,7 @@ class AdminSidebarWeb extends StatelessWidget {
                     }),
                     _expTileChild(
                       context,
-                      "From Employer (sum of employee salary & profit)",
+                      "Commission Percent",
                       () {
                         Navigator.push(
                           context,
@@ -649,7 +635,7 @@ class AdminSidebarWeb extends StatelessWidget {
                     ),
                   ]),
                   _expansionGroup(context, Icons.payment, "Salary Management", [
-                    _expTileChild(context, "HR Salary (to be paid to hr)", () {
+                    _expTileChild(context, "HR Salary", () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (_) => const HRSalaryPage()),
@@ -657,7 +643,7 @@ class AdminSidebarWeb extends StatelessWidget {
                     }),
                     _expTileChild(
                       context,
-                      "Employee Salary (to be paid to employees for their work)",
+                      "Salary based Employees",
                       () {
                         Navigator.push(
                           context,
@@ -672,21 +658,21 @@ class AdminSidebarWeb extends StatelessWidget {
                     _expTileChild(context, "Employees", () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const UsersKYCPage()),
+                        MaterialPageRoute(builder: (_) => const EmployeeKYCPage()),
                       );
                     }),
                     _expTileChild(context, "Employers", () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const EmployersKYCPage(),
+                          builder: (_) => const EmployerKYCPage(),
                         ),
                       );
                     }),
                     _expTileChild(context, "HR", () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const HRKYCPage()),
+                        MaterialPageRoute(builder: (_) => const HrKYCPage()),
                       );
                     }),
                   ]),
@@ -725,7 +711,7 @@ class AdminSidebarWeb extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => AdminAllNotificationsPage(),
+                            builder: (_) => AdminViewNotificationsPage(),
                           ),
                         );
                       }),

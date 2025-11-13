@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:jobshub/users/views/alltype_jobs_page.dart';
 import 'package:jobshub/users/views/home_page.dart';
-import 'package:jobshub/users/views/jobs_screen.dart';
+import 'package:jobshub/users/views/main_pages/search_screen.dart';
 import 'package:jobshub/users/views/reward_screen.dart';
 import 'package:jobshub/common/utils/AppColor.dart';
 import 'package:jobshub/users/views/bottomnav_drawer_dashboard/user_sidedrawer.dart'; // contains AppDrawerWrapper
