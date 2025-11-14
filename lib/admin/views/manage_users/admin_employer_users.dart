@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:jobshub/admin/views/sidebar_dashboard/admin_sidebar.dart';
-import 'package:jobshub/common/utils/AppColor.dart';
-import 'package:jobshub/common/constants/constants.dart'; // for ApiConstants.baseUrl
+import 'package:jobshub/common/utils/app_color.dart';
+import 'package:jobshub/common/constants/base_url.dart'; // for ApiConstants.baseUrl
 
 class EmployerUsersPage extends StatefulWidget {
   const EmployerUsersPage({super.key});
@@ -127,7 +127,7 @@ class _EmployerUsersPageState extends State<EmployerUsersPage>
           appBar: AppBar(
             automaticallyImplyLeading: !isWeb,
             title: const Text(
-              "HR Users",
+              "Employer Users",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -137,6 +137,7 @@ class _EmployerUsersPageState extends State<EmployerUsersPage>
             backgroundColor: AppColors.primary,
             bottom: const TabBar(
               labelColor: Colors.white,
+              unselectedLabelColor: Colors.white70, // ✅ whitish grey
               indicatorColor: Colors.white,
               tabs: [
                 Tab(text: "Pending"),

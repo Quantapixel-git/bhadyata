@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jobshub/admin/views/sidebar_dashboard/admin_sidebar.dart';
-import 'package:jobshub/common/utils/AppColor.dart';
-import 'package:jobshub/users/views/project_model.dart';
+import 'package:jobshub/common/utils/app_color.dart';
+import 'package:jobshub/users/model/project_model.dart';
 
 /// LIVE Admin Dashboard - fetches data from Admin Overview API
 class AdminDashboard extends StatefulWidget {

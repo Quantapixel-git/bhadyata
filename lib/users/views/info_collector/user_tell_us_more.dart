@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:jobshub/common/utils/session_manager.dart';
-import 'package:jobshub/users/views/bottomnav_drawer_dashboard/bottom_nav.dart';
-import 'package:jobshub/common/utils/AppColor.dart';
-import 'package:jobshub/common/constants/constants.dart';
+import 'package:jobshub/users/views/bottomnav_sidebar/bottom_nav.dart';
+import 'package:jobshub/common/utils/app_color.dart';
+import 'package:jobshub/common/constants/base_url.dart';
 
 class JobProfileDetailsPage extends StatefulWidget {
   const JobProfileDetailsPage({super.key});
@@ -206,7 +206,7 @@ class _JobProfileDetailsPageState extends State<JobProfileDetailsPage> {
         );
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (_) => const DashBoardScreen()),
+          MaterialPageRoute(builder: (_) => const MainBottomNav()),
           (route) => false,
         );
       } else {

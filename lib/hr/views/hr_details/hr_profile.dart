@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:jobshub/common/constants/constants.dart';
-import 'package:jobshub/common/utils/AppColor.dart';
+import 'package:jobshub/common/constants/base_url.dart';
+import 'package:jobshub/common/utils/app_color.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
 // import 'package:jobshub/hr/views/Sidebar_dashboard/hr_side_bar.dart';
 import 'package:jobshub/hr/views/hr_details/hr_edit_profile.dart';

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
-import 'package:jobshub/common/views/onboarding_screen.dart';
+import 'package:jobshub/common/views/onboarding/onboarding_screen.dart';
 import 'package:jobshub/hr/views/attendance/hr_employees_attendance_page.dart';
-import 'package:jobshub/hr/views/hr_companies.dart';
+import 'package:jobshub/hr/views/company/hr_companies.dart';
 import 'package:jobshub/hr/views/hr_details/hr_detail.dart';
 import 'package:jobshub/hr/views/hr_details/hr_profile.dart';
 import 'package:jobshub/hr/views/job_applicants/hr_commission_based_job_with_applicants.dart';
@@ -22,8 +22,8 @@ import 'package:jobshub/hr/views/ratings/employer_to_employee_ratings.dart';
 import 'package:jobshub/hr/views/sidebar_dashboard/hr_dashboard.dart';
 import 'package:jobshub/hr/views/notification/hr_send_notification_page.dart';
 import 'package:jobshub/hr/views/notification/hr_view_notifications_page.dart';
-import 'package:jobshub/hr/views/upload_kyc_hr.dart';
-import 'package:jobshub/common/utils/AppColor.dart';
+import 'package:jobshub/hr/views/kyc/upload_kyc_hr.dart';
+import 'package:jobshub/common/utils/app_color.dart';
 
 class HrSidebar extends StatelessWidget {
   final bool isWeb;

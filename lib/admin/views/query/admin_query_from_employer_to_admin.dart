@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:jobshub/admin/views/sidebar_dashboard/admin_sidebar.dart';
-import 'package:jobshub/common/utils/AppColor.dart';
-import 'package:jobshub/common/constants/constants.dart';
+import 'package:jobshub/common/utils/app_color.dart';
+import 'package:jobshub/common/constants/base_url.dart';
 
 class EmployerQueryToAdminPage extends StatefulWidget {
   const EmployerQueryToAdminPage({super.key});

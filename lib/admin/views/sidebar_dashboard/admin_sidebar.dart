@@ -2,27 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:jobshub/admin/views/kyc_status/admin_employer_kyc.dart';
 import 'package:jobshub/admin/views/kyc_status/admin_hr_kyc.dart';
 import 'package:jobshub/admin/views/manage_users/admin_hr_users.dart';
-import 'package:jobshub/admin/views/admin_all_companies.dart';
+import 'package:jobshub/admin/views/company/admin_all_companies.dart';
 import 'package:jobshub/admin/views/notification/admin_all_notification.dart';
-import 'package:jobshub/admin/views/admin_category_job.dart';
+import 'package:jobshub/admin/views/category/admin_category_job.dart';
 import 'package:jobshub/admin/views/ratings/employee_to_employer_ratings.dart';
 import 'package:jobshub/admin/views/ratings/employer_to_employee_ratings.dart';
 import 'package:jobshub/admin/views/sidebar_dashboard/admin_dashboard.dart';
 import 'package:jobshub/admin/views/manage_users/admin_employee_users.dart';
 import 'package:jobshub/admin/views/kyc_status/admin_employee_kyc.dart';
-import 'package:jobshub/admin/views/admin_employee_salary.dart';
+import 'package:jobshub/admin/views/salary_management/admin_employee_salary.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/admin/views/manage_users/admin_employer_users.dart';
-import 'package:jobshub/admin/views/admin_evenue_total.dart';
-import 'package:jobshub/admin/views/admin_hr_salary.dart';
+import 'package:jobshub/admin/views/revenue_commission/admin_evenue_total.dart';
+// import 'package:jobshub/admin/views/admin_hr_salary.dart';
 import 'package:jobshub/admin/views/query/admin_query_from_employer_to_admin.dart';
 import 'package:jobshub/admin/views/query/admin_query_from_hr_to_admin.dart';
 import 'package:jobshub/admin/views/query/admin_query_from_user.dart';
-import 'package:jobshub/admin/views/admin_revenue_profit.dart';
+import 'package:jobshub/admin/views/revenue_commission/admin_revenue_profit.dart';
 import 'package:jobshub/admin/views/notification/admin_send_notification.dart';
-import 'package:jobshub/admin/views/admin_stats.dart';
-import 'package:jobshub/common/views/onboarding_screen.dart';
-import 'package:jobshub/common/utils/AppColor.dart';
+import 'package:jobshub/admin/views/chart/admin_chart.dart';
+import 'package:jobshub/common/views/onboarding/onboarding_screen.dart';
+import 'package:jobshub/common/utils/app_color.dart';
 
 /// ✅ MAIN WRAPPER that decides which sidebar to show
 class AdminSidebar extends StatelessWidget {
@@ -92,7 +92,6 @@ class AdminSidebarMobile extends StatelessWidget {
                     iconColor: AppColors.primary,
                     collapsedIconColor: AppColors.primary,
                     children: [
-                    
                       ListTile(
                         title: const Text(
                           "Companies",
@@ -205,23 +204,23 @@ class AdminSidebarMobile extends StatelessWidget {
                     iconColor: AppColors.primary,
                     collapsedIconColor: AppColors.primary,
                     children: [
+                      // ListTile(
+                      //   title: const Text(
+                      //     "HR Salary (to be paid to hr)",
+                      //     style: TextStyle(fontSize: 13.5),
+                      //   ),
+                      //   onTap: () {
+                      //     Navigator.push(
+                      //       context,
+                      //       MaterialPageRoute(
+                      //         builder: (_) => const HRSalaryPage(),
+                      //       ),
+                      //     );
+                      //   },
+                      // ),
                       ListTile(
                         title: const Text(
-                          "HR Salary (to be paid to hr)",
-                          style: TextStyle(fontSize: 13.5),
-                        ),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const HRSalaryPage(),
-                            ),
-                          );
-                        },
-                      ),
-                      ListTile(
-                        title: const Text(
-                          "Employee Salary (to be paid to employees for their work)",
+                          "Salary based Employees",
                           style: TextStyle(fontSize: 13.5),
                         ),
                         onTap: () {
@@ -623,42 +622,31 @@ class AdminSidebarWeb extends StatelessWidget {
                         MaterialPageRoute(builder: (_) => RevenueProfitPage()),
                       );
                     }),
-                    _expTileChild(
-                      context,
-                      "Commission Percent",
-                      () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => RevenueTotalPage()),
-                        );
-                      },
-                    ),
-                  ]),
-                  _expansionGroup(context, Icons.payment, "Salary Management", [
-                    _expTileChild(context, "HR Salary", () {
+                    _expTileChild(context, "Commission Percent", () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const HRSalaryPage()),
+                        MaterialPageRoute(builder: (_) => RevenueTotalPage()),
                       );
                     }),
-                    _expTileChild(
-                      context,
-                      "Salary based Employees",
-                      () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const EmployeeSalaryPage(),
-                          ),
-                        );
-                      },
-                    ),
+                  ]),
+                  _expansionGroup(context, Icons.payment, "Salary Management", [
+                  
+                    _expTileChild(context, "Salary based Employees", () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const EmployeeSalaryPage(),
+                        ),
+                      );
+                    }),
                   ]),
                   _expansionGroup(context, Icons.person_search, "Manage KYC", [
                     _expTileChild(context, "Employees", () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const EmployeeKYCPage()),
+                        MaterialPageRoute(
+                          builder: (_) => const EmployeeKYCPage(),
+                        ),
                       );
                     }),
                     _expTileChild(context, "Employers", () {

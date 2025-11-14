@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:jobshub/common/utils/AppColor.dart';
+import 'package:jobshub/common/utils/app_color.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ProjectDetailPage extends StatelessWidget {

@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:jobshub/admin/views/sidebar_dashboard/admin_dashboard.dart';
-import 'package:jobshub/common/views/onboarding_screen.dart';
+import 'package:jobshub/common/views/onboarding/onboarding_screen.dart';
 import 'package:jobshub/employer/views/sidebar_dashboard/employer_dashboard.dart';
 import 'package:jobshub/hr/views/sidebar_dashboard/hr_dashboard.dart';
-import 'package:jobshub/users/views/bottomnav_drawer_dashboard/bottom_nav.dart';
+import 'package:jobshub/users/views/bottomnav_sidebar/bottom_nav.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -51,13 +51,12 @@ class _SplashScreenState extends State<SplashScreen>
     final employerId = await SessionManager.getValue('employer_id');
     final hrId = await SessionManager.getValue('hr_id');
 
-    // Widget nextScreen = const LoginScreen();
     Widget nextScreen = const OnboardingPage();
 
     if (adminLogin == 'true') {
       nextScreen = AdminDashboard();
     } else if (userId != null && userId.isNotEmpty) {
-      nextScreen = const DashBoardScreen();
+      nextScreen = const MainBottomNav();
     } else if (employerId != null && employerId.isNotEmpty) {
       nextScreen = EmployerDashboardPage();
     } else if (hrId != null && hrId.isNotEmpty) {

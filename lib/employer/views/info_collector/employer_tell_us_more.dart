@@ -5,8 +5,8 @@ import 'package:http/http.dart' as http;
 
 import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/employer/views/sidebar_dashboard/employer_dashboard.dart';
-import 'package:jobshub/common/utils/AppColor.dart';
-import 'package:jobshub/common/constants/constants.dart';
+import 'package:jobshub/common/utils/app_color.dart';
+import 'package:jobshub/common/constants/base_url.dart';
 
 class EmployerTellUsMore extends StatefulWidget {
   const EmployerTellUsMore({super.key});

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:jobshub/common/constants/constants.dart';
+import 'package:jobshub/common/constants/base_url.dart';
 import 'package:jobshub/users/views/auth/otp_screen.dart';
-import 'package:jobshub/common/utils/AppColor.dart';
+import 'package:jobshub/common/utils/app_color.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 

@@ -4,8 +4,8 @@ import 'package:http/http.dart' as http;
 
 import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/hr/views/sidebar_dashboard/hr_dashboard.dart';
-import 'package:jobshub/common/utils/AppColor.dart';
-import 'package:jobshub/common/constants/constants.dart';
+import 'package:jobshub/common/utils/app_color.dart';
+import 'package:jobshub/common/constants/base_url.dart';
 
 class HrTellUsMore extends StatefulWidget {
   const HrTellUsMore({super.key});

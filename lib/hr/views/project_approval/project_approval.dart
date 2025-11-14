@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:jobshub/common/utils/AppColor.dart';
+import 'package:jobshub/common/utils/app_color.dart';
 import 'package:jobshub/hr/views/project_approval/hr_project_detail.dart';
 import 'package:jobshub/hr/views/sidebar_dashboard/hr_sidebar.dart';
 

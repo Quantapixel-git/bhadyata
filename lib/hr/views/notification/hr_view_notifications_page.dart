@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:jobshub/common/utils/AppColor.dart';
+import 'package:jobshub/common/utils/app_color.dart';
 import 'package:jobshub/hr/views/sidebar_dashboard/hr_sidebar.dart';
 
 class ViewNotificationsPage extends StatelessWidget {

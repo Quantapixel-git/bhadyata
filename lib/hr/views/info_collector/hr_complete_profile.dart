@@ -7,8 +7,8 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/hr/views/info_collector/hr_tell_us_more.dart';
-import 'package:jobshub/common/utils/AppColor.dart';
-import 'package:jobshub/common/constants/constants.dart';
+import 'package:jobshub/common/utils/app_color.dart';
+import 'package:jobshub/common/constants/base_url.dart';
 
 class HrCompleteProfile extends StatefulWidget {
   final String mobile;

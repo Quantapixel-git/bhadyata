@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:jobshub/admin/views/sidebar_dashboard/admin_sidebar.dart';
-import 'package:jobshub/common/utils/AppColor.dart';
+import 'package:jobshub/common/utils/app_color.dart';
 
 class AdminViewNotificationsPage extends StatelessWidget {
   const AdminViewNotificationsPage({super.key});

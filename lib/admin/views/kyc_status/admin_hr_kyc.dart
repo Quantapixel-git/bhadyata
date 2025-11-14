@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
 import 'package:jobshub/admin/views/sidebar_dashboard/admin_sidebar.dart';
-import 'package:jobshub/common/utils/AppColor.dart';
+import 'package:jobshub/common/utils/app_color.dart';
 
 class HrKYCPage extends StatefulWidget {
   const HrKYCPage({super.key});
@@ -17,8 +17,8 @@ class _HrKYCPageState extends State<HrKYCPage> {
   // API config
   static const String _baseApi =
       'https://dialfirst.in/quantapixel/badhyata/api/'; // provided
-  static const String _profilesPath = 'EmployeeProfilesAll';
-  static const String _kycStatusPath = 'EmployeeKycStatus';
+  static const String _profilesPath = 'HrProfilesAll';
+  static const String _kycStatusPath = 'HrKycStatus';
 
   // pagination (per_page fixed to 10)
   int _currentPage = 1;
@@ -304,6 +304,12 @@ class _HrKYCPageState extends State<HrKYCPage> {
     final user = item.user;
     final profile = item.profile;
     final kycStatus = profile?.kycApproval ?? 2;
+
+    // NEW: whether KYC documents exist (either PAN or Aadhaar)
+    final bool hasKycDocs =
+        (profile?.kycPan != null && profile!.kycPan!.isNotEmpty) ||
+        (profile?.kycAadhaar != null && profile!.kycAadhaar!.isNotEmpty);
+
     Color statusColor;
     String statusText;
     switch (kycStatus) {
@@ -495,72 +501,95 @@ class _HrKYCPageState extends State<HrKYCPage> {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          SizedBox(
-                            width: double.infinity,
-                            child: FilledButton(
-                              style: FilledButton.styleFrom(
-                                backgroundColor: kycStatus == 1
-                                    ? Colors.grey.shade300
-                                    : Colors.green,
-                                foregroundColor: kycStatus == 1
-                                    ? Colors.black54
-                                    : Colors.white,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
+                          // APPROVE button: enabled only if profile exists AND has docs AND not already approved
+                          Tooltip(
+                            message: hasKycDocs
+                                ? (kycStatus == 1
+                                      ? 'Already approved'
+                                      : 'Approve KYC')
+                                : 'Cannot approve — no KYC documents uploaded',
+                            child: SizedBox(
+                              width: double.infinity,
+                              child: FilledButton(
+                                style: FilledButton.styleFrom(
+                                  backgroundColor:
+                                      (kycStatus == 1 || !hasKycDocs)
+                                      ? Colors.grey.shade300
+                                      : Colors.green,
+                                  foregroundColor:
+                                      (kycStatus == 1 || !hasKycDocs)
+                                      ? Colors.black54
+                                      : Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
                                 ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
+                                onPressed:
+                                    (kycStatus == 1 ||
+                                        profile == null ||
+                                        _actionInProgress ||
+                                        !hasKycDocs)
+                                    ? null
+                                    : () => _confirmAndChangeStatus(
+                                        index,
+                                        user.id,
+                                        1,
+                                        profile.id,
+                                      ),
+                                child: Text(
+                                  kycStatus == 1 ? 'Approved' : 'Approve',
                                 ),
-                              ),
-                              onPressed:
-                                  (kycStatus == 1 ||
-                                      profile == null ||
-                                      _actionInProgress)
-                                  ? null
-                                  : () => _confirmAndChangeStatus(
-                                      index,
-                                      user.id,
-                                      1,
-                                      profile.id,
-                                    ),
-                              child: Text(
-                                kycStatus == 1 ? 'Approved' : 'Approve',
                               ),
                             ),
                           ),
+
                           const SizedBox(height: 8),
-                          SizedBox(
-                            width: double.infinity,
-                            child: OutlinedButton(
-                              style: OutlinedButton.styleFrom(
-                                side: BorderSide(
-                                  color: kycStatus == 3
-                                      ? Colors.grey.shade300
+
+                          // REJECT button: enabled only if profile exists AND has docs AND not already rejected
+                          Tooltip(
+                            message: hasKycDocs
+                                ? (kycStatus == 3
+                                      ? 'Already rejected'
+                                      : 'Reject KYC')
+                                : 'Cannot reject — no KYC documents uploaded',
+                            child: SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton(
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(
+                                    color: (kycStatus == 3 || !hasKycDocs)
+                                        ? Colors.grey.shade300
+                                        : Colors.red,
+                                  ),
+                                  foregroundColor:
+                                      (kycStatus == 3 || !hasKycDocs)
+                                      ? Colors.black54
                                       : Colors.red,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
                                 ),
-                                foregroundColor: kycStatus == 3
-                                    ? Colors.black54
-                                    : Colors.red,
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 12,
+                                onPressed:
+                                    (kycStatus == 3 ||
+                                        profile == null ||
+                                        _actionInProgress ||
+                                        !hasKycDocs)
+                                    ? null
+                                    : () => _confirmAndChangeStatus(
+                                        index,
+                                        user.id,
+                                        3,
+                                        profile.id,
+                                      ),
+                                child: Text(
+                                  kycStatus == 3 ? 'Rejected' : 'Reject',
                                 ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                              ),
-                              onPressed:
-                                  (kycStatus == 3 ||
-                                      profile == null ||
-                                      _actionInProgress)
-                                  ? null
-                                  : () => _confirmAndChangeStatus(
-                                      index,
-                                      user.id,
-                                      3,
-                                      profile.id,
-                                    ),
-                              child: Text(
-                                kycStatus == 3 ? 'Rejected' : 'Reject',
                               ),
                             ),
                           ),

@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:jobshub/admin/views/sidebar_dashboard/admin_sidebar.dart';
-import 'package:jobshub/common/utils/AppColor.dart';
-import 'package:jobshub/common/constants/constants.dart'; // for ApiConstants.baseUrl
+import 'package:jobshub/common/utils/app_color.dart';
+import 'package:jobshub/common/constants/base_url.dart'; // for ApiConstants.baseUrl
 
 class HrUsersPage extends StatefulWidget {
   const HrUsersPage({super.key});
@@ -137,6 +137,7 @@ class _HrUsersPageState extends State<HrUsersPage>
             backgroundColor: AppColors.primary,
             bottom: const TabBar(
               labelColor: Colors.white,
+              unselectedLabelColor: Colors.white70, // ✅ whitish grey
               indicatorColor: Colors.white,
               tabs: [
                 Tab(text: "Pending"),
@@ -150,7 +151,7 @@ class _HrUsersPageState extends State<HrUsersPage>
               Expanded(
                 child: TabBarView(
                   children: [
-                   _buildList(
+                    _buildList(
                       _pending,
                       _loadingPending,
                       _errPending,
@@ -171,7 +172,6 @@ class _HrUsersPageState extends State<HrUsersPage>
                       color: Colors.red,
                       onRetry: () => _fetchUsers('rejected'),
                     ),
-                   
                   ],
                 ),
               ),

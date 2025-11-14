@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:jobshub/common/constants/constants.dart';
+import 'package:jobshub/common/constants/base_url.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
-import 'package:jobshub/users/views/bottomnav_drawer_dashboard/bottom_nav.dart';
+import 'package:jobshub/users/views/bottomnav_sidebar/bottom_nav.dart';
 import 'package:jobshub/users/views/info_collector/user_complete_profile.dart';
-import 'package:jobshub/common/utils/AppColor.dart';
+import 'package:jobshub/common/utils/app_color.dart';
 import 'package:http/http.dart' as http;
 
 class OtpScreen extends StatefulWidget {
@@ -147,7 +147,7 @@ class _OtpScreenState extends State<OtpScreen> {
         } else {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (_) => const DashBoardScreen()),
+            MaterialPageRoute(builder: (_) => const MainBottomNav()),
           );
         }
       } else {

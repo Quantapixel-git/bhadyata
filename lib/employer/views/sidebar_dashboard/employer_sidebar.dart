@@ -1,41 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
-import 'package:jobshub/common/views/onboarding_screen.dart';
-import 'package:jobshub/employer/views/commission_based_job/employer_post_commission_based_job.dart';
-import 'package:jobshub/employer/views/commission_based_job/employer_view_commission_based_jobs.dart';
-import 'package:jobshub/employer/views/employer_commission_based_jobs_with_applicants.dart';
-import 'package:jobshub/employer/views/employer_salary_jobs_with_applicants.dart';
-import 'package:jobshub/employer/views/one_time_job/employer_view_ome_time_jobs.dart';
-import 'package:jobshub/employer/views/project_job/emnployer_post_project.dart';
-import 'package:jobshub/employer/views/one_time_job/employer_post_one_time_job.dart';
-import 'package:jobshub/employer/views/project_job/employer_view_projects.dart';
-import 'package:jobshub/employer/views/salary_based_job/employer_post_salary_based_job.dart';
+import 'package:jobshub/common/views/onboarding/onboarding_screen.dart';
+import 'package:jobshub/employer/views/commission_job/post_commission_job.dart';
+import 'package:jobshub/employer/views/commission_job/view_commission_job.dart';
+import 'package:jobshub/employer/views/schedule_interview/commission_jobs_applicants.dart';
+import 'package:jobshub/employer/views/schedule_interview/salary_jobs_applicants.dart';
+import 'package:jobshub/employer/views/one_time_job/view_one_time_job.dart';
+import 'package:jobshub/employer/views/project_job/post_project.dart';
+import 'package:jobshub/employer/views/one_time_job/post_one_time_job.dart';
+import 'package:jobshub/employer/views/project_job/view_project.dart';
+import 'package:jobshub/employer/views/salary_job/post_salary_job.dart';
 import 'package:jobshub/employer/views/notification/employer_all_notification.dart';
-import 'package:jobshub/employer/views/employer_attendance.dart';
-import 'package:jobshub/employer/views/employer_commision_based.dart';
-import 'package:jobshub/employer/views/notes/employer_commision_based_job_note.dart';
+import 'package:jobshub/employer/views/attendance_leave/employer_attendance.dart';
+import 'package:jobshub/employer/views/my_employees/commision_job.dart';
+import 'package:jobshub/employer/views/notes/employer_commision_job_note.dart';
 import 'package:jobshub/employer/views/employer_details/employer_detail.dart';
 import 'package:jobshub/employer/views/sidebar_dashboard/employer_dashboard.dart';
-import 'package:jobshub/employer/views/employer_deposit.dart';
-import 'package:jobshub/employer/views/employer_one_time_employee.dart';
+import 'package:jobshub/employer/views/wallet_deposit/employer_deposit.dart';
+import 'package:jobshub/employer/views/my_employees/one_time_job.dart';
 import 'package:jobshub/employer/views/notes/employer_one_time_job_note.dart';
 import 'package:jobshub/employer/views/employer_details/employer_profile.dart';
 import 'package:jobshub/employer/views/notes/employer_project_note.dart';
-import 'package:jobshub/employer/views/employer_project_employee.dart';
+import 'package:jobshub/employer/views/my_employees/project_employee.dart';
 import 'package:jobshub/employer/views/query/employer_query_to_admin.dart';
 import 'package:jobshub/employer/views/query/employer_query_to_hr.dart';
-import 'package:jobshub/employer/views/employer_salary_based.dart';
+import 'package:jobshub/employer/views/my_employees/salary_job.dart';
 import 'package:jobshub/employer/views/notification/employer_send_notification.dart';
-import 'package:jobshub/employer/views/salary_based_job/employer_view_salary_based_jobs.dart';
+import 'package:jobshub/employer/views/salary_job/view_salary_job.dart';
 import 'package:jobshub/employer/views/notes/employer_wallet_note.dart';
-import 'package:jobshub/employer/views/leave_requests.dart';
-import 'package:jobshub/employer/views/notes/employer_salary_based_job_note.dart';
-import 'package:jobshub/common/utils/AppColor.dart';
+import 'package:jobshub/employer/views/attendance_leave/leave_requests.dart';
+import 'package:jobshub/employer/views/notes/employer_salary_job_note.dart';
+import 'package:jobshub/common/utils/app_color.dart';
 import 'package:jobshub/employer/views/kyc/employer_upload_kyc.dart';
-// import 'package:jobshub/users/views/auth/login_screen.dart';
-// import 'package:shared_preferences/shared_preferences.dart';
+import 'package:jobshub/employer/views/salary_management/salary_structure.dart';
+import 'package:jobshub/employer/views/wallet_deposit/employer_wallet.dart';
 
-/// ✅ MAIN WRAPPER that decides which sidebar to show
+
 class EmployerSidebar extends StatelessWidget {
   final bool isWeb;
   final bool isCollapsed;
@@ -396,14 +396,15 @@ class EmployerSidebarMobile extends StatelessWidget {
                     Icons.account_balance_wallet,
                     "My Wallet",
                     () {
-                      // Navigator.push(
-                      //   context,
-                      //   MaterialPageRoute(
-                      //     builder: (_) => EmployerDashboardPage(),
-                      //   ),
-                      // );
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const EmployerWalletPage(),
+                        ),
+                      );
                     },
                   ),
+
                   _sidebarItem(
                     context,
                     Icons.attach_money_outlined,
@@ -483,33 +484,31 @@ class EmployerSidebarMobile extends StatelessWidget {
                     childrenPadding: const EdgeInsets.only(left: 20, bottom: 8),
                     children: [
                       _expTileChild(context, "Salary-based Employees", () {
-                        // Navigator.push(
-                        //   context,
-                        //   MaterialPageRoute(
-                        //     builder: (_) => EmployerDashboardPage(),
-                        //   ),
-                        // );
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => SalaryDuePage()),
+                        );
                       }),
-                      _expTileChild(
-                        context,
-                        "Commission-based Lead Generator",
-                        () {
-                          // Navigator.push(
-                          //   context,
-                          //   MaterialPageRoute(
-                          //     builder: (_) => EmployerDashboardPage(),
-                          //   ),
-                          // );
-                        },
-                      ),
-                      _expTileChild(context, "Project Employees", () {
-                        // Navigator.push(
-                        //   context,
-                        //   MaterialPageRoute(
-                        //     builder: (_) => EmployerDashboardPage(),
-                        //   ),
-                        // );
-                      }),
+                      // _expTileChild(
+                      //   context,
+                      //   "Commission-based Lead Generator",
+                      //   () {
+                      //     // Navigator.push(
+                      //     //   context,
+                      //     //   MaterialPageRoute(
+                      //     //     builder: (_) => EmployerDashboardPage(),
+                      //     //   ),
+                      //     // );
+                      //   },
+                      // ),
+                      // _expTileChild(context, "Project Employees", () {
+                      //   // Navigator.push(
+                      //   //   context,
+                      //   //   MaterialPageRoute(
+                      //   //     builder: (_) => EmployerDashboardPage(),
+                      //   //   ),
+                      //   // );
+                      // }),
                     ],
                   ),
 
@@ -897,7 +896,8 @@ class EmployerSidebarWeb extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => EmployerCommissionBasedJobsWithApplicantsPage(),
+                            builder: (_) =>
+                                EmployerCommissionBasedJobsWithApplicantsPage(),
                           ),
                         );
                       }),
@@ -954,12 +954,10 @@ class EmployerSidebarWeb extends StatelessWidget {
                     Icons.account_balance_wallet,
                     "My Wallet",
                     () {
-                      // Navigator.push(
-                      //   context,
-                      //   MaterialPageRoute(
-                      //     builder: (_) => EmployerDashboardPage(),
-                      //   ),
-                      // );
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => EmployerWalletPage()),
+                      );
                     },
                   ),
                   _menuItem(
@@ -1028,33 +1026,31 @@ class EmployerSidebarWeb extends StatelessWidget {
                     "Salary Structure",
                     [
                       _expTileChild(context, "Salary-based Employees", () {
-                        // Navigator.push(
-                        //   context,
-                        //   MaterialPageRoute(
-                        //     builder: (_) => EmployerDashboardPage(),
-                        //   ),
-                        // );
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => SalaryDuePage()),
+                        );
                       }),
-                      _expTileChild(
-                        context,
-                        "Commission-based Lead Generator",
-                        () {
-                          // Navigator.push(
-                          //   context,
-                          //   MaterialPageRoute(
-                          //     builder: (_) => EmployerDashboardPage(),
-                          //   ),
-                          // );
-                        },
-                      ),
-                      _expTileChild(context, "Project Employees", () {
-                        // Navigator.push(
-                        //   context,
-                        //   MaterialPageRoute(
-                        //     builder: (_) => EmployerDashboardPage(),
-                        //   ),
-                        // );
-                      }),
+                      // _expTileChild(
+                      //   context,
+                      //   "Commission-based Lead Generator",
+                      //   () {
+                      //     // Navigator.push(
+                      //     //   context,
+                      //     //   MaterialPageRoute(
+                      //     //     builder: (_) => EmployerDashboardPage(),
+                      //     //   ),
+                      //     // );
+                      //   },
+                      // ),
+                      // _expTileChild(context, "Project Employees", () {
+                      //   // Navigator.push(
+                      //   //   context,
+                      //   //   MaterialPageRoute(
+                      //   //     builder: (_) => EmployerDashboardPage(),
+                      //   //   ),
+                      //   // );
+                      // }),
                     ],
                   ),
                   _expansionGroup(
