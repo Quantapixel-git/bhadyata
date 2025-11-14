@@ -66,7 +66,7 @@ class _AllProjectsPageState extends State<AllProjectsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isWeb = MediaQuery.of(context).size.width > 800;
+    // final isWeb = MediaQuery.of(context).size.width > 800;
 
     return Scaffold(
       appBar: AppBar(

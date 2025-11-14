@@ -82,7 +82,7 @@ class _EmployerTellUsMoreState extends State<EmployerTellUsMore> {
 
     try {
       final userId = await SessionManager.getValue('employer_id');
-      if (userId == null || (userId is String && userId.isEmpty)) {
+      if (userId == null || (userId.isEmpty)) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

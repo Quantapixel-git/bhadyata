@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jobshub/common/utils/app_color.dart';
-import 'package:jobshub/hr/views/job_applicants/one_time_job_applicant.dart';
+// import 'package:jobshub/hr/views/job_applicants/one_time_job_applicant.dart';
 import 'package:jobshub/hr/views/sidebar_dashboard/hr_sidebar.dart';
 
 class HrCommissionBasedJobApplicants extends StatefulWidget {

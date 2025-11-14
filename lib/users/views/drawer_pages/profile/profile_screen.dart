@@ -120,18 +120,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  Color _approvalColor(int? code) {
-    switch (code) {
-      case 1:
-        return Colors.green;
-      case 3:
-        return Colors.red;
-      case 2:
-      default:
-        return Colors.orange;
-    }
-  }
-
   List<String> _skillsList() {
     final s = (_profile?['skills'] ?? '').toString().trim();
     if (s.isEmpty) return [];
@@ -554,72 +542,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _kycCard() {
-    final panUrl = (_profile?['kyc_pan'] ?? '').toString();
-    final aadhaarUrl = (_profile?['kyc_aadhaar'] ?? '').toString();
-    final kycApproval = _profile?['kyc_approval'] as int?;
-    final kycText = _approvalLabel(kycApproval);
-    final kycColor = _approvalColor(kycApproval);
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Icon(Icons.assignment_turned_in, color: AppColors.primary),
-              const SizedBox(width: 10),
-              Text(
-                "KYC Status: $kycText",
-                style: TextStyle(fontWeight: FontWeight.w600, color: kycColor),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          if (panUrl.isNotEmpty) _kycRow("PAN PDF", panUrl),
-          if (aadhaarUrl.isNotEmpty) _kycRow("Aadhaar PDF", aadhaarUrl),
-          if (panUrl.isEmpty && aadhaarUrl.isEmpty)
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "No KYC PDFs uploaded yet.",
-                style: TextStyle(color: Colors.grey),
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _kycRow(String label, String url) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 8.0),
-      child: Row(
-        children: [
-          const Icon(Icons.picture_as_pdf, color: Colors.redAccent),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () => _openUrl(url),
-            child: Text("View", style: TextStyle(color: AppColors.primary)),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 class _ErrorState extends StatelessWidget {

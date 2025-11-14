@@ -115,7 +115,7 @@ class _AdminStatsState extends State<AdminStats> {
     }
   }
 
-  Future<void> _onRefresh() async => _fetchOverview();
+  // Future<void> _onRefresh() async => _fetchOverview();
 
   @override
   Widget build(BuildContext context) {

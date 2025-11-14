@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:jobshub/common/utils/app_color.dart';
+// import 'package:jobshub/common/utils/app_color.dart';
 
 class OneTimeRecruitmentAllJobsPage extends StatefulWidget {
   const OneTimeRecruitmentAllJobsPage({super.key});

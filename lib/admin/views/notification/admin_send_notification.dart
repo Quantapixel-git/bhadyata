@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:jobshub/admin/views/sidebar_dashboard/admin_sidebar.dart';
 import 'package:jobshub/common/utils/app_color.dart';
-import 'package:jobshub/hr/views/sidebar_dashboard/hr_sidebar.dart';
+// import 'package:jobshub/hr/views/sidebar_dashboard/hr_sidebar.dart';
 
 enum UserGroup { employees, employers, hrs }
 
@@ -91,8 +91,7 @@ class _AdminSendNotificationPageState extends State<AdminSendNotificationPage> {
       case UserGroup.hrs:
         return _hrs;
       case UserGroup.employees:
-      default:
-        return _employees;
+      return _employees;
     }
   }
 

@@ -306,7 +306,7 @@ class _AttendanceHistoryPageState extends State<AttendanceHistoryPage> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final bool isWeb = constraints.maxWidth >= 900;
+        // final bool isWeb = constraints.maxWidth >= 900;
 
         return Scaffold(
           backgroundColor: Colors.grey.shade100,
