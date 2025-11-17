@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:jobshub/common/utils/app_color.dart';
+import 'package:jobshub/users/views/main_pages/search_placeholder.dart';
 
 const String kApiBase = 'https://dialfirst.in/quantapixel/badhyata/api/';
 
@@ -34,8 +35,6 @@ class _CategoryJobsPageState extends State<CategoryJobsPage> {
   final Set<String> _selectedJobTypes = {};
   String _experienceFilter = 'any';
   String _locationFilter = '';
-  double _salaryMin = 0;
-  double _salaryMax = 0;
   RangeValues _salaryRange = const RangeValues(0, 100000);
 
   // derived sets for filter controls
@@ -87,8 +86,7 @@ class _CategoryJobsPageState extends State<CategoryJobsPage> {
       _selectedJobTypes.clear();
       _experienceFilter = 'any';
       _locationFilter = '';
-      _salaryMin = 0;
-      _salaryMax = 0;
+
       _salaryRange = const RangeValues(0, 100000);
       _page = 1;
     });
@@ -142,8 +140,6 @@ class _CategoryJobsPageState extends State<CategoryJobsPage> {
 
           setState(() {
             _jobs = parsed;
-            _salaryMin = minSalary;
-            _salaryMax = maxSalary;
             _salaryRange = RangeValues(
               minSalary,
               maxSalary == 0 ? minSalary : maxSalary,
@@ -263,47 +259,12 @@ class _CategoryJobsPageState extends State<CategoryJobsPage> {
       }
     });
 
-    // pagination - client-side
     final start = (_page - 1) * _perPage;
     final end = start + _perPage;
     final paged = items.sublist(0, items.length < end ? items.length : end);
 
     setState(() {
       _visibleJobs = paged;
-    });
-  }
-
-  void _toggleJobType(String jt) {
-    setState(() {
-      if (_selectedJobTypes.contains(jt))
-        _selectedJobTypes.remove(jt);
-      else
-        _selectedJobTypes.add(jt);
-      _page = 1;
-      _applyFilters();
-    });
-  }
-
-  void _changeExperience(String e) {
-    setState(() {
-      _experienceFilter = e;
-      _page = 1;
-      _applyFilters();
-    });
-  }
-
-  void _clearFilters() {
-    setState(() {
-      _selectedJobTypes.clear();
-      _experienceFilter = 'any';
-      _locationFilter = '';
-      _searchCtrl.clear();
-      _keyword = '';
-      _salaryRange = RangeValues(_salaryMin, _salaryMax);
-      _approvalFilter = '1';
-      _sort = 'newest';
-      _page = 1;
-      _applyFilters();
     });
   }
 
@@ -321,6 +282,7 @@ class _CategoryJobsPageState extends State<CategoryJobsPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.primary,
+        automaticallyImplyLeading: false,
         elevation: 2,
         title: Text(
           widget.category,
@@ -329,13 +291,6 @@ class _CategoryJobsPageState extends State<CategoryJobsPage> {
             fontWeight: FontWeight.w700,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.filter_list),
-            onPressed: () => _openAdvancedFilters(context, isWide),
-            tooltip: 'Advanced filters',
-          ),
-        ],
       ),
       backgroundColor: Colors.grey.shade100,
       body: Padding(
@@ -352,19 +307,24 @@ class _CategoryJobsPageState extends State<CategoryJobsPage> {
                   child: SizedBox(
                     height: 48,
                     child: TextField(
-                      controller: _searchCtrl,
+                      readOnly: true,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const SearchScreen(),
+                          ),
+                        );
+                      },
                       decoration: InputDecoration(
-                        hintText: 'Search jobs by title, skills or location...',
+                        hintText: "Search jobs...",
                         prefixIcon: const Icon(Icons.search),
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: Colors.grey.shade100,
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
                         ),
                       ),
-                      textInputAction: TextInputAction.search,
-                      onSubmitted: (_) => _applyFilters(),
                     ),
                   ),
                 ),
@@ -414,11 +374,6 @@ class _CategoryJobsPageState extends State<CategoryJobsPage> {
             ),
             const SizedBox(height: 10),
 
-            // Active filter chips
-            _buildActiveChips(),
-
-            const SizedBox(height: 10),
-
             // Body list
             Expanded(
               child: RefreshIndicator(
@@ -441,108 +396,6 @@ class _CategoryJobsPageState extends State<CategoryJobsPage> {
         ),
       ),
     );
-  }
-
-  Widget _buildActiveChips() {
-    final List<Widget> chips = [];
-
-    if (_selectedJobTypes.isNotEmpty) {
-      for (final t in _selectedJobTypes) {
-        chips.add(
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: InputChip(
-              label: Text(t),
-              onDeleted: () => _toggleJobType(t),
-              selected: true,
-              selectedColor: AppColors.primary.withOpacity(0.12),
-            ),
-          ),
-        );
-      }
-    }
-
-    if (_experienceFilter != 'any') {
-      chips.add(
-        Padding(
-          padding: const EdgeInsets.only(right: 8),
-          child: InputChip(
-            label: Text(_experienceFilter),
-            onDeleted: () => _changeExperience('any'),
-          ),
-        ),
-      );
-    }
-
-    if (_locationFilter.trim().isNotEmpty) {
-      chips.add(
-        Padding(
-          padding: const EdgeInsets.only(right: 8),
-          child: InputChip(
-            label: Text('Loc: $_locationFilter'),
-            onDeleted: () => setState(() {
-              _locationFilter = '';
-              _applyFilters();
-            }),
-          ),
-        ),
-      );
-    }
-
-    if ((_salaryRange.start != _salaryMin) ||
-        (_salaryRange.end != _salaryMax)) {
-      chips.add(
-        Padding(
-          padding: const EdgeInsets.only(right: 8),
-          child: InputChip(
-            label: Text(
-              'Salary: ${_salaryRange.start.toInt()} - ${_salaryRange.end.toInt()}',
-            ),
-            onDeleted: () {
-              setState(() {
-                _salaryRange = RangeValues(_salaryMin, _salaryMax);
-                _applyFilters();
-              });
-            },
-          ),
-        ),
-      );
-    }
-
-    if (chips.isEmpty) {
-      return Row(
-        children: [
-          Text('Filters', style: TextStyle(color: Colors.grey.shade700)),
-          const SizedBox(width: 8),
-          TextButton(
-            onPressed: _openAdvancedFiltersPressed,
-            child: const Text('Show filters'),
-          ),
-          const Spacer(),
-          TextButton(onPressed: _clearFilters, child: const Text('Clear all')),
-        ],
-      );
-    }
-
-    return Row(
-      children: [
-        Expanded(
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(children: chips),
-          ),
-        ),
-        TextButton(
-          onPressed: _openAdvancedFiltersPressed,
-          child: const Text('Edit'),
-        ),
-        TextButton(onPressed: _clearFilters, child: const Text('Clear all')),
-      ],
-    );
-  }
-
-  void _openAdvancedFiltersPressed() {
-    _openAdvancedFilters(context, MediaQuery.of(context).size.width > 900);
   }
 
   Widget _buildBody(bool isWide) {
@@ -589,224 +442,6 @@ class _CategoryJobsPageState extends State<CategoryJobsPage> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => JobDetailPage(job: job)),
-    );
-  }
-
-  Future<void> _openAdvancedFilters(BuildContext context, bool isWide) async {
-    // show modal bottom sheet for mobile, side sheet for web
-    if (isWide) {
-      await showDialog(
-        context: context,
-        builder: (_) => Dialog(
-          insetPadding: const EdgeInsets.all(20),
-          child: SizedBox(width: 700, child: _advancedFiltersContent()),
-        ),
-      );
-    } else {
-      await showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        builder: (_) => SafeArea(
-          child: Padding(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom,
-            ),
-            child: _advancedFiltersContent(),
-          ),
-        ),
-      );
-    }
-  }
-
-  Widget _advancedFiltersContent() {
-    return StatefulBuilder(
-      builder: (context, setStateSB) {
-        return Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                children: [
-                  const Expanded(
-                    child: Text(
-                      'Advanced Filters',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.clear),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              // Approval (small)
-              Row(
-                children: [
-                  const Text(
-                    'Approval: ',
-                    style: TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                  const SizedBox(width: 8),
-                  ChoiceChip(
-                    label: const Text('Approved'),
-                    selected: _approvalFilter == '1',
-                    onSelected: (_) => setStateSB(() => _approvalFilter = '1'),
-                  ),
-                  const SizedBox(width: 8),
-                  ChoiceChip(
-                    label: const Text('Pending'),
-                    selected: _approvalFilter == '2',
-                    onSelected: (_) => setStateSB(() => _approvalFilter = '2'),
-                  ),
-                  const SizedBox(width: 8),
-                  ChoiceChip(
-                    label: const Text('Rejected'),
-                    selected: _approvalFilter == '3',
-                    onSelected: (_) => setStateSB(() => _approvalFilter = '3'),
-                  ),
-                  const SizedBox(width: 8),
-                  ChoiceChip(
-                    label: const Text('Any'),
-                    selected: _approvalFilter == 'all',
-                    onSelected: (_) =>
-                        setStateSB(() => _approvalFilter = 'all'),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-
-              // Job types grid
-              Align(
-                alignment: Alignment.centerLeft,
-                child: const Text(
-                  'Job type',
-                  style: TextStyle(fontWeight: FontWeight.w700),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: _jobTypes.map((jt) {
-                  final sel = _selectedJobTypes.contains(jt);
-                  return FilterChip(
-                    label: Text(jt),
-                    selected: sel,
-                    onSelected: (v) => setStateSB(() => _toggleJobType(jt)),
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 12),
-
-              // Experience + location row
-              Row(
-                children: [
-                  Expanded(
-                    child: DropdownButtonFormField<String>(
-                      value: _experienceFilter,
-                      items: [
-                        const DropdownMenuItem(
-                          value: 'any',
-                          child: Text('Any experience'),
-                        ),
-                        ..._experienceLevels.map(
-                          (e) => DropdownMenuItem(value: e, child: Text(e)),
-                        ),
-                      ],
-                      onChanged: (v) =>
-                          setStateSB(() => _changeExperience(v ?? 'any')),
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        isDense: true,
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 12,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: TextFormField(
-                      initialValue: _locationFilter,
-                      onChanged: (v) => setStateSB(() => _locationFilter = v),
-                      decoration: const InputDecoration(
-                        hintText: 'Location',
-                        border: OutlineInputBorder(),
-                        isDense: true,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-
-              // Salary range
-              Align(
-                alignment: Alignment.centerLeft,
-                child: const Text(
-                  'Salary range',
-                  style: TextStyle(fontWeight: FontWeight.w700),
-                ),
-              ),
-              const SizedBox(height: 6),
-              RangeSlider(
-                values: _salaryRange,
-                min: _salaryMin,
-                max: _salaryMax == 0 ? (_salaryMin + 100000) : _salaryMax,
-                labels: RangeLabels(
-                  _salaryRange.start.toInt().toString(),
-                  _salaryRange.end.toInt().toString(),
-                ),
-                onChanged: (vals) => setStateSB(() => _salaryRange = vals),
-              ),
-
-              const SizedBox(height: 12),
-
-              // Buttons
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () {
-                        setState(() {
-                          _selectedJobTypes.clear();
-                          _experienceFilter = 'any';
-                          _locationFilter = '';
-                          _salaryRange = RangeValues(_salaryMin, _salaryMax);
-                        });
-                        setStateSB(() {}); // update modal state
-                      },
-                      child: const Text('Reset'),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // apply: update parent and close
-                        setState(() {
-                          // already mutated via setState callbacks above
-                        });
-                        _page = 1;
-                        _applyFilters();
-                        Navigator.of(context).pop();
-                      },
-                      child: const Text('Apply filters'),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 18),
-            ],
-          ),
-        );
-      },
     );
   }
 }

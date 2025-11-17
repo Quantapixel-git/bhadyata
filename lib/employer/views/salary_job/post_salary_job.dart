@@ -48,7 +48,7 @@ class _EmployerPostSalaryBasedJobState
   String salaryType = 'Monthly';
 
   final List<String> jobTypes = ['Full-Time', 'Part-Time', 'Internship'];
-  final List<String> salaryTypes = ['Monthly', 'Yearly', 'Weekly'];
+  final List<String> salaryTypes = ['Monthly'];
 
   @override
   void initState() {

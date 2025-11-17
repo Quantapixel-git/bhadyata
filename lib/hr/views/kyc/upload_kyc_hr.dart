@@ -223,7 +223,7 @@ class _HrKycUploadPageState extends State<HrKycUploadPage> {
         backgroundColor: Colors.grey.shade100,
         appBar: AppBar(
           automaticallyImplyLeading: false,
-          backgroundColor: Colors.black,
+          backgroundColor: AppColors.primary,
           elevation: 1,
           title: const Text(
             "KYC Verification",
@@ -317,7 +317,7 @@ class _HrKycUploadPageState extends State<HrKycUploadPage> {
                     else
                       const Center(
                         child: Text(
-                          "✅ KYC documents already uploaded.",
+                          "KYC documents already uploaded.",
                           style: TextStyle(
                             color: Colors.green,
                             fontWeight: FontWeight.w600,

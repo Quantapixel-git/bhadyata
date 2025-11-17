@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jobshub/common/utils/app_color.dart';
 import 'package:jobshub/employer/views/sidebar_dashboard/employer_sidebar.dart';
+import 'package:jobshub/common/utils/session_manager.dart'; // <<-- added
 
 class SalaryBasedViewPostedJobsPage extends StatelessWidget {
   const SalaryBasedViewPostedJobsPage({super.key});
@@ -42,7 +43,6 @@ class SalaryBasedViewPostedJobsPage extends StatelessWidget {
                     Tab(text: "Pending"),
                     Tab(text: "Approved"),
                     Tab(text: "Rejected"),
-                    // Tab(text: "Approved"),
                   ],
                 ),
               ),
@@ -51,7 +51,6 @@ class SalaryBasedViewPostedJobsPage extends StatelessWidget {
                   JobsList(status: "Pending"),
                   JobsList(status: "Approved"),
                   JobsList(status: "Rejected"),
-                  // JobsList(status: "Approved"),
                 ],
               ),
             ),
@@ -85,6 +84,15 @@ class _JobsListState extends State<JobsList> {
     setState(() => isLoading = true);
 
     try {
+      // get employer id from session
+      final userIdStr = await SessionManager.getValue('employer_id');
+
+      if (userIdStr == null || userIdStr.toString().isEmpty) {
+        // No employer id available — stop loading and leave jobs empty
+        setState(() => isLoading = false);
+        return;
+      }
+
       String apiUrl;
       if (widget.status == "Pending") {
         apiUrl = apiUrlPending;
@@ -94,22 +102,25 @@ class _JobsListState extends State<JobsList> {
         apiUrl = apiUrlRejected;
       }
 
+      final body = jsonEncode({"employer_id": userIdStr});
+
       final response = await http.post(
         Uri.parse(apiUrl),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({"employer_id": 14}),
+        body: body,
       );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         setState(() {
-          jobs = List<Map<String, dynamic>>.from(data['data']);
+          jobs = List<Map<String, dynamic>>.from(data['data'] ?? []);
           isLoading = false;
         });
       } else {
         setState(() => isLoading = false);
       }
     } catch (e) {
+      // ignore errors for now, just stop loading
       setState(() => isLoading = false);
     }
   }
@@ -176,7 +187,7 @@ class _JobsListState extends State<JobsList> {
                 children: [
                   const SizedBox(height: 4),
                   Text(
-                    "${job["job_type"] ?? "N/A"} | ₹${job["salary_min"]} - ₹${job["salary_max"]}",
+                    "${job["job_type"] ?? "N/A"} | ₹${job["salary_min"] ?? '0'} - ₹${job["salary_max"] ?? '0'}",
                   ),
                   const SizedBox(height: 2),
                   Text("Location: ${job["location"] ?? "N/A"}"),

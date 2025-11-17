@@ -35,6 +35,42 @@ class _EmployerSendNotificationPageState
       "email": "amit@example.com",
       "selected": false,
     },
+    {
+      "id": 104,
+      "name": "Priya Sharma",
+      "email": "priya@example.com",
+      "selected": false,
+    },
+    {
+      "id": 105,
+      "name": "Amit Verma",
+      "email": "amit@example.com",
+      "selected": false,
+    },
+    {
+      "id": 106,
+      "name": "Priya Sharma",
+      "email": "priya@example.com",
+      "selected": false,
+    },
+    {
+      "id": 107,
+      "name": "Amit Verma",
+      "email": "amit@example.com",
+      "selected": false,
+    },
+    {
+      "id": 108,
+      "name": "Priya Sharma",
+      "email": "priya@example.com",
+      "selected": false,
+    },
+    {
+      "id": 109,
+      "name": "Amit Verma",
+      "email": "amit@example.com",
+      "selected": false,
+    },
   ];
 
   List<Map<String, dynamic>> get _activeList => _employees;
@@ -141,7 +177,7 @@ class _EmployerSendNotificationPageState
                         controller: _titleController,
                         decoration: InputDecoration(
                           labelText: "Notification Title",
-                          labelStyle: TextStyle(color: AppColors.primary),
+                          // labelStyle: TextStyle(color: AppColors.primary),
                           focusedBorder: OutlineInputBorder(
                             borderSide: BorderSide(
                               color: AppColors.primary,
@@ -162,7 +198,7 @@ class _EmployerSendNotificationPageState
                         maxLines: 3,
                         decoration: InputDecoration(
                           labelText: "Notification Message",
-                          labelStyle: TextStyle(color: AppColors.primary),
+                          // labelStyle: TextStyle(color: AppColors.primary),
                           focusedBorder: OutlineInputBorder(
                             borderSide: BorderSide(
                               color: AppColors.primary,

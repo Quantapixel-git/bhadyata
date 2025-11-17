@@ -151,20 +151,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
             backgroundColor: AppColors.white,
             appBar: AppBar(
               automaticallyImplyLeading: false,
-              backgroundColor: AppColors.white,
+              backgroundColor: AppColors.primary,
               elevation: 1,
               title: const Text(
                 "My Profile",
                 style: TextStyle(
-                  color: Colors.black87,
-                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
               actions: [
                 IconButton(
                   tooltip: "Refresh",
                   onPressed: _fetchProfile,
-                  icon: const Icon(Icons.refresh, color: Colors.black87),
+                  icon: const Icon(Icons.refresh, color: Colors.white),
                 ),
               ],
             ),

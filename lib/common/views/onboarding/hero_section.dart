@@ -1,10 +1,9 @@
-
-import 'dart:ui';
+// ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
 import 'package:jobshub/common/utils/app_color.dart';
 
-class HeroUnstopStyle extends StatelessWidget {
+class HeroUnstopStyle extends StatefulWidget {
   final bool isDesktop;
   final VoidCallback? onHireNow;
   final VoidCallback? onGetJob;
@@ -13,11 +12,17 @@ class HeroUnstopStyle extends StatelessWidget {
     required this.isDesktop,
     this.onHireNow,
     this.onGetJob,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
-  // Tile data — change asset paths to match your assets
-  List<_TileData> get _tiles => [
+  @override
+  State<HeroUnstopStyle> createState() => _HeroUnstopStyleState();
+}
+
+class _HeroUnstopStyleState extends State<HeroUnstopStyle>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  final List<_TileData> _tiles = [
     _TileData(
       'Salary Jobs',
       'Fixed Pay\nOpportunities',
@@ -56,16 +61,38 @@ class HeroUnstopStyle extends StatelessWidget {
     ),
   ];
 
+  final Set<int> _hovered = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+
+    // start the staggered entrance
+    _ctrl.forward();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final horizontalPadding = isDesktop ? 64.0 : 20.0;
-    final topPadding = isDesktop ? 32.0 : 28.0;
+    final horizontalPadding = widget.isDesktop ? 64.0 : 20.0;
+    final topPadding = widget.isDesktop ? 32.0 : 28.0;
 
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: horizontalPadding,
       ).copyWith(top: topPadding, bottom: 48),
-      child: isDesktop ? _desktopLayout(context) : _mobileLayout(context),
+      child: widget.isDesktop
+          ? _desktopLayout(context)
+          : _mobileLayout(context),
     );
   }
 
@@ -75,10 +102,7 @@ class HeroUnstopStyle extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // small badge
           const SizedBox(height: 22),
-
-          // Headline with highlight on first word
           RichText(
             text: TextSpan(
               children: [
@@ -87,7 +111,7 @@ class HeroUnstopStyle extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 52,
                     fontWeight: FontWeight.w800,
-                    color: Colors.black,
+                    color: AppColors.primary,
                     height: 1.0,
                   ),
                 ),
@@ -104,8 +128,6 @@ class HeroUnstopStyle extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 18),
-
-          // subtitle
           const SizedBox(
             width: 560,
             child: Text(
@@ -118,14 +140,12 @@ class HeroUnstopStyle extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-
-          // CTAs
           Row(
             children: [
               ElevatedButton(
-                onPressed: onHireNow,
+                onPressed: widget.onHireNow,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.secondary,
+                  backgroundColor: AppColors.primary,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 40,
                     vertical: 18,
@@ -142,9 +162,9 @@ class HeroUnstopStyle extends StatelessWidget {
               ),
               const SizedBox(width: 14),
               OutlinedButton(
-                onPressed: onGetJob,
+                onPressed: widget.onGetJob,
                 style: OutlinedButton.styleFrom(
-                  side: BorderSide(color: AppColors.secondary),
+                  side: BorderSide(color: AppColors.primary),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 40,
                     vertical: 18,
@@ -155,7 +175,7 @@ class HeroUnstopStyle extends StatelessWidget {
                 ),
                 child: const Text(
                   'Get a job',
-                  style: TextStyle(fontSize: 18, color: AppColors.secondary),
+                  style: TextStyle(fontSize: 18, color: AppColors.primary),
                 ),
               ),
             ],
@@ -164,33 +184,29 @@ class HeroUnstopStyle extends StatelessWidget {
       ),
     );
 
-    // Right column with tiles + overlapping image
     final right = Expanded(
       flex: 10,
       child: SizedBox(
-        height: 347,
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            // tiles grid
-            Align(
-              alignment: Alignment.centerRight,
-              child: SizedBox(
-                width: 700,
-                child: GridView.count(
-                  crossAxisCount:
-                      1, // use one column here and create rows of two items via Row in itemBuilder
-                  mainAxisSpacing: 0,
-                  crossAxisSpacing: 12,
-                  childAspectRatio:
-                      6, // will be overridden by tile widget's height
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: _buildTileRows(),
-                ),
-              ),
+        height: 360,
+        child: Align(
+          alignment: Alignment.centerRight,
+          child: SizedBox(
+            width: 720,
+            child: _AnimatedTileGrid(
+              tiles: _tiles,
+              controller: _ctrl,
+              hoveredSet: _hovered,
+              onHoverChanged: (index, hover) {
+                setState(() {
+                  if (hover) {
+                    _hovered.add(index);
+                  } else {
+                    _hovered.remove(index);
+                  }
+                });
+              },
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -198,39 +214,105 @@ class HeroUnstopStyle extends StatelessWidget {
     return Row(children: [left, const SizedBox(width: 0), right]);
   }
 
-  // Build rows: each row contains two tiles side-by-side (right aligned like reference)
-  List<Widget> _buildTileRows() {
-    final rows = <Widget>[];
-    for (int i = 0; i < _tiles.length; i += 2) {
-      final leftTile = _tiles[i];
-      final rightTile = (i + 1) < _tiles.length ? _tiles[i + 1] : null;
-
-      rows.add(
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 6),
-          child: Row(
+  Widget _mobileLayout(BuildContext context) {
+    return Column(
+      children: [
+        const SizedBox(height: 14),
+        RichText(
+          textAlign: TextAlign.center,
+          text: TextSpan(
             children: [
-              // left small spacer so tiles align to right side visually
-              const SizedBox(width: 8),
-              Expanded(child: _tileWidget(leftTile)),
-              const SizedBox(width: 10),
-              Expanded(
-                child: rightTile != null
-                    ? _tileWidget(rightTile)
-                    : const SizedBox(),
+              TextSpan(
+                text: 'Unlock ',
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.primary,
+                ),
+              ),
+              const TextSpan(
+                text: 'Your Career',
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black87,
+                ),
               ),
             ],
           ),
         ),
-      );
-    }
-    return rows;
+        const SizedBox(height: 12),
+        const Text(
+          'Explore opportunities from across the globe to grow, showcase skills, gain CV points & get hired by your dream company.',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 15, color: Colors.black54, height: 1.4),
+        ),
+        const SizedBox(height: 18),
+        SizedBox(
+          height: 160,
+          child: Image.asset('assets/job-removebg.png', fit: BoxFit.contain),
+        ),
+        const SizedBox(height: 18),
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 10,
+          children: [
+            ElevatedButton(
+              onPressed: widget.onHireNow,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 26,
+                  vertical: 14,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text(
+                'Hire now',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+            OutlinedButton(
+              onPressed: widget.onGetJob,
+              style: OutlinedButton.styleFrom(
+                side: BorderSide(color: AppColors.primary),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 14,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text(
+                'Get a job',
+                style: TextStyle(color: AppColors.primary),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          alignment: WrapAlignment.center,
+          children: _tiles
+              .map(
+                (t) => SizedBox(
+                  width: MediaQuery.of(context).size.width * 0.9,
+                  child: _tileWidget(t),
+                ),
+              )
+              .toList(),
+        ),
+      ],
+    );
   }
 
   Widget _tileWidget(_TileData t) {
     return Container(
-      // height: 500,
-      // width: 200,
       padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
         color: t.bg,
@@ -245,7 +327,6 @@ class HeroUnstopStyle extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // text block
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(8.0),
@@ -269,8 +350,6 @@ class HeroUnstopStyle extends StatelessWidget {
               ),
             ),
           ),
-
-          // small artwork on right (use your tile images)
           SizedBox(
             width: 76,
             height: 76,
@@ -289,122 +368,124 @@ class HeroUnstopStyle extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _mobileLayout(BuildContext context) {
-    return Column(
-      children: [
-        // Badge
-        // Container(
-        //   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        //   decoration: BoxDecoration(
-        //     color: Colors.purple.shade50,
-        //     borderRadius: BorderRadius.circular(20),
-        //   ),
-        //   child: const Text(
-        //     'Aditya • Just Went Badhyata Pro!',
-        //     style: TextStyle(fontSize: 13),
-        //   ),
-        // ),
-        const SizedBox(height: 14),
+class _AnimatedTileGrid extends StatelessWidget {
+  final List<_TileData> tiles;
+  final AnimationController controller;
+  final Set<int> hoveredSet;
+  final void Function(int index, bool hover) onHoverChanged;
 
-        // Headline stacked
-        RichText(
-          textAlign: TextAlign.center,
-          text: TextSpan(
-            children: [
-              TextSpan(
-                text: 'Unlock ',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w800,
-                  color: AppColors.secondary,
+  const _AnimatedTileGrid({
+    required this.tiles,
+    required this.controller,
+    required this.hoveredSet,
+    required this.onHoverChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        childAspectRatio: 3.2,
+      ),
+      itemCount: tiles.length,
+      itemBuilder: (context, index) {
+        final start = (index * 0.08).clamp(0.0, 1.0);
+        final end = (start + 0.5).clamp(0.0, 1.0);
+        final anim = CurvedAnimation(
+          parent: controller,
+          curve: Interval(start, end, curve: Curves.easeOut),
+        );
+
+        return AnimatedBuilder(
+          animation: controller,
+          builder: (context, child) {
+            final opacity = anim.value;
+            final translateY = (1 - anim.value) * 18;
+            final scale = hoveredSet.contains(index) ? 1.03 : 1.0;
+
+            return Opacity(
+              opacity: opacity,
+              child: Transform.translate(
+                offset: Offset(0, translateY),
+                child: MouseRegion(
+                  onEnter: (_) => onHoverChanged(index, true),
+                  onExit: (_) => onHoverChanged(index, false),
+                  child: AnimatedScale(
+                    duration: const Duration(milliseconds: 180),
+                    scale: scale,
+                    child: child,
+                  ),
                 ),
               ),
-              const TextSpan(
-                text: 'Your Career',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black87,
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            decoration: BoxDecoration(
+              color: tiles[index].bg,
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.06),
+                  blurRadius: 12,
+                  offset: const Offset(0, 6),
                 ),
-              ),
-            ],
+              ],
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          tiles[index].title,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          tiles[index].subtitle,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.black54,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  width: 76,
+                  height: 76,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: tiles[index].asset != null
+                        ? Image.asset(
+                            tiles[index].asset!,
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, __, ___) => const SizedBox(),
+                          )
+                        : const SizedBox(),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-        const SizedBox(height: 12),
-        const Text(
-          'Explore opportunities from across the globe to grow, showcase skills, gain CV points & get hired by your dream company.',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 15, color: Colors.black54, height: 1.4),
-        ),
-        const SizedBox(height: 18),
-
-        // Illustration
-        SizedBox(
-          height: 160,
-          child: Image.asset('assets/job-removebg.png', fit: BoxFit.contain),
-        ),
-        const SizedBox(height: 18),
-
-        // CTAs
-        Wrap(
-          alignment: WrapAlignment.center,
-          spacing: 10,
-          children: [
-            ElevatedButton(
-              onPressed: onHireNow,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 26,
-                  vertical: 14,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text(
-                'Hire now',
-                style: TextStyle(color: Colors.white),
-              ),
-            ),
-            OutlinedButton(
-              onPressed: onGetJob,
-              style: OutlinedButton.styleFrom(
-                side: BorderSide(color: Colors.black),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 14,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text(
-                'Get a job',
-                style: TextStyle(color: Colors.black),
-              ),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 20),
-
-        // tiles stacked two-per-row
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          alignment: WrapAlignment.center,
-          children: _tiles
-              .map(
-                (t) => SizedBox(
-                  width: MediaQuery.of(context).size.width * 0.9,
-                  child: _tileWidget(t),
-                ),
-              )
-              .toList(),
-        ),
-      ],
+        );
+      },
     );
   }
 }

@@ -261,7 +261,7 @@ class _HrProfilePageState extends State<HrProfilePage> {
                         : const AssetImage('assets/job_bgr.png')
                               as ImageProvider,
                   ),
-                  SizedBox(width: 15,),
+                  SizedBox(width: 15),
                   Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -329,7 +329,9 @@ class _HrProfilePageState extends State<HrProfilePage> {
                               ordered[i].value,
                             ),
                           ),
-                        if (i != ordered.length - 1) const Divider(),
+                        if (i != ordered.length - 1 &&
+                            ordered[i].key != 'wallet_balance')
+                          const Divider(),
                       ],
                     ],
                   ),

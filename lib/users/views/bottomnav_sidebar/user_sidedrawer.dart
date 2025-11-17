@@ -102,36 +102,36 @@ class AppDrawerMobile extends StatelessWidget {
                         ),
                       );
                     }),
-                    ExpansionTile(
-                      leading: const Icon(
-                        Icons.folder_copy_outlined,
-                        color: Colors.black87,
-                        size: 22,
-                      ),
-                      title: const Text(
-                        "Project Applications",
-                        style: TextStyle(
-                          color: Colors.black87,
-                          fontSize: 14.5,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      iconColor: AppColors.primary,
-                      collapsedIconColor: Colors.black54,
-                      childrenPadding: const EdgeInsets.only(
-                        left: 30,
-                        bottom: 4,
-                        right: 8,
-                      ),
-                      children: [
-                        _expTileChild(context, "View Projects", () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => Projects()),
-                          );
-                        }),
-                      ],
-                    ),
+                    // ExpansionTile(
+                    //   leading: const Icon(
+                    //     Icons.folder_copy_outlined,
+                    //     color: Colors.black87,
+                    //     size: 22,
+                    //   ),
+                    //   title: const Text(
+                    //     "Project Applications",
+                    //     style: TextStyle(
+                    //       color: Colors.black87,
+                    //       fontSize: 14.5,
+                    //       fontWeight: FontWeight.w600,
+                    //     ),
+                    //   ),
+                    //   iconColor: AppColors.primary,
+                    //   collapsedIconColor: Colors.black54,
+                    //   childrenPadding: const EdgeInsets.only(
+                    //     left: 30,
+                    //     bottom: 4,
+                    //     right: 8,
+                    //   ),
+                    //   children: [
+                    //     _expTileChild(context, "View Projects", () {
+                    //       Navigator.push(
+                    //         context,
+                    //         MaterialPageRoute(builder: (_) => Projects()),
+                    //       );
+                    //     }),
+                    //   ],
+                    // ),
                     ExpansionTile(
                       leading: const Icon(
                         Icons.work_outline,
@@ -157,21 +157,25 @@ class AppDrawerMobile extends StatelessWidget {
                         _expTileChild(context, "Salary Based Job", () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => SalaryJobs()),
+                            MaterialPageRoute(
+                              builder: (_) => SalaryJobsScreen(),
+                            ),
                           );
                         }),
                         _expTileChild(context, "One-Time Recruitment", () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => OneTimeRecruitment(),
+                              builder: (_) => OneTimeRecruitmentScreen(),
                             ),
                           );
                         }),
-                        _expTileChild(context, "Lead Generator Job", () {
+                        _expTileChild(context, "Commission Based Job", () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (_) => CommissionJobs()),
+                            MaterialPageRoute(
+                              builder: (_) => CommissionJobsScreen(),
+                            ),
                           );
                         }),
                       ],
@@ -202,15 +206,7 @@ class AppDrawerMobile extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => EmployeeLeaveRequestScreen(
-                                employeeName: "Punita Gaba",
-                                work: WorkAssignment(
-                                  title: "Software Engineer",
-                                  company: "TechCorp Pvt Ltd",
-                                  employmentType: "Salary Based Job",
-                                  salary: 40000,
-                                ),
-                              ),
+                              builder: (_) => EmployeeLeaveRequestScreen(),
                             ),
                           );
                         }),
@@ -219,14 +215,7 @@ class AppDrawerMobile extends StatelessWidget {
                             context,
                             MaterialPageRoute(
                               builder: (_) => EmployeeAttendanceScreen(
-                                employeeName: "Punita Gaba",
-                                joiningDate: DateTime(2024, 1, 15),
-                                work: WorkAssignment(
-                                  title: "Software Engineer",
-                                  company: "TechCorp Pvt Ltd",
-                                  employmentType: "Salary Based",
-                                  salary: 40000,
-                                ),
+                               
                               ),
                             ),
                           );
@@ -286,54 +275,94 @@ class AppDrawerMobile extends StatelessWidget {
     );
   }
 
+  // Replace AppDrawerMobile._buildHeader()
   Widget _buildHeader() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.primary.withOpacity(0.95),
-            AppColors.primary.withOpacity(0.75),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        // borderRadius: const BorderRadius.only(topRight: Radius.circular(26)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CircleAvatar(
-            radius: 38,
-            backgroundColor: Colors.white,
-            child: ClipOval(
-              child: Image.asset(
-                "assets/job_bgr.png",
-                fit: BoxFit.cover,
-                height: 55,
+    Future<Map<String, String>> _fetchProfile() async {
+      final first = await SessionManager.getValue('first_name') ?? '';
+      final last = await SessionManager.getValue('last_name') ?? '';
+      final email = await SessionManager.getValue('email') ?? '';
+      final image = await SessionManager.getValue('profile_image') ?? '';
+
+      final fullName = (first + ' ' + last).trim();
+      return {
+        'name': fullName.isNotEmpty ? fullName : '',
+        'email': email,
+        'image': image,
+      };
+    }
+
+    return FutureBuilder<Map<String, String>>(
+      future: _fetchProfile(),
+      builder: (context, snapshot) {
+        final name = (snapshot.data?['name'] ?? '').isNotEmpty
+            ? snapshot.data!['name']!
+            : 'No data';
+        final email = (snapshot.data?['email'] ?? '').isNotEmpty
+            ? snapshot.data!['email']!
+            : 'No data';
+        final image = snapshot.data?['image'] ?? '';
+
+        ImageProvider avatarImage;
+        if (image.isNotEmpty &&
+            (image.startsWith('http') || image.startsWith('https'))) {
+          avatarImage = NetworkImage(image);
+        } else {
+          avatarImage = const AssetImage('assets/job_bgr.png');
+        }
+
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppColors.primary.withOpacity(0.95),
+                AppColors.primary.withOpacity(0.75),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CircleAvatar(
+                radius: 38,
+                backgroundColor: Colors.white,
+                child: ClipOval(
+                  child: SizedBox(
+                    height: 76,
+                    width: 76,
+                    child: Image(
+                      image: avatarImage,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) =>
+                          Image.asset('assets/job_bgr.png', fit: BoxFit.cover),
+                    ),
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(height: 12),
+              Text(
+                name,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 17,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                email,
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.9),
+                  fontSize: 13,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
-          const Text(
-            "Punita Gaba",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 17,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            "Software Engineer",
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.9),
-              fontSize: 13,
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -424,9 +453,7 @@ class AppDrawerWeb extends StatelessWidget {
                   _menuItem(context, Icons.home_outlined, "Home", () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => const MainBottomNav(),
-                      ),
+                      MaterialPageRoute(builder: (_) => const MainBottomNav()),
                     );
                   }),
                   _menuItem(context, Icons.person_outline, "Profile", () {
@@ -441,19 +468,19 @@ class AppDrawerWeb extends StatelessWidget {
                       MaterialPageRoute(builder: (_) => const KycUploadPage()),
                     );
                   }),
-                  _expansionGroup(
-                    context,
-                    Icons.folder_copy_outlined,
-                    "Project Applications",
-                    [
-                      _expTileChild(context, "View Projects", () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => Projects()),
-                        );
-                      }),
-                    ],
-                  ),
+                  // _expansionGroup(
+                  //   context,
+                  //   Icons.folder_copy_outlined,
+                  //   "Project Applications",
+                  //   [
+                  //     _expTileChild(context, "View Projects", () {
+                  //       Navigator.push(
+                  //         context,
+                  //         MaterialPageRoute(builder: (_) => Projects()),
+                  //       );
+                  //     }),
+                  //   ],
+                  // ),
                   _expansionGroup(
                     context,
                     Icons.work_outline,
@@ -462,21 +489,23 @@ class AppDrawerWeb extends StatelessWidget {
                       _expTileChild(context, "Salary Based Job", () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => SalaryJobs()),
+                          MaterialPageRoute(builder: (_) => SalaryJobsScreen()),
                         );
                       }),
                       _expTileChild(context, "One-Time Recruitment", () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => OneTimeRecruitment(),
+                            builder: (_) => OneTimeRecruitmentScreen(),
                           ),
                         );
                       }),
-                      _expTileChild(context, "Lead Generator Job", () {
+                      _expTileChild(context, "Commission Based Job", () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (_) => CommissionJobs()),
+                          MaterialPageRoute(
+                            builder: (_) => CommissionJobsScreen(),
+                          ),
                         );
                       }),
                     ],
@@ -490,15 +519,7 @@ class AppDrawerWeb extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => EmployeeLeaveRequestScreen(
-                              employeeName: "Punita Gaba",
-                              work: WorkAssignment(
-                                title: "Software Engineer",
-                                company: "TechCorp Pvt Ltd",
-                                employmentType: "Salary Based Job",
-                                salary: 40000,
-                              ),
-                            ),
+                            builder: (_) => EmployeeLeaveRequestScreen(),
                           ),
                         );
                       }),
@@ -507,14 +528,7 @@ class AppDrawerWeb extends StatelessWidget {
                           context,
                           MaterialPageRoute(
                             builder: (_) => EmployeeAttendanceScreen(
-                              employeeName: "Punita Gaba",
-                              joiningDate: DateTime(2024, 1, 15),
-                              work: WorkAssignment(
-                                title: "Software Engineer",
-                                company: "TechCorp Pvt Ltd",
-                                employmentType: "Salary Based",
-                                salary: 40000,
-                              ),
+                           
                             ),
                           ),
                         );
@@ -582,62 +596,100 @@ class AppDrawerWeb extends StatelessWidget {
     );
   }
 
+  // Replace AppDrawerWeb._buildHeader()
   Widget _buildHeader() {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 250),
-      height: 120,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.primary.withOpacity(0.95),
-            AppColors.primary.withOpacity(0.75),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        // borderRadius: const BorderRadius.only(topRight: Radius.circular(26)),
-      ),
-      child: ClipRect(
-        child: Row(
-          mainAxisAlignment: isCollapsed
-              ? MainAxisAlignment.center
-              : MainAxisAlignment.start,
-          children: [
-            const CircleAvatar(
-              radius: 20,
-              backgroundImage: AssetImage("assets/job_bgr.png"),
+    Future<Map<String, String>> _fetchProfile() async {
+      final first = await SessionManager.getValue('first_name') ?? '';
+      final last = await SessionManager.getValue('last_name') ?? '';
+      final email = await SessionManager.getValue('email') ?? '';
+      final image = await SessionManager.getValue('profile_image') ?? '';
+
+      final fullName = (first + ' ' + last).trim();
+      return {
+        'name': fullName.isNotEmpty ? fullName : '',
+        'email': email,
+        'image': image,
+      };
+    }
+
+    return FutureBuilder<Map<String, String>>(
+      future: _fetchProfile(),
+      builder: (context, snapshot) {
+        final name = (snapshot.data?['name'] ?? '').isNotEmpty
+            ? snapshot.data!['name']!
+            : 'No data';
+        final email = (snapshot.data?['email'] ?? '').isNotEmpty
+            ? snapshot.data!['email']!
+            : 'No data';
+        final image = snapshot.data?['image'] ?? '';
+
+        ImageProvider avatarImage;
+        if (image.isNotEmpty &&
+            (image.startsWith('http') || image.startsWith('https'))) {
+          avatarImage = NetworkImage(image);
+        } else {
+          avatarImage = const AssetImage('assets/job_bgr.png');
+        }
+
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          height: 120,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                AppColors.primary.withOpacity(0.95),
+                AppColors.primary.withOpacity(0.75),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
-            if (!isCollapsed) ...[
-              const SizedBox(width: 10),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Punita Gaba",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      "Software Engineer",
-                      style: TextStyle(
-                        // color: Colors.white.withOpacity(0.9),
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
+          ),
+          child: ClipRect(
+            child: Row(
+              mainAxisAlignment: isCollapsed
+                  ? MainAxisAlignment.center
+                  : MainAxisAlignment.start,
+              children: [
+                CircleAvatar(
+                  radius: 20,
+                  backgroundImage: avatarImage,
+                  backgroundColor: Colors.white,
                 ),
-              ),
-            ],
-          ],
-        ),
-      ),
+                if (!isCollapsed) ...[
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          name,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          email,
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.9),
+                            fontSize: 13,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 

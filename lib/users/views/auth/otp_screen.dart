@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:jobshub/common/constants/base_url.dart';
+import 'package:jobshub/common/utils/fetch_user_profile.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/users/views/bottomnav_sidebar/bottom_nav.dart';
 import 'package:jobshub/users/views/info_collector/user_complete_profile.dart';
@@ -145,6 +146,8 @@ class _OtpScreenState extends State<OtpScreen> {
             ),
           );
         } else {
+         
+          await fetchAndStoreUserProfile();
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => const MainBottomNav()),

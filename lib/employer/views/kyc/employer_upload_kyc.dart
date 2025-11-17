@@ -225,7 +225,7 @@ class _EmployerKycUploadPageState extends State<EmployerKycUploadPage> {
         backgroundColor: Colors.grey.shade100,
         appBar: AppBar(
           automaticallyImplyLeading: false,
-          backgroundColor: Colors.black,
+          backgroundColor: AppColors.primary,
           elevation: 1,
           title: const Text(
             "KYC Verification",

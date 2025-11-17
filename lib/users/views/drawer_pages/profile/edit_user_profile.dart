@@ -268,12 +268,12 @@ class _UserEditProfilePageState extends State<UserEditProfilePage> {
              backgroundColor: AppColors.white,
             appBar: AppBar(
               automaticallyImplyLeading: !isWeb,
-              backgroundColor: AppColors.white,
+              backgroundColor: AppColors.primary,
               elevation: 2,
               iconTheme: const IconThemeData(color: Colors.white),
               title: const Text(
                 "Edit Profile",
-                style: TextStyle(fontWeight: FontWeight.w600),
+                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
               ),
             ),
             body: _loading

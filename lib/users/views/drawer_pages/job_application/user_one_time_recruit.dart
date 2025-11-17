@@ -1,321 +1,350 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
+import 'package:jobshub/common/constants/base_url.dart';
+import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/common/utils/app_color.dart';
 import 'package:jobshub/users/views/bottomnav_sidebar/user_sidedrawer.dart';
 
-class OneTimeJob {
+/// ----------------------------------------------------
+/// MODEL
+/// ----------------------------------------------------
+class OneTimeJobApplication {
+  final int jobId;
   final String title;
-  final String company;
-  final String appliedDate;
-  final String location;
+  final String category;
+  final String jobDate;
+  final String startTime;
+  final String endTime;
   final String duration;
-  final String payout;
-  String status;
+  final String paymentAmount;
+  final String paymentType;
+  final String location;
+  final String jobStatus;
 
-  OneTimeJob({
+  final int applicantId;
+  final String applicationDate;
+  final String applicantStatus;
+  final int hrApproval;
+  final String remarks;
+
+  OneTimeJobApplication({
+    required this.jobId,
     required this.title,
-    required this.company,
-    required this.appliedDate,
-    required this.location,
+    required this.category,
+    required this.jobDate,
+    required this.startTime,
+    required this.endTime,
     required this.duration,
-    required this.payout,
-    this.status = "Pending",
+    required this.paymentAmount,
+    required this.paymentType,
+    required this.location,
+    required this.jobStatus,
+    required this.applicantId,
+    required this.applicationDate,
+    required this.applicantStatus,
+    required this.hrApproval,
+    required this.remarks,
   });
+
+  factory OneTimeJobApplication.fromJson(Map<String, dynamic> j) {
+    return OneTimeJobApplication(
+      jobId: j["job_id"] ?? 0,
+      title: j["title"] ?? "",
+      category: j["category"] ?? "",
+      jobDate: j["job_date"] ?? "",
+      startTime: j["start_time"] ?? "",
+      endTime: j["end_time"] ?? "",
+      duration: j["duration"] ?? "",
+      paymentAmount: j["payment_amount"]?.toString() ?? "0",
+      paymentType: j["payment_type"] ?? "One-Time",
+      location: j["location"] ?? "",
+      jobStatus: j["job_status"] ?? "",
+
+      applicantId: j["applicant_id"] ?? 0,
+      applicationDate: j["application_date"] ?? "",
+      applicantStatus: j["applicant_status"] ?? "",
+      hrApproval: j["hr_approval"] ?? 2,
+      remarks: j["remarks"] ?? "",
+    );
+  }
 }
 
-class OneTimeRecruitment extends StatefulWidget {
-  const OneTimeRecruitment({super.key});
+/// ----------------------------------------------------
+/// API SERVICE
+/// ----------------------------------------------------
+class OneTimeJobsApi {
+  static Future<List<OneTimeJobApplication>> fetchAppliedOneTimeJobs() async {
+    try {
+      final userId = await SessionManager.getValue('user_id');
+      if (userId == null) return [];
+
+      final url = Uri.parse("${ApiConstants.baseUrl}oneTimeJobsAppliedByUser");
+
+      final resp = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"user_id": int.parse(userId)}),
+      );
+
+      final body = jsonDecode(resp.body);
+
+      if (resp.statusCode == 200 && body["success"] == true) {
+        final List data = body["data"] ?? [];
+        return data.map((e) => OneTimeJobApplication.fromJson(e)).toList();
+      }
+
+      return [];
+    } catch (e) {
+      debugPrint("OneTime Jobs API Error: $e");
+      return [];
+    }
+  }
+}
+
+/// ----------------------------------------------------
+/// ONE TIME JOBS APPLIED SCREEN
+/// ----------------------------------------------------
+class OneTimeRecruitmentScreen extends StatefulWidget {
+  const OneTimeRecruitmentScreen({super.key});
 
   @override
-  State<OneTimeRecruitment> createState() => _OneTimeRecruitmentState();
+  State<OneTimeRecruitmentScreen> createState() =>
+      _OneTimeRecruitmentScreenState();
 }
 
-class _OneTimeRecruitmentState extends State<OneTimeRecruitment> {
-  List<OneTimeJob> jobs = [
-    OneTimeJob(
-      title: "Event Promoter (2 Days)",
-      company: "Eventify Pvt. Ltd.",
-      appliedDate: "Oct 21, 2025",
-      location: "Delhi, India",
-      duration: "2 Days",
-      payout: "₹3,000",
-      status: "Pending",
-    ),
-    OneTimeJob(
-      title: "Survey Field Assistant",
-      company: "DataEdge Analytics",
-      appliedDate: "Oct 15, 2025",
-      location: "Remote",
-      duration: "1 Week",
-      payout: "₹5,000",
-      status: "Accepted",
-    ),
-    OneTimeJob(
-      title: "Photography Assistant",
-      company: "LensCraft Studio",
-      appliedDate: "Oct 10, 2025",
-      location: "Pune, India",
-      duration: "3 Days",
-      payout: "₹4,500",
-      status: "Rejected",
-    ),
-  ];
+class _OneTimeRecruitmentScreenState extends State<OneTimeRecruitmentScreen> {
+  late Future<List<OneTimeJobApplication>> _future;
 
-  void _acceptJob(int index) {
-    setState(() {
-      for (var j in jobs) {
-        j.status = "Pending";
-      }
-      jobs[index].status = "Accepted";
-    });
+  @override
+  void initState() {
+    super.initState();
+    _future = OneTimeJobsApi.fetchAppliedOneTimeJobs();
   }
 
-  Color _getStatusColor(String status) {
+  String _formatDate(String dt) {
+    try {
+      return DateFormat("dd MMM yyyy").format(DateTime.parse(dt));
+    } catch (_) {
+      return dt;
+    }
+  }
+
+  Color _statusBg(String status) {
     switch (status) {
-      case "Accepted":
+      case "selected":
         return Colors.green.shade100;
-      case "Rejected":
+      case "rejected":
         return Colors.red.shade100;
+      case "shortlisted":
+        return Colors.blue.shade100;
       default:
         return Colors.orange.shade100;
     }
   }
 
-  Color _getStatusTextColor(String status) {
+  Color _statusTextColor(String status) {
     switch (status) {
-      case "Accepted":
+      case "selected":
         return Colors.green.shade800;
-      case "Rejected":
+      case "rejected":
         return Colors.red.shade800;
+      case "shortlisted":
+        return Colors.blue.shade800;
       default:
         return Colors.orange.shade800;
     }
   }
 
-  IconData _getStatusIcon(String status) {
-    switch (status) {
-      case "Accepted":
-        return Icons.check_circle_outline;
-      case "Rejected":
-        return Icons.cancel_outlined;
-      default:
-        return Icons.hourglass_empty_outlined;
-    }
-  }
+  Widget _buildCard(OneTimeJobApplication j) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(18),
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 8,
+            offset: const Offset(2, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CircleAvatar(
+            radius: 28,
+            backgroundColor: AppColors.primary.withOpacity(0.12),
+            child: const Icon(
+              Icons.event_available_outlined,
+              color: AppColors.primary,
+            ),
+          ),
 
-  @override
-  Widget build(BuildContext context) {
-    return AppDrawerWrapper(
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final isWeb = constraints.maxWidth > 800;
+          const SizedBox(width: 14),
 
-          return Scaffold(
-            backgroundColor: Colors.grey.shade100,
-            appBar: AppBar(
-              automaticallyImplyLeading: false,
-              backgroundColor: Colors.white,
-              elevation: 1,
-              title: const Text(
-                "My One-Time Jobs",
-                style: TextStyle(
-                  color: Colors.black87,
-                  fontWeight: FontWeight.w600,
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  j.title,
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+
+                const SizedBox(height: 4),
+                Text(
+                  j.category,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black54,
+                  ),
+                ),
+
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.location_on_outlined,
+                      size: 16,
+                      color: Colors.grey,
+                    ),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        j.location,
+                        style: const TextStyle(color: Colors.grey),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 10),
+                Text("Date: ${_formatDate(j.jobDate)}"),
+                Text("Time: ${j.startTime} to ${j.endTime}"),
+                Text("Duration: ${j.duration}"),
+
+                const SizedBox(height: 6),
+                Text(
+                  "Payout: ₹${j.paymentAmount} (${j.paymentType})",
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+
+                const SizedBox(height: 6),
+                Text(
+                  "Applied on ${_formatDate(j.applicationDate)}",
+                  style: const TextStyle(color: Colors.grey, fontSize: 13),
+                ),
+
+                if (j.remarks.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    "Remarks: ${j.remarks}",
+                    style: const TextStyle(color: Colors.black87),
+                  ),
+                ],
+              ],
+            ),
+          ),
+
+          Column(
+            children: [
+              Chip(
+                backgroundColor: _statusBg(j.applicantStatus),
+                label: Text(
+                  j.applicantStatus.toUpperCase(),
+                  style: TextStyle(
+                    color: _statusTextColor(j.applicantStatus),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ),
-            body: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: isWeb
-                    ? MediaQuery.of(context).size.width * 0.2
-                    : 16,
-                vertical: 20,
-              ),
-              child: jobs.isEmpty
-                  ? _buildEmptyState()
-                  : ListView.builder(
-                      itemCount: jobs.length,
-                      itemBuilder: (context, index) {
-                        final job = jobs[index];
-                        return Container(
-                          margin: const EdgeInsets.symmetric(vertical: 8),
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black12,
-                                blurRadius: 6,
-                                offset: const Offset(2, 2),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              CircleAvatar(
-                                radius: 28,
-                                backgroundColor: Colors.grey.shade200,
-                                child: Icon(
-                                  Icons.event_available_outlined,
-                                  color: AppColors.primary,
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      job.title,
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      job.company,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.black54,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      children: [
-                                        const Icon(
-                                          Icons.location_on_outlined,
-                                          size: 16,
-                                          color: Colors.grey,
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          job.location,
-                                          style: const TextStyle(
-                                            color: Colors.grey,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      "Duration: ${job.duration}",
-                                      style: const TextStyle(
-                                        color: Colors.black87,
-                                      ),
-                                    ),
-                                    Text(
-                                      "Payout: ${job.payout}",
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.black87,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      "Applied on ${job.appliedDate}",
-                                      style: const TextStyle(
-                                        color: Colors.grey,
-                                        fontSize: 13,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Chip(
-                                          avatar: Icon(
-                                            _getStatusIcon(job.status),
-                                            color: _getStatusTextColor(
-                                              job.status,
-                                            ),
-                                            size: 18,
-                                          ),
-                                          backgroundColor: _getStatusColor(
-                                            job.status,
-                                          ),
-                                          label: Text(
-                                            job.status,
-                                            style: TextStyle(
-                                              color: _getStatusTextColor(
-                                                job.status,
-                                              ),
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ),
-                                        if (job.status == "Accepted")
-                                          TextButton.icon(
-                                            onPressed: () {
-                                              // View details
-                                            },
-                                            icon: const Icon(
-                                              Icons.visibility_outlined,
-                                              size: 18,
-                                            ),
-                                            label: const Text("View Details"),
-                                            style: TextButton.styleFrom(
-                                              foregroundColor:
-                                                  AppColors.primary,
-                                            ),
-                                          )
-                                        else if (job.status == "Pending")
-                                          TextButton.icon(
-                                            onPressed: () {
-                                              _acceptJob(index);
-                                            },
-                                            icon: const Icon(
-                                              Icons.check_circle_outline,
-                                              size: 18,
-                                            ),
-                                            label: const Text("Accept Job"),
-                                            style: TextButton.styleFrom(
-                                              foregroundColor:
-                                                  AppColors.primary,
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-            ),
-          );
-        },
+            ],
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _emptyState() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
             Icons.event_busy_outlined,
-            size: 80,
-            color: Colors.grey.shade400,
+            size: 90,
+            color: Colors.grey.shade300,
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 18),
           const Text(
-            "No One-Time Jobs Yet",
+            "No Applications Yet",
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           const Text(
-            "You haven’t applied for any one-time work.\nFind quick short-term tasks now!",
+            "You haven't applied to any one-time jobs.\nStart exploring now!",
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.grey),
           ),
         ],
+      ),
+    );
+  }
+
+  Future<void> _refresh() async {
+    setState(() => _future = OneTimeJobsApi.fetchAppliedOneTimeJobs());
+    await _future;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AppDrawerWrapper(
+      child: Scaffold(
+        backgroundColor: Colors.grey.shade100,
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          backgroundColor: AppColors.primary,
+          title: const Text(
+            "My One-Time Jobs",
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.refresh, color: Colors.white),
+              onPressed: _refresh,
+            ),
+          ],
+        ),
+        body: RefreshIndicator(
+          onRefresh: _refresh,
+          child: FutureBuilder<List<OneTimeJobApplication>>(
+            future: _future,
+            builder: (context, snap) {
+              if (snap.connectionState != ConnectionState.done) {
+                return const Center(
+                  child: CircularProgressIndicator(color: AppColors.primary),
+                );
+              }
+
+              final items = snap.data ?? [];
+              if (items.isEmpty) return _emptyState();
+
+              return ListView.builder(
+                padding: const EdgeInsets.all(12),
+                itemCount: items.length,
+                itemBuilder: (c, i) => _buildCard(items[i]),
+              );
+            },
+          ),
+        ),
       ),
     );
   }

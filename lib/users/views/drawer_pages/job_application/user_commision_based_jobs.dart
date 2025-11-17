@@ -1,319 +1,351 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:jobshub/users/views/bottomnav_sidebar/user_sidedrawer.dart';
+import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
+import 'package:jobshub/common/constants/base_url.dart';
+import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/common/utils/app_color.dart';
+import 'package:jobshub/users/views/bottomnav_sidebar/user_sidedrawer.dart';
 
-class CommissionApplication {
+/// ----------------------------------------------------
+/// MODEL
+/// ----------------------------------------------------
+class CommissionJobApplication {
+  final int jobId;
   final String title;
-  final String company;
-  final String appliedDate;
-  final String location;
+  final String category;
   final String commissionRate;
-  final String expectedLeads;
-  String status;
+  final String commissionType;
+  final int targetLeads;
+  final String potentialEarning;
+  final String leadType;
+  final String industry;
+  final String workMode;
+  final String location;
 
-  CommissionApplication({
+  final int applicantId;
+  final String applicationDate;
+  final String applicantStatus;
+  final int hrApproval;
+  final String remarks;
+
+  CommissionJobApplication({
+    required this.jobId,
     required this.title,
-    required this.company,
-    required this.appliedDate,
-    required this.location,
+    required this.category,
     required this.commissionRate,
-    required this.expectedLeads,
-    this.status = "Pending",
+    required this.commissionType,
+    required this.targetLeads,
+    required this.potentialEarning,
+    required this.leadType,
+    required this.industry,
+    required this.workMode,
+    required this.location,
+    required this.applicantId,
+    required this.applicationDate,
+    required this.applicantStatus,
+    required this.hrApproval,
+    required this.remarks,
   });
+
+  factory CommissionJobApplication.fromJson(Map<String, dynamic> json) {
+    return CommissionJobApplication(
+      jobId: json["job_id"] ?? 0,
+      title: json["title"] ?? "",
+      category: json["category"] ?? "",
+      commissionRate: json["commission_rate"]?.toString() ?? "0",
+      commissionType: json["commission_type"] ?? "",
+      targetLeads: json["target_leads"] ?? 0,
+      potentialEarning: json["potential_earning"]?.toString() ?? "0",
+      leadType: json["lead_type"] ?? "",
+      industry: json["industry"] ?? "",
+      workMode: json["work_mode"] ?? "",
+      location: json["location"] ?? "",
+      applicantId: json["applicant_id"] ?? 0,
+      applicationDate: json["application_date"] ?? "",
+      applicantStatus: json["applicant_status"] ?? "",
+      hrApproval: json["hr_approval"] ?? 2,
+      remarks: json["remarks"] ?? "",
+    );
+  }
 }
 
-class CommissionJobs extends StatefulWidget {
-  const CommissionJobs({super.key});
+/// ----------------------------------------------------
+/// API SERVICE
+/// ----------------------------------------------------
+class CommissionJobsApi {
+  static Future<List<CommissionJobApplication>>
+  fetchAppliedCommissionJobs() async {
+    try {
+      final userId = await SessionManager.getValue('user_id');
+      if (userId == null) return [];
+
+      final url = Uri.parse(
+        "${ApiConstants.baseUrl}commissionJobsAppliedByUser",
+      );
+
+      final resp = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"user_id": int.parse(userId)}),
+      );
+
+      final body = jsonDecode(resp.body);
+
+      if (resp.statusCode == 200 && body["success"] == true) {
+        final List data = body["data"] ?? [];
+        return data.map((e) => CommissionJobApplication.fromJson(e)).toList();
+      }
+
+      return [];
+    } catch (e) {
+      debugPrint("Commission Jobs API Error: $e");
+      return [];
+    }
+  }
+}
+
+/// ----------------------------------------------------
+/// COMMISSION JOBS APPLIED SCREEN
+/// ----------------------------------------------------
+class CommissionJobsScreen extends StatefulWidget {
+  const CommissionJobsScreen({super.key});
 
   @override
-  State<CommissionJobs> createState() => _CommissionJobsState();
+  State<CommissionJobsScreen> createState() => _CommissionJobsScreenState();
 }
 
-class _CommissionJobsState extends State<CommissionJobs> {
-  List<CommissionApplication> applications = [
-    CommissionApplication(
-      title: "Sales Lead Generator",
-      company: "Growthly Pvt. Ltd.",
-      appliedDate: "Oct 22, 2025",
-      location: "Remote",
-      commissionRate: "12% per Sale",
-      expectedLeads: "Target: 50+ Leads",
-      status: "Pending",
-    ),
-    CommissionApplication(
-      title: "Real Estate Lead Executive",
-      company: "HomeKart Realty",
-      appliedDate: "Oct 18, 2025",
-      location: "Pune, India",
-      commissionRate: "₹2000 per Lead",
-      expectedLeads: "Target: 25 Leads",
-      status: "Accepted",
-    ),
-    CommissionApplication(
-      title: "Insurance Lead Promoter",
-      company: "SecureLife Agency",
-      appliedDate: "Oct 14, 2025",
-      location: "Delhi, India",
-      commissionRate: "8% per Sale",
-      expectedLeads: "Target: 40 Leads",
-      status: "Rejected",
-    ),
-  ];
+class _CommissionJobsScreenState extends State<CommissionJobsScreen> {
+  late Future<List<CommissionJobApplication>> _future;
 
-  void _acceptJob(int index) {
-    setState(() {
-      for (var app in applications) {
-        app.status = "Pending";
-      }
-      applications[index].status = "Accepted";
-    });
+  @override
+  void initState() {
+    super.initState();
+    _future = CommissionJobsApi.fetchAppliedCommissionJobs();
   }
 
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case "Accepted":
+  String _formatDate(String dt) {
+    try {
+      return DateFormat("dd MMM yyyy").format(DateTime.parse(dt));
+    } catch (_) {
+      return dt;
+    }
+  }
+
+  Color _statusBg(String s) {
+    switch (s) {
+      case "selected":
         return Colors.green.shade100;
-      case "Rejected":
+      case "rejected":
         return Colors.red.shade100;
+      case "shortlisted":
+        return Colors.blue.shade100;
       default:
         return Colors.orange.shade100;
     }
   }
 
-  Color _getStatusTextColor(String status) {
-    switch (status) {
-      case "Accepted":
+  Color _statusText(String s) {
+    switch (s) {
+      case "selected":
         return Colors.green.shade800;
-      case "Rejected":
+      case "rejected":
         return Colors.red.shade800;
+      case "shortlisted":
+        return Colors.blue.shade800;
       default:
         return Colors.orange.shade800;
     }
   }
 
-  IconData _getStatusIcon(String status) {
-    switch (status) {
-      case "Accepted":
-        return Icons.check_circle_outline;
-      case "Rejected":
-        return Icons.cancel_outlined;
-      default:
-        return Icons.hourglass_empty_outlined;
-    }
-  }
+  Widget _buildCard(CommissionJobApplication j) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 8,
+            offset: const Offset(2, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CircleAvatar(
+            radius: 28,
+            backgroundColor: AppColors.primary.withOpacity(0.12),
+            child: const Icon(Icons.trending_up, color: AppColors.primary),
+          ),
+          const SizedBox(width: 14),
 
-  @override
-  Widget build(BuildContext context) {
-    return AppDrawerWrapper(
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final isWeb = constraints.maxWidth > 800;
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  j.title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  j.category,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black54,
+                  ),
+                ),
+                const SizedBox(height: 8),
 
-          return Scaffold(
-            backgroundColor: Colors.grey.shade100,
-            appBar: AppBar(
-              automaticallyImplyLeading: false,
-              backgroundColor: Colors.white,
-              elevation: 1,
-              title: const Text(
-                "My Commission Applications",
-                style: TextStyle(
-                  color: Colors.black87,
-                  fontWeight: FontWeight.w600,
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.location_on_outlined,
+                      size: 16,
+                      color: Colors.grey,
+                    ),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        j.location,
+                        style: const TextStyle(color: Colors.grey),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 10),
+                Text(
+                  "Commission: ${j.commissionRate}${j.commissionType == "Percentage" ? "%" : ""} (${j.commissionType})",
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  "Target Leads: ${j.targetLeads}",
+                  style: const TextStyle(color: Colors.black87),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  "Potential Earning: ₹${j.potentialEarning}",
+                  style: const TextStyle(color: Colors.black87),
+                ),
+
+                const SizedBox(height: 6),
+                Text(
+                  "Applied on ${_formatDate(j.applicationDate)}",
+                  style: const TextStyle(color: Colors.grey, fontSize: 13),
+                ),
+
+                if (j.remarks.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    "Remarks: ${j.remarks}",
+                    style: const TextStyle(color: Colors.black87),
+                  ),
+                ],
+              ],
+            ),
+          ),
+
+          Column(
+            children: [
+              Chip(
+                backgroundColor: _statusBg(j.applicantStatus),
+                label: Text(
+                  j.applicantStatus.toUpperCase(),
+                  style: TextStyle(
+                    color: _statusText(j.applicantStatus),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ),
-            body: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: isWeb
-                    ? MediaQuery.of(context).size.width * 0.2
-                    : 16,
-                vertical: 20,
-              ),
-              child: applications.isEmpty
-                  ? _buildEmptyState()
-                  : ListView.builder(
-                      itemCount: applications.length,
-                      itemBuilder: (context, index) {
-                        final app = applications[index];
-                        return Container(
-                          margin: const EdgeInsets.symmetric(vertical: 8),
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black12,
-                                blurRadius: 6,
-                                offset: const Offset(2, 2),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              CircleAvatar(
-                                radius: 28,
-                                backgroundColor: Colors.grey.shade200,
-                                child: Icon(
-                                  Icons.trending_up_rounded,
-                                  color: AppColors.primary,
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-
-                              // Details
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      app.title,
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      app.company,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.black54,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      children: [
-                                        const Icon(
-                                          Icons.location_on_outlined,
-                                          size: 16,
-                                          color: Colors.grey,
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          app.location,
-                                          style: const TextStyle(
-                                            color: Colors.grey,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      "Commission: ${app.commissionRate}",
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.black87,
-                                      ),
-                                    ),
-                                    Text(
-                                      app.expectedLeads,
-                                      style: const TextStyle(
-                                        color: Colors.black87,
-                                        fontSize: 13,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      "Applied on ${app.appliedDate}",
-                                      style: const TextStyle(
-                                        color: Colors.grey,
-                                        fontSize: 13,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Chip(
-                                          avatar: Icon(
-                                            _getStatusIcon(app.status),
-                                            color: _getStatusTextColor(
-                                              app.status,
-                                            ),
-                                            size: 18,
-                                          ),
-                                          backgroundColor: _getStatusColor(
-                                            app.status,
-                                          ),
-                                          label: Text(
-                                            app.status,
-                                            style: TextStyle(
-                                              color: _getStatusTextColor(
-                                                app.status,
-                                              ),
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ),
-                                        if (app.status == "Accepted")
-                                          TextButton.icon(
-                                            onPressed: () {},
-                                            icon: const Icon(
-                                              Icons.visibility_outlined,
-                                              size: 18,
-                                            ),
-                                            label: const Text("View Details"),
-                                            style: TextButton.styleFrom(
-                                              foregroundColor:
-                                                  AppColors.primary,
-                                            ),
-                                          )
-                                        else if (app.status == "Pending")
-                                          TextButton.icon(
-                                            onPressed: () => _acceptJob(index),
-                                            icon: const Icon(
-                                              Icons.check_circle_outline,
-                                              size: 18,
-                                            ),
-                                            label: const Text("Accept Job"),
-                                            style: TextButton.styleFrom(
-                                              foregroundColor:
-                                                  AppColors.primary,
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-            ),
-          );
-        },
+            ],
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _emptyState() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
             Icons.trending_down_outlined,
-            size: 80,
-            color: Colors.grey.shade400,
+            size: 90,
+            color: Colors.grey.shade300,
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 18),
           const Text(
-            "No Commission Applications Yet",
+            "No Applications Yet",
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           const Text(
-            "You haven’t applied for any commission-based roles.\nExplore new sales and lead opportunities!",
+            "You haven't applied to any commission-based jobs.",
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.grey),
           ),
         ],
+      ),
+    );
+  }
+
+  Future<void> _refresh() async {
+    setState(() => _future = CommissionJobsApi.fetchAppliedCommissionJobs());
+    await _future;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AppDrawerWrapper(
+      child: Scaffold(
+        backgroundColor: Colors.grey.shade100,
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          backgroundColor: AppColors.primary,
+          title: const Text(
+            "My Commission Jobs",
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          actions: [
+            IconButton(
+              onPressed: _refresh,
+              icon: const Icon(Icons.refresh, color: Colors.white),
+            ),
+          ],
+        ),
+
+        body: RefreshIndicator(
+          onRefresh: _refresh,
+          child: FutureBuilder<List<CommissionJobApplication>>(
+            future: _future,
+            builder: (ctx, snap) {
+              if (snap.connectionState != ConnectionState.done) {
+                return const Center(
+                  child: CircularProgressIndicator(color: AppColors.primary),
+                );
+              }
+
+              final items = snap.data ?? [];
+              if (items.isEmpty) return _emptyState();
+
+              return ListView.builder(
+                padding: const EdgeInsets.all(12),
+                itemCount: items.length,
+                itemBuilder: (c, i) => _buildCard(items[i]),
+              );
+            },
+          ),
+        ),
       ),
     );
   }

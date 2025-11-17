@@ -23,7 +23,6 @@ class _EmployerPostOneTimeJobState extends State<EmployerPostOneTimeJob> {
 
   // Controllers
   final TextEditingController _jobTitleController = TextEditingController();
-  // REMOVED: final TextEditingController _categoryController = TextEditingController();
   final TextEditingController _jobDateController = TextEditingController();
   final TextEditingController _startTimeController = TextEditingController();
   final TextEditingController _endTimeController = TextEditingController();
@@ -45,6 +44,91 @@ class _EmployerPostOneTimeJobState extends State<EmployerPostOneTimeJob> {
   void initState() {
     super.initState();
     _loadCategories();
+  }
+
+  @override
+  void dispose() {
+    _jobTitleController.dispose();
+    _jobDateController.dispose();
+    _startTimeController.dispose();
+    _endTimeController.dispose();
+    _durationController.dispose();
+    _paymentAmountController.dispose();
+    _locationController.dispose();
+    _jobDescriptionController.dispose();
+    _requirementsController.dispose();
+    _perksController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    _vacanciesController.dispose();
+    super.dispose();
+  }
+
+  // parse a TimeOfDay from localized string like "9:30 AM" or "09:30"
+  TimeOfDay? _parseTimeOfDayFromString(String s) {
+    try {
+      final cleaned = s.trim();
+      final ampmMatch = RegExp(r'([AaPp][Mm])$').firstMatch(cleaned);
+      if (ampmMatch != null) {
+        // likely format "9:30 AM" or "09:30 PM"
+        final parts = cleaned
+            .split(RegExp(r'[:\s]'))
+            .where((p) => p.isNotEmpty)
+            .toList();
+        if (parts.length >= 2) {
+          int hour = int.parse(parts[0]);
+          final min = int.parse(parts[1]);
+          final ampm = parts.length > 2
+              ? parts[2].toLowerCase()
+              : (cleaned.toLowerCase().contains('pm') ? 'pm' : 'am');
+          if (ampm == 'pm' && hour != 12) hour += 12;
+          if (ampm == 'am' && hour == 12) hour = 0;
+          return TimeOfDay(hour: hour, minute: min);
+        }
+      } else {
+        // try "HH:MM"
+        final parts = cleaned.split(':');
+        if (parts.length >= 2) {
+          final hour = int.parse(parts[0]);
+          final min = int.parse(parts[1]);
+          return TimeOfDay(hour: hour, minute: min);
+        }
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  // compute duration string using TimeOfDay objects
+  String _computeDurationString(TimeOfDay? start, TimeOfDay? end) {
+    if (start == null || end == null) return '';
+    final today = DateTime.now();
+    final dtStart = DateTime(
+      today.year,
+      today.month,
+      today.day,
+      start.hour,
+      start.minute,
+    );
+    var dtEnd = DateTime(
+      today.year,
+      today.month,
+      today.day,
+      end.hour,
+      end.minute,
+    );
+    if (dtEnd.isBefore(dtStart)) dtEnd = dtEnd.add(const Duration(days: 1));
+    final dur = dtEnd.difference(dtStart);
+    final h = dur.inHours;
+    final m = dur.inMinutes % 60;
+    if (h > 0 && m > 0) return '${h}h ${m}m';
+    if (h > 0) return '${h}h';
+    return '${m}m';
+  }
+
+  // convert TimeOfDay to 24-hour HH:mm string
+  String _to24Hour(TimeOfDay? t) {
+    if (t == null) return '';
+    return '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
   }
 
   // --- Fetch categories (NEW) ---
@@ -117,6 +201,13 @@ class _EmployerPostOneTimeJobState extends State<EmployerPostOneTimeJob> {
       // If your API expects a number, parse it (fallback to string if parsing fails)
       final employerId = int.tryParse(userIdStr.toString()) ?? userIdStr;
 
+      // parse times to TimeOfDay so we can send machine-friendly values
+      final startTOD = _parseTimeOfDayFromString(_startTimeController.text);
+      final endTOD = _parseTimeOfDayFromString(_endTimeController.text);
+
+      // compute duration machine-friendly if needed (e.g., minutes)
+      String durationDisplay = _durationController.text.trim();
+
       final url = Uri.parse(
         'https://dialfirst.in/quantapixel/badhyata/api/OneTimeRecruitmentJobCreate',
       );
@@ -124,12 +215,12 @@ class _EmployerPostOneTimeJobState extends State<EmployerPostOneTimeJob> {
       final body = {
         "employer_id": employerId, // ✅ from session
         "title": _jobTitleController.text.trim(),
-        "category": _selectedCategory ?? "", // keep sending the name
-        "job_date": _jobDateController.text.trim(),
-        "start_time": _startTimeController.text.trim(),
-        "end_time": _endTimeController.text.trim(),
-        "duration": _durationController.text.trim(),
-        "payment_amount": double.tryParse(_paymentAmountController.text) ?? 0,
+        "category": _selectedCategory ?? "",
+        "job_date": _jobDateController.text.trim(), // YYYY-MM-DD
+        "start_time": _to24Hour(startTOD), // HH:mm
+        "end_time": _to24Hour(endTOD), // HH:mm
+        "duration": durationDisplay,
+        "payment_amount": double.tryParse(_paymentAmountController.text) ?? 0.0,
         "payment_type": "One-Time",
         "location": _locationController.text.trim(),
         "job_description": _jobDescriptionController.text.trim(),
@@ -137,7 +228,7 @@ class _EmployerPostOneTimeJobState extends State<EmployerPostOneTimeJob> {
         "perks": _perksController.text.trim(),
         "openings": int.tryParse(_vacanciesController.text) ?? 1,
         "application_deadline": _applicationDeadline != null
-            ? "${_applicationDeadline!.year}-${_applicationDeadline!.month.toString().padLeft(2, '0')}-${_applicationDeadline!.day.toString().padLeft(2, '0')}"
+            ? "${_applicationDeadline!.year.toString().padLeft(4, '0')}-${_applicationDeadline!.month.toString().padLeft(2, '0')}-${_applicationDeadline!.day.toString().padLeft(2, '0')}"
             : null,
         "contact_email": _emailController.text.trim(),
         "contact_phone": _phoneController.text.trim(),
@@ -202,8 +293,6 @@ class _EmployerPostOneTimeJobState extends State<EmployerPostOneTimeJob> {
     }
     setState(() {
       _applicationDeadline = null;
-      // keep selected category as-is (or reset to first)
-      // _selectedCategory = _categories.isNotEmpty ? _categories.first : null;
     });
   }
 
@@ -253,23 +342,190 @@ class _EmployerPostOneTimeJobState extends State<EmployerPostOneTimeJob> {
                                     ),
                                     // --- Category dropdown (NEW) ---
                                     _buildCategoryField(),
-                                    _buildTextField(
-                                      _jobDateController,
-                                      "Job Date",
-                                      keyboardType: TextInputType.datetime,
+                                    // Job Date (date picker)
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: 14,
+                                      ),
+                                      child: GestureDetector(
+                                        onTap: () async {
+                                          final picked = await showDatePicker(
+                                            context: context,
+                                            initialDate: DateTime.now(),
+                                            firstDate: DateTime.now().subtract(
+                                              const Duration(days: 365 * 5),
+                                            ),
+                                            lastDate: DateTime.now().add(
+                                              const Duration(days: 365 * 5),
+                                            ),
+                                          );
+                                          if (picked != null) {
+                                            _jobDateController.text =
+                                                '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+                                            setState(() {});
+                                          }
+                                        },
+                                        child: AbsorbPointer(
+                                          child: TextFormField(
+                                            controller: _jobDateController,
+                                            decoration: InputDecoration(
+                                              labelText: "Job Date",
+                                              filled: true,
+                                              fillColor: Colors.grey.shade50,
+                                              border: OutlineInputBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                              ),
+                                              suffixIcon: const Icon(
+                                                Icons.calendar_today,
+                                              ),
+                                            ),
+                                            validator: (val) =>
+                                                val == null || val.isEmpty
+                                                ? "Please enter Job Date"
+                                                : null,
+                                          ),
+                                        ),
+                                      ),
                                     ),
-                                    _buildTextField(
-                                      _startTimeController,
-                                      "Start Time",
+
+                                    // Start Time (time picker)
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: 14,
+                                      ),
+                                      child: GestureDetector(
+                                        onTap: () async {
+                                          final picked = await showTimePicker(
+                                            context: context,
+                                            initialTime: TimeOfDay.now(),
+                                          );
+                                          if (picked != null) {
+                                            _startTimeController.text =
+                                                MaterialLocalizations.of(
+                                                  context,
+                                                ).formatTimeOfDay(picked);
+                                            // if end already set, compute duration
+                                            if (_endTimeController
+                                                .text
+                                                .isNotEmpty) {
+                                              final end =
+                                                  _parseTimeOfDayFromString(
+                                                    _endTimeController.text,
+                                                  );
+                                              final start = picked;
+                                              _durationController.text =
+                                                  _computeDurationString(
+                                                    start,
+                                                    end,
+                                                  );
+                                            }
+                                            setState(() {});
+                                          }
+                                        },
+                                        child: AbsorbPointer(
+                                          child: TextFormField(
+                                            controller: _startTimeController,
+                                            decoration: InputDecoration(
+                                              labelText: "Start Time",
+                                              filled: true,
+                                              fillColor: Colors.grey.shade50,
+                                              border: OutlineInputBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                              ),
+                                              suffixIcon: const Icon(
+                                                Icons.access_time,
+                                              ),
+                                            ),
+                                            validator: (val) =>
+                                                val == null || val.isEmpty
+                                                ? "Please enter Start Time"
+                                                : null,
+                                          ),
+                                        ),
+                                      ),
                                     ),
-                                    _buildTextField(
-                                      _endTimeController,
-                                      "End Time",
+
+                                    // End Time (time picker)
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: 14,
+                                      ),
+                                      child: GestureDetector(
+                                        onTap: () async {
+                                          final picked = await showTimePicker(
+                                            context: context,
+                                            initialTime: TimeOfDay.now(),
+                                          );
+                                          if (picked != null) {
+                                            _endTimeController.text =
+                                                MaterialLocalizations.of(
+                                                  context,
+                                                ).formatTimeOfDay(picked);
+                                            // if start already set, compute duration
+                                            if (_startTimeController
+                                                .text
+                                                .isNotEmpty) {
+                                              final start =
+                                                  _parseTimeOfDayFromString(
+                                                    _startTimeController.text,
+                                                  );
+                                              final end = picked;
+                                              _durationController.text =
+                                                  _computeDurationString(
+                                                    start,
+                                                    end,
+                                                  );
+                                            }
+                                            setState(() {});
+                                          }
+                                        },
+                                        child: AbsorbPointer(
+                                          child: TextFormField(
+                                            controller: _endTimeController,
+                                            decoration: InputDecoration(
+                                              labelText: "End Time",
+                                              filled: true,
+                                              fillColor: Colors.grey.shade50,
+                                              border: OutlineInputBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                              ),
+                                              suffixIcon: const Icon(
+                                                Icons.access_time,
+                                              ),
+                                            ),
+                                            validator: (val) =>
+                                                val == null || val.isEmpty
+                                                ? "Please enter End Time"
+                                                : null,
+                                          ),
+                                        ),
+                                      ),
                                     ),
-                                    _buildTextField(
-                                      _durationController,
-                                      "Duration",
+
+                                    // Duration - read-only (computed) — not required
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: 14,
+                                      ),
+                                      child: AbsorbPointer(
+                                        child: TextFormField(
+                                          controller: _durationController,
+                                          decoration: InputDecoration(
+                                            labelText: "Duration",
+                                            filled: true,
+                                            fillColor: Colors.grey.shade50,
+                                            border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
                                     ),
+
                                     _buildTextField(
                                       _paymentAmountController,
                                       "Payment Amount",
@@ -444,11 +700,26 @@ class _EmployerPostOneTimeJobState extends State<EmployerPostOneTimeJob> {
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
+              suffixIcon: const Icon(Icons.calendar_today),
             ),
-            child: Text(
-              _applicationDeadline != null
-                  ? "${_applicationDeadline!.day}/${_applicationDeadline!.month}/${_applicationDeadline!.year}"
-                  : "Select Date",
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () async {
+                final picked = await showDatePicker(
+                  context: context,
+                  initialDate: _applicationDeadline ?? DateTime.now(),
+                  firstDate: DateTime.now(),
+                  lastDate: DateTime.now().add(const Duration(days: 365)),
+                );
+                if (picked != null) {
+                  setState(() => _applicationDeadline = picked);
+                }
+              },
+              child: Text(
+                _applicationDeadline != null
+                    ? "${_applicationDeadline!.day}/${_applicationDeadline!.month}/${_applicationDeadline!.year}"
+                    : "Select Date",
+              ),
             ),
           ),
         ),
@@ -457,7 +728,7 @@ class _EmployerPostOneTimeJobState extends State<EmployerPostOneTimeJob> {
           onPressed: () async {
             final picked = await showDatePicker(
               context: context,
-              initialDate: DateTime.now(),
+              initialDate: _applicationDeadline ?? DateTime.now(),
               firstDate: DateTime.now(),
               lastDate: DateTime.now().add(const Duration(days: 365)),
             );

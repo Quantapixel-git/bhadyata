@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:jobshub/admin/views/banner/admin_banner_page.dart';
+import 'package:jobshub/admin/views/commision_percent/admin_commission_page.dart';
 import 'package:jobshub/admin/views/kyc_status/admin_employer_kyc.dart';
 import 'package:jobshub/admin/views/kyc_status/admin_hr_kyc.dart';
 import 'package:jobshub/admin/views/manage_users/admin_hr_users.dart';
@@ -14,7 +16,6 @@ import 'package:jobshub/admin/views/salary_management/admin_employee_salary.dart
 import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/admin/views/manage_users/admin_employer_users.dart';
 import 'package:jobshub/admin/views/revenue_commission/admin_evenue_total.dart';
-// import 'package:jobshub/admin/views/admin_hr_salary.dart';
 import 'package:jobshub/admin/views/query/admin_query_from_employer_to_admin.dart';
 import 'package:jobshub/admin/views/query/admin_query_from_hr_to_admin.dart';
 import 'package:jobshub/admin/views/query/admin_query_from_user.dart';
@@ -24,7 +25,6 @@ import 'package:jobshub/admin/views/chart/admin_chart.dart';
 import 'package:jobshub/common/views/onboarding/onboarding_screen.dart';
 import 'package:jobshub/common/utils/app_color.dart';
 
-/// ✅ MAIN WRAPPER that decides which sidebar to show
 class AdminSidebar extends StatelessWidget {
   final bool isWeb;
   final bool isCollapsed;
@@ -85,6 +85,30 @@ class AdminSidebarMobile extends StatelessWidget {
                       MaterialPageRoute(builder: (_) => AdminCategoryPage()),
                     );
                   }),
+                  _sidebarItem(
+                    context,
+                    Icons.imagesearch_roller_rounded,
+                    "Banner",
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => AdminBannerPage()),
+                      );
+                    },
+                  ),
+                  _sidebarItem(
+                    context,
+                    Icons.percent_outlined,
+                    "Commission Percent",
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => AdminCommissionPage(),
+                        ),
+                      );
+                    },
+                  ),
                   ExpansionTile(
                     leading: Icon(Icons.business, color: AppColors.primary),
                     title: const Text("Company"),
@@ -169,7 +193,7 @@ class AdminSidebarMobile extends StatelessWidget {
                     children: [
                       ListTile(
                         title: const Text(
-                          "From Employer (profit amount)",
+                          "From Employer",
                           style: TextStyle(fontSize: 13.5),
                         ),
                         onTap: () {
@@ -181,20 +205,20 @@ class AdminSidebarMobile extends StatelessWidget {
                           );
                         },
                       ),
-                      ListTile(
-                        title: const Text(
-                          "From Employer (sum of employee salary & profit)",
-                          style: TextStyle(fontSize: 13.5),
-                        ),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => RevenueTotalPage(),
-                            ),
-                          );
-                        },
-                      ),
+                      // ListTile(
+                      //   title: const Text(
+                      //     "From Employer (sum of employee salary & profit)",
+                      //     style: TextStyle(fontSize: 13.5),
+                      //   ),
+                      //   onTap: () {
+                      //     Navigator.push(
+                      //       context,
+                      //       MaterialPageRoute(
+                      //         builder: (_) => RevenueTotalPage(),
+                      //       ),
+                      //     );
+                      //   },
+                      // ),
                     ],
                   ),
                   ExpansionTile(
@@ -568,6 +592,30 @@ class AdminSidebarWeb extends StatelessWidget {
                       MaterialPageRoute(builder: (_) => AdminCategoryPage()),
                     );
                   }),
+                  _menuItem(
+                    context,
+                    Icons.imagesearch_roller_rounded,
+                    "Banner",
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => AdminBannerPage()),
+                      );
+                    },
+                  ),
+                  _menuItem(
+                    context,
+                    Icons.percent_outlined,
+                    "Commission Percent",
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => AdminCommissionPage(),
+                        ),
+                      );
+                    },
+                  ),
                   _expansionGroup(context, Icons.business, "Company", [
                     // _expTileChild(context, "Approved Company (by HR)", () {
                     //   Navigator.push(
@@ -615,6 +663,7 @@ class AdminSidebarWeb extends StatelessWidget {
                       }),
                     ],
                   ),
+
                   _expansionGroup(context, Icons.money, "Revenue Generated", [
                     _expTileChild(context, "From Employer", () {
                       Navigator.push(
@@ -622,15 +671,8 @@ class AdminSidebarWeb extends StatelessWidget {
                         MaterialPageRoute(builder: (_) => RevenueProfitPage()),
                       );
                     }),
-                    _expTileChild(context, "Commission Percent", () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => RevenueTotalPage()),
-                      );
-                    }),
                   ]),
                   _expansionGroup(context, Icons.payment, "Salary Management", [
-                  
                     _expTileChild(context, "Salary based Employees", () {
                       Navigator.push(
                         context,

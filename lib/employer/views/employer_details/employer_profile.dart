@@ -252,13 +252,49 @@ class _EmployerProfilePageState extends State<EmployerProfilePage> {
               // Header: Avatar + name/id + joined (same layout vibes as HR)
               Row(
                 children: [
+                  // Avatar with network image fallback to asset on error
                   CircleAvatar(
-                    radius: 55,
-                    backgroundImage: (imageUrl != null && imageUrl.isNotEmpty)
-                        ? NetworkImage(imageUrl)
-                        : const AssetImage('assets/job_bgr.png')
-                              as ImageProvider,
+                    minRadius: 50,
+                    // width: 110,
+                    // height: 110,
+                    child: ClipOval(
+                      child: (imageUrl != null && imageUrl.isNotEmpty)
+                          ? Image.network(
+                              imageUrl,
+                              width: 110,
+                              height: 110,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                // Network failed — show local asset
+                                return Image.asset(
+                                  'assets/job_bgr.png',
+                                  width: 110,
+                                  height: 110,
+                                  fit: BoxFit.cover,
+                                );
+                              },
+                              // optional: show placeholder while loading
+                              loadingBuilder: (context, child, progress) {
+                                if (progress == null) return child;
+                                return Center(
+                                  child: CircularProgressIndicator(
+                                    value: progress.expectedTotalBytes != null
+                                        ? progress.cumulativeBytesLoaded /
+                                              (progress.expectedTotalBytes ?? 1)
+                                        : null,
+                                  ),
+                                );
+                              },
+                            )
+                          : Image.asset(
+                              'assets/job_bgr.png',
+                              width: 110,
+                              height: 110,
+                              fit: BoxFit.cover,
+                            ),
+                    ),
                   ),
+
                   const SizedBox(width: 15),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -322,7 +358,11 @@ class _EmployerProfilePageState extends State<EmployerProfilePage> {
                               ordered[i].value,
                             ),
                           ),
-                        if (i != ordered.length - 1) const Divider(),
+
+                        // don't draw a divider after wallet_balance; otherwise draw if not last
+                        if (i != ordered.length - 1 &&
+                            ordered[i].key != 'wallet_balance')
+                          const Divider(),
                       ],
                     ],
                   ),

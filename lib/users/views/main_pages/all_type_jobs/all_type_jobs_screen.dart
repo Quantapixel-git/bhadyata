@@ -2,317 +2,352 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:jobshub/users/views/bottomnav_sidebar/user_sidedrawer.dart';
-import 'package:jobshub/users/views/main_pages/all_type_jobs/commision_based_job.dart';
-import 'package:jobshub/users/views/main_pages/all_type_jobs/onetime_recrutment_ui.dart';
-import 'package:jobshub/users/views/main_pages/all_type_jobs/projects_ui.dart';
-import 'package:jobshub/users/views/main_pages/all_type_jobs/salary_based_job_ui.dart';
 import 'package:jobshub/common/utils/app_color.dart';
 
-class AllJobsPage extends StatelessWidget {
+class AllJobsPage extends StatefulWidget {
   const AllJobsPage({super.key});
 
   @override
+  State<AllJobsPage> createState() => _AllJobsPageState();
+}
+
+class _AllJobsPageState extends State<AllJobsPage> {
+  final List<String> carouselImages = [
+    'assets/six.jpg',
+    'assets/two.jpg',
+    'assets/five.jpg',
+  ];
+
+  final List<Map<String, String>> salaryJobsDemo = [
+    {
+      'title': 'Junior Flutter Developer',
+      'company': 'Innova Tech',
+      'location': 'Gurgaon, HR',
+      'salary': '₹25,000 - ₹35,000 / month',
+      'logo': 'assets/one.png',
+    },
+    {
+      'title': 'Sales Executive',
+      'company': 'Apex Solutions',
+      'location': 'Bengaluru, KA',
+      'salary': '₹18,000 - ₹22,000 / month',
+      'logo': 'assets/one.png',
+    },
+    {
+      'title': 'Accountant (Entry)',
+      'company': 'Mint Books',
+      'location': 'Chennai, TN',
+      'salary': '₹20,000 - ₹28,000 / month',
+      'logo': 'assets/one.png',
+    },
+  ];
+
+  int _carouselIndex = 0;
+  String _query = '';
+  String _selectedFilter = 'All';
+
+  List<String> _filters = ['All', 'Remote', 'Full-time', 'Part-time'];
+
+  List<Map<String, String>> get _filteredJobs {
+    var list = salaryJobsDemo.where((job) {
+      final matchesQuery =
+          _query.isEmpty ||
+          job['title']!.toLowerCase().contains(_query.toLowerCase()) ||
+          job['company']!.toLowerCase().contains(_query.toLowerCase());
+      final matchesFilter =
+          _selectedFilter == 'All' ||
+          (_selectedFilter == 'Remote' &&
+              job['location']!.toLowerCase().contains('remote'));
+      return matchesQuery && matchesFilter;
+    }).toList();
+    return list;
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
+    final bool isWeb = width > 900;
 
-    final jobCategories = [
-      {
-        "title": "Salary-Based Jobs",
-        "subtitle": "Monthly salary roles in trusted companies.",
-        "gradient": [Colors.blue.shade400, Colors.blue.shade700],
-        "icon": Icons.work_outline_rounded,
-        "page": const SalaryAllJobsPage(),
-      },
-      {
-        "title": "Commission-Based Leads",
-        "subtitle": "Earn money for every lead or sale.",
-        "gradient": [Colors.green.shade400, Colors.teal.shade700],
-        "icon": Icons.trending_up_rounded,
-        "page": const CommissionAllJobsPage(),
-      },
-      {
-        "title": "One-Time Recruitment",
-        "subtitle": "Short-term & event-based job opportunities.",
-        "gradient": [Colors.orange.shade400, Colors.deepOrange.shade700],
-        "icon": Icons.access_time_filled_rounded,
-        "page": const OneTimeRecruitmentAllJobsPage(),
-      },
-      {
-        "title": "Freelance Projects",
-        "subtitle": "Work flexibly on exciting project-based jobs.",
-        "gradient": [Colors.purple.shade400, Colors.deepPurple.shade700],
-        "icon": Icons.folder_copy_rounded,
-        "page": const AllProjectsPage(),
-      },
-    ];
-
-    final carouselImages = [
-      "assets/job_bgr.png",
-      "assets/job_bgr.png",
-      "assets/job_bgr.png",
-      "assets/job_bgr.png",
-    ];
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final bool isWeb = constraints.maxWidth > 900;
-        return Scaffold(
-          backgroundColor: const Color(0xFFF5F6FA),
-
-          // ✅ Drawer only for mobile
-          drawer: isWeb ? null : AppDrawer(),
-
-          // ✅ AppBar only for mobile
-          appBar: isWeb
-              ? null
-              : AppBar(
-                  backgroundColor: AppColors.primary,
-                  elevation: 0,
-                  centerTitle: true,
-                  title: const Text(
-                    "All Jobs",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  leading: Builder(
-                    builder: (context) => IconButton(
-                      iconSize: 34,
-                      icon: const Icon(Icons.menu, color: Colors.white),
-                      onPressed: () {
-                        Scaffold.of(context).openDrawer();
-                      },
-                    ),
-                  ),
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F6FA),
+      drawer: isWeb ? null : const AppDrawer(),
+      appBar: isWeb
+          ? null
+          : AppBar(
+              backgroundColor: AppColors.primary,
+              elevation: 0,
+              centerTitle: true,
+              title: const Text(
+                'All Jobs',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              leading: Builder(
+                builder: (context) => IconButton(
+                  iconSize: 30,
+                  icon: const Icon(Icons.menu, color: Colors.white),
+                  onPressed: () => Scaffold.of(context).openDrawer(),
                 ),
+              ),
+            ),
 
-          body: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1100),
-              child: SingleChildScrollView(
-                padding: EdgeInsets.symmetric(
-                  horizontal: isWeb ? 50 : 20,
-                  vertical: isWeb ? 40 : 20,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // 🌟 Header (only on web)
-                    if (isWeb)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 30),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: const [
-                            Text(
-                              "Explore Opportunities",
-                              style: TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.black87,
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  // Card-style carousel with rounded corners and shadow
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isWeb ? 56 : 12,
+                      vertical: 10,
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(14),
+                      child: Container(
+                        height: isWeb ? 200 : 220,
+                        color: Colors.black12,
+                        child: Stack(
+                          children: [
+                            CarouselSlider.builder(
+                              itemCount: carouselImages.length,
+                              itemBuilder: (context, index, realIdx) {
+                                return Stack(
+                                  fit: StackFit.expand,
+                                  children: [
+                                    Image.asset(
+                                      carouselImages[index],
+                                      fit: BoxFit.cover,
+                                    ),
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          begin: Alignment.bottomCenter,
+                                          end: Alignment.topCenter,
+                                          colors: [
+                                            Colors.black.withOpacity(0.45),
+                                            Colors.transparent,
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                              options: CarouselOptions(
+                                viewportFraction: isWeb ? 1.0 : 1.0,
+                                height: isWeb ? 360 : 220,
+                                autoPlay: true,
+                                enlargeCenterPage: true,
+                                onPageChanged: (index, reason) =>
+                                    setState(() => _carouselIndex = index),
+                              ),
+                            ),
+
+                            // overlay headline centered (subtle)
+                            Positioned(
+                              left: isWeb ? 56 : 16,
+                              bottom: isWeb ? 36 : 16,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Monthly Salary Openings',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: isWeb ? 26 : 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    'Fresh roles from trusted employers — demo data.',
+                                    style: TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: isWeb ? 14 : 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            // small pill indicator top-right
+                            Positioned(
+                              top: 12,
+                              right: 12,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.12),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Row(
+                                  children: [
+                                    // const Icon(
+                                    //   Icons.work_outline,
+                                    //   color: Colors.white,
+                                    //   size: 16,
+                                    // ),
+                                    // const SizedBox(width: 8),
+                                    Text(
+                                      '${_carouselIndex + 1}/${carouselImages.length}',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ],
                         ),
                       ),
-
-                    // 🌟 Carousel Section
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: CarouselSlider(
-                        options: CarouselOptions(
-                          height: isWeb ? 320 : 160,
-                          autoPlay: true,
-                          enlargeCenterPage: true,
-                          viewportFraction: isWeb ? 0.8 : 0.9,
-                          autoPlayInterval: const Duration(seconds: 4),
-                          autoPlayAnimationDuration: const Duration(
-                            milliseconds: 900,
-                          ),
-                        ),
-                        items: carouselImages.map((imageUrl) {
-                          return Stack(
-                            fit: StackFit.expand,
-                            children: [
-                              Image.asset(imageUrl, fit: BoxFit.contain),
-                              Container(
-                                decoration: const BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Colors.black54,
-                                      Colors.transparent,
-                                    ],
-                                    begin: Alignment.bottomCenter,
-                                    end: Alignment.topCenter,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          );
-                        }).toList(),
-                      ),
                     ),
+                  ),
 
-                    const SizedBox(height: 40),
-
-                    const Text(
-                      "Choose Your Job Type",
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.black87,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      "Find opportunities that match your skills and goals.",
-                      style: TextStyle(fontSize: 16, color: Colors.black54),
-                      textAlign: TextAlign.center,
-                    ),
-
-                    const SizedBox(height: 35),
-
-                    // 🌈 Job Type Grid
-                    GridView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      padding: const EdgeInsets.only(bottom: 30),
-                      itemCount: jobCategories.length,
-                      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                        maxCrossAxisExtent: isWeb ? 480 : 600,
-                        crossAxisSpacing: 25,
-                        mainAxisSpacing: 25,
-                        childAspectRatio: isWeb ? 1.4 : 1.8,
-                      ),
-                      itemBuilder: (context, index) {
-                        final job = jobCategories[index];
-                        return _JobTypeCard(
-                          title: job["title"] as String,
-                          subtitle: job["subtitle"] as String,
-                          gradient: job["gradient"] as List<Color>,
-                          icon: job["icon"] as IconData,
-                          onTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => job["page"] as Widget,
-                            ),
+                  // Jobs list (vertical, richer card)
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: isWeb ? 56 : 12),
+                    child: Column(
+                      children: _filteredJobs.map((job) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12.0),
+                          child: _RichJobCard(
+                            title: job['title']!,
+                            company: job['company']!,
+                            location: job['location']!,
+                            salary: job['salary']!,
+                            logoAsset: job['logo']!,
                           ),
                         );
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _JobTypeCard extends StatefulWidget {
-  final String title;
-  final String subtitle;
-  final List<Color> gradient;
-  final IconData icon;
-  final VoidCallback onTap;
-
-  const _JobTypeCard({
-    required this.title,
-    required this.subtitle,
-    required this.gradient,
-    required this.icon,
-    required this.onTap,
-  });
-
-  @override
-  State<_JobTypeCard> createState() => _JobTypeCardState();
-}
-
-class _JobTypeCardState extends State<_JobTypeCard> {
-  bool hovering = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => hovering = true),
-      onExit: (_) => setState(() => hovering = false),
-      child: AnimatedScale(
-        scale: hovering ? 1.03 : 1.0,
-        duration: const Duration(milliseconds: 180),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: widget.gradient,
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(18),
-            boxShadow: [
-              BoxShadow(
-                color: widget.gradient.last.withOpacity(0.35),
-                blurRadius: hovering ? 20 : 10,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: InkWell(
-            onTap: widget.onTap,
-            borderRadius: BorderRadius.circular(18),
-            child: Padding(
-              padding: const EdgeInsets.all(26),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(widget.icon, color: Colors.white, size: 46),
-                  const Spacer(),
-                  Text(
-                    widget.title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                      }).toList(),
                     ),
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    widget.subtitle,
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.9),
-                      fontSize: 14.5,
-                      height: 1.3,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  AnimatedOpacity(
-                    opacity: hovering ? 1 : 0.0,
-                    duration: const Duration(milliseconds: 250),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.25),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Text(
-                        "View Jobs →",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
-                  ),
+
+                  const SizedBox(height: 40),
                 ],
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RichJobCard extends StatelessWidget {
+  final String title, company, location, salary, logoAsset;
+
+  const _RichJobCard({
+    required this.title,
+    required this.company,
+    required this.location,
+    required this.salary,
+    required this.logoAsset,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 6,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(14.0),
+        child: Row(
+          children: [
+            // company logo / avatar
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.asset(
+                logoAsset,
+                width: 62,
+                height: 62,
+                fit: BoxFit.cover,
+              ),
+            ),
+            const SizedBox(width: 12),
+
+            // main content
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          title,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // Container(
+                      //   padding: const EdgeInsets.symmetric(
+                      //     horizontal: 10,
+                      //     vertical: 6,
+                      //   ),
+                      //   decoration: BoxDecoration(
+                      //     color: Colors.green.shade50,
+                      //     borderRadius: BorderRadius.circular(8),
+                      //   ),
+                      //   child: const Text(
+                      //     'Hiring',
+                      //     style: TextStyle(color: Colors.green),
+                      //   ),
+                      // ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 6),
+                  Text(company, style: const TextStyle(color: Colors.black54)),
+
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Icon(Icons.location_on_outlined, size: 14),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          location,
+                          style: const TextStyle(fontSize: 13),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            // right column: salary + apply
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  salary,
+                  style: const TextStyle(fontWeight: FontWeight.w800),
+                ),
+                const SizedBox(height: 10),
+                OutlinedButton(onPressed: () {}, child: const Text('Details')),
+                const SizedBox(height: 6),
+                ElevatedButton(
+                  onPressed: () {},
+                  style: ElevatedButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text('Apply'),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );

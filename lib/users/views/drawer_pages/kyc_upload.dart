@@ -235,11 +235,11 @@ class _KycUploadPageState extends State<KycUploadPage> {
         backgroundColor: AppColors.white,
         appBar: AppBar(
           automaticallyImplyLeading: false,
-          backgroundColor: AppColors.white,
+          backgroundColor: AppColors.primary,
           elevation: 1,
           title: const Text(
             "KYC Verification",
-            style: TextStyle( fontWeight: FontWeight.w600),
+            style: TextStyle( fontWeight: FontWeight.bold, color: Colors.white),
           ),
         ),
         body: isFetching
@@ -327,7 +327,7 @@ class _KycUploadPageState extends State<KycUploadPage> {
                     else
                       const Center(
                         child: Text(
-                          "✅ KYC documents already uploaded.",
+                          "KYC documents already uploaded.",
                           style: TextStyle(
                             color: Colors.green,
                             fontWeight: FontWeight.w600,

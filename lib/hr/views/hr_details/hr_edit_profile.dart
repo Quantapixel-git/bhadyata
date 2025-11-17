@@ -311,7 +311,7 @@ class _HrEditProfilePageState extends State<HrEditProfilePage> {
               Row(
                 children: [
                   CircleAvatar(
-                    radius: 44,
+                    radius: 50,
                     backgroundImage:
                         _pickedImage != null && _pickedImage!.bytes != null
                         ? MemoryImage(_pickedImage!.bytes!)

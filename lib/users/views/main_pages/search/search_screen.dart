@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:jobshub/users/views/bottomnav_sidebar/user_sidedrawer.dart';
 import 'package:jobshub/common/utils/app_color.dart';
 import 'package:jobshub/users/views/main_pages/search/jobs_by_category.dart';
+import 'package:jobshub/users/views/main_pages/search_placeholder.dart';
 
 const String kApiBase = 'https://dialfirst.in/quantapixel/badhyata/api/';
 
@@ -147,36 +148,24 @@ class _SearchPageState extends State<SearchPage> {
                   child: SizedBox(
                     width: isWeb ? 500 : double.infinity,
                     child: TextField(
-                      controller: _searchCtrl,
+                      readOnly: true,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const SearchScreen(),
+                          ),
+                        );
+                      },
                       decoration: InputDecoration(
-                        hintText: "Search for jobs or categories...",
+                        hintText: "Search jobs...",
                         prefixIcon: const Icon(Icons.search),
                         filled: true,
-                        fillColor: isWeb ? Colors.grey.shade100 : Colors.white,
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 14,
-                        ),
+                        fillColor: Colors.grey.shade100,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                           borderSide: BorderSide.none,
                         ),
                       ),
-                      textInputAction: TextInputAction.search,
-                      onSubmitted: (_) {
-                        // immediate filter on enter
-                        final q = _searchCtrl.text.trim().toLowerCase();
-                        setState(() {
-                          _filtered = q.isEmpty
-                              ? List.from(_categories)
-                              : _categories.where((c) {
-                                  final name = (c['category_name'] ?? '')
-                                      .toString()
-                                      .toLowerCase();
-                                  return name.contains(q);
-                                }).toList();
-                        });
-                      },
                     ),
                   ),
                 ),
@@ -263,20 +252,19 @@ class _SearchPageState extends State<SearchPage> {
         final title = (c['category_name'] ?? 'Unknown').toString();
         final imageUrl = (c['image'] ?? '').toString();
 
-     return _CategoryCard(
-  title: title,
-  imageUrl: imageUrl,
-  isWeb: isWeb,
-  onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => CategoryJobsPage(category: title),
-      ),
-    );
-  },
-);
-
+        return _CategoryCard(
+          title: title,
+          imageUrl: imageUrl,
+          isWeb: isWeb,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => CategoryJobsPage(category: title),
+              ),
+            );
+          },
+        );
       },
     );
   }
@@ -400,7 +388,6 @@ class _CategoryCardState extends State<_CategoryCard> {
   }
 }
 
-
 class _HoverJobCardCategory extends StatefulWidget {
   final Map<String, String> job;
   final bool isWeb;
@@ -497,7 +484,6 @@ class JobDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         title: Text(job["title"] ?? ''),

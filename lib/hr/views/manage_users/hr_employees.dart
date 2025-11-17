@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:jobshub/common/utils/app_color.dart';
 import 'package:jobshub/common/constants/base_url.dart';
-import 'package:jobshub/hr/views/sidebar_dashboard/hr_sidebar.dart'; // for ApiConstants.baseUrl
+import 'package:jobshub/hr/views/manage_users/employee_detail.dart';
+import 'package:jobshub/hr/views/sidebar_dashboard/hr_sidebar.dart';
 
 class HrEmployeeUsersPage extends StatefulWidget {
   const HrEmployeeUsersPage({super.key});
@@ -30,7 +32,7 @@ class _HrEmployeeUsersPageState extends State<HrEmployeeUsersPage>
   String? _errApproved;
   String? _errRejected;
 
-  static const int _role = 1; // HR
+  static const int _role = 1; // Employees / Job seekers
 
   @override
   void initState() {
@@ -126,7 +128,7 @@ class _HrEmployeeUsersPageState extends State<HrEmployeeUsersPage>
           appBar: AppBar(
             automaticallyImplyLeading: !isWeb,
             title: const Text(
-              "HR Users",
+              "Employees/Job Seekers",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
@@ -136,9 +138,8 @@ class _HrEmployeeUsersPageState extends State<HrEmployeeUsersPage>
             backgroundColor: AppColors.primary,
             bottom: const TabBar(
               labelColor: Colors.white,
-              unselectedLabelColor: Colors.white70, // ✅ whitish grey
+              unselectedLabelColor: Colors.white70,
               indicatorColor: Colors.white,
-
               tabs: [
                 Tab(text: "Pending"),
                 Tab(text: "Approved"),
@@ -189,9 +190,7 @@ class _HrEmployeeUsersPageState extends State<HrEmployeeUsersPage>
     required Color color,
     required VoidCallback onRetry,
   }) {
-    if (loading) {
-      return const Center(child: CircularProgressIndicator());
-    }
+    if (loading) return const Center(child: CircularProgressIndicator());
     if (error != null) {
       return Center(
         child: Column(
@@ -205,7 +204,9 @@ class _HrEmployeeUsersPageState extends State<HrEmployeeUsersPage>
       );
     }
     if (items.isEmpty) {
-      return const Center(child: Text('No users', style: TextStyle(fontSize: 16),));
+      return const Center(
+        child: Text('No users', style: TextStyle(fontSize: 16)),
+      );
     }
 
     return RefreshIndicator(
@@ -215,10 +216,17 @@ class _HrEmployeeUsersPageState extends State<HrEmployeeUsersPage>
         itemCount: items.length,
         itemBuilder: (context, i) {
           final u = items[i];
+          final id = _parseId(u['id']);
           final name = _fullName(u) ?? '—';
           final mobile = u['mobile']?.toString() ?? '—';
-          final email = u['email']?.toString();
-          final img = u['profile_image']?.toString();
+          final email = u['email']?.toString() ?? '';
+          final imgUrl = _pickImageUrl(u);
+          final wallet = u['wallet_balance']?.toString() ?? '0.00';
+          final createdAtRaw = u['created_at']?.toString() ?? '';
+          final createdAt = _formatJoinedAt(createdAtRaw);
+
+          final approval = u['approval'];
+          final approvalColor = color;
 
           return Container(
             margin: const EdgeInsets.symmetric(vertical: 8),
@@ -235,12 +243,26 @@ class _HrEmployeeUsersPageState extends State<HrEmployeeUsersPage>
               ],
             ),
             child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
               leading: CircleAvatar(
-                backgroundColor: color.withOpacity(0.1),
-                foregroundImage: img != null && img.isNotEmpty
-                    ? (img.startsWith('http') ? NetworkImage(img) : null)
+                radius: 26,
+                backgroundColor: color.withOpacity(0.08),
+                foregroundImage:
+                    (imgUrl.isNotEmpty && imgUrl.startsWith('http'))
+                    ? NetworkImage(imgUrl) as ImageProvider
                     : null,
-                child: Icon(Icons.person, color: color),
+                child: (imgUrl.isEmpty || !imgUrl.startsWith('http'))
+                    ? Text(
+                        _initials(name),
+                        style: TextStyle(
+                          color: color,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      )
+                    : null,
               ),
               title: Text(
                 name,
@@ -249,16 +271,65 @@ class _HrEmployeeUsersPageState extends State<HrEmployeeUsersPage>
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Text(
+                    'User ID: $id',
+                    style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                  ),
+                  const SizedBox(height: 4),
                   Text('Mobile: $mobile'),
-                  if (email != null && email.isNotEmpty) Text('Email: $email'),
+                  if (email.isNotEmpty) Text('Email: $email'),
+                  Text('Wallet: ₹$wallet'),
+                  if (createdAt.isNotEmpty) Text('Joined: $createdAt'),
                 ],
               ),
-              trailing: _statusPill(color),
+              trailing: SizedBox(
+                width: 110,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Expanded(child: _statusPill(approvalColor, approval)),
+                    const SizedBox(width: 8),
+                    Material(
+                      color: Colors.transparent,
+                      child: IconButton(
+                        tooltip: 'View details',
+                        icon: const Icon(Icons.visibility),
+                        onPressed: () =>
+                            _openUserDetail(context, id, isEmployee: true),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              onTap: () => _openUserDetail(context, id, isEmployee: true),
             ),
           );
         },
       ),
     );
+  }
+
+  String _pickImageUrl(Map<String, dynamic> u) {
+    final url = u['profile_image_url']?.toString() ?? '';
+    if (url.isNotEmpty) return url;
+    final raw = u['profile_image']?.toString() ?? '';
+    return raw;
+  }
+
+  int _parseId(dynamic idVal) {
+    if (idVal is int) return idVal;
+    if (idVal is String) {
+      return int.tryParse(idVal) ?? 0;
+    }
+    return 0;
+  }
+
+  String _initials(String name) {
+    final parts = name.split(' ').where((s) => s.isNotEmpty).toList();
+    if (parts.isEmpty) return '';
+    final a = parts[0][0];
+    final b = parts.length > 1 ? parts[1][0] : '';
+    return (a + b).toUpperCase();
   }
 
   String? _fullName(Map<String, dynamic> u) {
@@ -268,22 +339,67 @@ class _HrEmployeeUsersPageState extends State<HrEmployeeUsersPage>
     return [f, l].where((e) => e.isNotEmpty).join(' ');
   }
 
-  Widget _statusPill(Color color) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+  Widget _statusPill(Color color, dynamic approval) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 6),
     decoration: BoxDecoration(
       color: color.withOpacity(0.12),
       borderRadius: BorderRadius.circular(999),
       border: Border.all(color: color.withOpacity(0.3)),
     ),
     child: Text(
-      color == Colors.green
+      (approval == 1)
           ? 'Approved'
-          : color == Colors.red
+          : (approval == 3)
           ? 'Rejected'
           : 'Pending',
       style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 12),
     ),
   );
+
+  // Format 'created_at' into a readable local string:
+  // Examples: '17 Nov 2025, 09:12 PM'
+  String _formatJoinedAt(String raw) {
+    if (raw.isEmpty) return '';
+    try {
+      // Accept both "2025-11-17 15:42:54" and ISO formats
+      DateTime dt = DateTime.parse(raw);
+      // convert to local time for display
+      dt = dt.toLocal();
+      final fmt = DateFormat('dd MMM yyyy, hh:mm a');
+      return fmt.format(dt);
+    } catch (_) {
+      // If parsing fails, try a common space-separated format by replacing space with 'T'
+      try {
+        final alt = raw.replaceFirst(' ', 'T');
+        DateTime dt = DateTime.parse(alt);
+        dt = dt.toLocal();
+        final fmt = DateFormat('dd MMM yyyy, hh:mm a');
+        return fmt.format(dt);
+      } catch (__) {
+        // fallback: return raw string
+        return raw;
+      }
+    }
+  }
+
+  // Navigate to detail page (placeholder). Replace EmployerUserDetailPage with your real detail page.
+  void _openUserDetail(
+    BuildContext context,
+    int userId, {
+    required bool isEmployee,
+  }) {
+    if (userId <= 0) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Invalid user id')));
+      return;
+    }
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => EmployeeUserDetailPage(userId: userId)),
+    );
+  }
 
   @override
   void dispose() {

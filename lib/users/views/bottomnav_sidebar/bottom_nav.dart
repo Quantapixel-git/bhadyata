@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jobshub/common/utils/fetch_user_profile.dart';
 import 'package:jobshub/users/views/main_pages/all_type_jobs/all_type_jobs_screen.dart';
 import 'package:jobshub/users/views/main_pages/home_screen.dart';
 import 'package:jobshub/users/views/main_pages/search/search_screen.dart';
@@ -14,6 +15,12 @@ class MainBottomNav extends StatefulWidget {
 }
 
 class _MainBottomNavState extends State<MainBottomNav> {
+  @override
+  void initState() {
+    super.initState();
+    fetchAndStoreUserProfile(); // <--- IMPORTANT
+  }
+
   int _currentIndex = 0;
 
   final List<Widget> _pages = [

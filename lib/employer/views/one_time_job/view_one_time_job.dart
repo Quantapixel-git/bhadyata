@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jobshub/common/utils/app_color.dart';
 import 'package:jobshub/employer/views/sidebar_dashboard/employer_sidebar.dart';
+import 'package:jobshub/common/utils/session_manager.dart';
 
 class OneTimeViewPostedJobsPage extends StatelessWidget {
   const OneTimeViewPostedJobsPage({super.key});
@@ -19,11 +20,8 @@ class OneTimeViewPostedJobsPage extends StatelessWidget {
             child: Scaffold(
               backgroundColor: Colors.grey.shade100,
               appBar: AppBar(
-                iconTheme: const IconThemeData(
-                  color: Colors.white, // ✅ White menu icon for mobile
-                ),
-                automaticallyImplyLeading:
-                    !isWeb, // ✅ Drawer icon visible only on mobile
+                iconTheme: const IconThemeData(color: Colors.white),
+                automaticallyImplyLeading: !isWeb,
                 title: const Text(
                   "View Posted Jobs",
                   style: TextStyle(
@@ -35,14 +33,13 @@ class OneTimeViewPostedJobsPage extends StatelessWidget {
                 elevation: 2,
                 bottom: const TabBar(
                   labelColor: Colors.white,
-                  unselectedLabelColor: Colors.white70, // ✅ whitish grey
+                  unselectedLabelColor: Colors.white70,
                   indicatorColor: Colors.white,
                   labelStyle: TextStyle(fontWeight: FontWeight.w600),
                   tabs: [
                     Tab(text: "Pending"),
                     Tab(text: "Approved"),
                     Tab(text: "Rejected"),
-                    // Tab(text: "Approved"),
                   ],
                 ),
               ),
@@ -51,7 +48,6 @@ class OneTimeViewPostedJobsPage extends StatelessWidget {
                   JobsList(status: "Pending"),
                   JobsList(status: "Approved"),
                   JobsList(status: "Rejected"),
-                  // JobsList(status: "Approved"),
                 ],
               ),
             ),
@@ -74,7 +70,7 @@ class _JobsListState extends State<JobsList> {
   bool isLoading = true;
   List<Map<String, dynamic>> jobs = [];
 
-  // API URLs (You can replace these with variables from your environment)
+  // API endpoints
   final String apiUrlPending =
       'https://dialfirst.in/quantapixel/badhyata/api/getPendingOneTimeJobs';
   final String apiUrlApproved =
@@ -82,13 +78,19 @@ class _JobsListState extends State<JobsList> {
   final String apiUrlRejected =
       'https://dialfirst.in/quantapixel/badhyata/api/getRejectedOneTimeJobs';
 
-  // Fetch jobs based on status
   Future<void> fetchJobs() async {
-    setState(() {
-      isLoading = true;
-    });
+    if (mounted) setState(() => isLoading = true);
 
     try {
+      // get employer id from session
+      final userIdStr = await SessionManager.getValue('employer_id');
+
+      if (userIdStr == null || userIdStr.toString().isEmpty) {
+        // No employer id available — stop loading and leave jobs empty
+        if (mounted) setState(() => isLoading = false);
+        return;
+      }
+
       String apiUrl;
       if (widget.status == "Pending") {
         apiUrl = apiUrlPending;
@@ -98,35 +100,27 @@ class _JobsListState extends State<JobsList> {
         apiUrl = apiUrlRejected;
       }
 
-      print("📡 Fetching jobs for status: ${widget.status}");
+      final body = jsonEncode({"employer_id": userIdStr});
+
       final response = await http.post(
         Uri.parse(apiUrl),
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({"employer_id": 14}),
+        body: body,
       );
-
-      print("📬 Response Status: ${response.statusCode}");
-      print("📥 Raw Response Body: ${response.body}");
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        print("📊 Parsed Response: $data");
-
-        setState(() {
-          jobs = List<Map<String, dynamic>>.from(data['data']);
-          isLoading = false;
-        });
+        if (mounted) {
+          setState(() {
+            jobs = List<Map<String, dynamic>>.from(data['data'] ?? []);
+            isLoading = false;
+          });
+        }
       } else {
-        setState(() {
-          isLoading = false;
-        });
-        print("❌ Error fetching jobs: ${response.statusCode}");
+        if (mounted) setState(() => isLoading = false);
       }
     } catch (e) {
-      setState(() {
-        isLoading = false;
-      });
-      print("🔥 Error while fetching jobs: $e");
+      if (mounted) setState(() => isLoading = false);
     }
   }
 
@@ -142,17 +136,32 @@ class _JobsListState extends State<JobsList> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    // ✅ Full-width ListView
-    return Container(
-      color: Colors.grey.shade100,
-      child: ListView.builder(
+    if (jobs.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24),
+          child: Text("No jobs found."),
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: fetchJobs,
+      child: ListView.separated(
         padding: const EdgeInsets.all(16),
         itemCount: jobs.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 14),
         itemBuilder: (context, index) {
           final job = jobs[index];
 
+          final statusColor = widget.status == "Approved"
+              ? Colors.green
+              : widget.status == "Rejected"
+              ? Colors.red
+              : Colors.orange;
+
           return Container(
-            margin: const EdgeInsets.only(bottom: 14),
+            width: double.infinity,
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
@@ -178,7 +187,7 @@ class _JobsListState extends State<JobsList> {
                 children: [
                   const SizedBox(height: 4),
                   Text(
-                    "${job["job_type"] ?? "N/A"} | ₹${job["salary_min"]} - ₹${job["salary_max"]}",
+                    "${job["job_type"] ?? "N/A"} | ₹${job["salary_min"] ?? '0'} - ₹${job["salary_max"] ?? '0'}",
                   ),
                   const SizedBox(height: 2),
                   Text("Location: ${job["location"] ?? "N/A"}"),
@@ -189,11 +198,7 @@ class _JobsListState extends State<JobsList> {
                     "Status: ${widget.status}",
                     style: TextStyle(
                       fontWeight: FontWeight.w500,
-                      color: widget.status == "Approved"
-                          ? Colors.green
-                          : widget.status == "Rejected"
-                          ? Colors.red
-                          : Colors.orange,
+                      color: statusColor,
                     ),
                   ),
                 ],

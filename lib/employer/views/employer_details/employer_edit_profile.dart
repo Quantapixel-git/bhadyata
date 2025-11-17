@@ -13,7 +13,8 @@ class EmployerEditProfilePage extends StatefulWidget {
   const EmployerEditProfilePage({super.key});
 
   @override
-  State<EmployerEditProfilePage> createState() => _EmployerEditProfilePageState();
+  State<EmployerEditProfilePage> createState() =>
+      _EmployerEditProfilePageState();
 }
 
 class _EmployerEditProfilePageState extends State<EmployerEditProfilePage> {
@@ -22,9 +23,9 @@ class _EmployerEditProfilePageState extends State<EmployerEditProfilePage> {
   final _firstController = TextEditingController();
   final _lastController = TextEditingController();
 
-  Map<String, dynamic>? _profile;     // current profile for prefills
-  PlatformFile? _pickedImage;         // new file chosen
-  bool _removeImage = false;          // remove_image=1
+  Map<String, dynamic>? _profile; // current profile for prefills
+  PlatformFile? _pickedImage; // new file chosen
+  bool _removeImage = false; // remove_image=1
   bool _loading = true;
   bool _saving = false;
 
@@ -36,19 +37,29 @@ class _EmployerEditProfilePageState extends State<EmployerEditProfilePage> {
     map.forEach((k, v) => debugPrint('  $k: $v'));
   }
 
-  void _debugHttpResponse(String label, http.Response resp, {int bodyMax = 4000}) {
+  void _debugHttpResponse(
+    String label,
+    http.Response resp, {
+    int bodyMax = 4000,
+  }) {
     if (!kDebugMode) return;
     debugPrint('[$label] Status: ${resp.statusCode}');
     debugPrint('[$label] Headers: ${resp.headers}');
     final body = resp.body;
     if (body.length > bodyMax) {
-      debugPrint('[$label] Body (${body.length} chars, truncated): ${body.substring(0, bodyMax)}...');
+      debugPrint(
+        '[$label] Body (${body.length} chars, truncated): ${body.substring(0, bodyMax)}...',
+      );
     } else {
       debugPrint('[$label] Body: $body');
     }
   }
 
-  Future<http.Response> _streamToResponse(String label, http.StreamedResponse sResp, {int bodyMax = 4000}) async {
+  Future<http.Response> _streamToResponse(
+    String label,
+    http.StreamedResponse sResp, {
+    int bodyMax = 4000,
+  }) async {
     final resp = await http.Response.fromStream(sResp);
     if (kDebugMode) _debugHttpResponse(label, resp, bodyMax: bodyMax);
     return resp;
@@ -100,13 +111,19 @@ class _EmployerEditProfilePageState extends State<EmployerEditProfilePage> {
           return;
         }
 
-        if (decoded is Map && decoded['success'] == true && decoded['data'] != null) {
+        if (decoded is Map &&
+            decoded['success'] == true &&
+            decoded['data'] != null) {
           _profile = Map<String, dynamic>.from(decoded['data'] as Map);
           _firstController.text = (_profile?['first_name'] ?? '').toString();
-          _lastController.text  = (_profile?['last_name'] ?? '').toString();
+          _lastController.text = (_profile?['last_name'] ?? '').toString();
           if (kDebugMode) _debugPrintMap('Loaded profile', _profile!);
         } else {
-          _snack(decoded is Map ? (decoded['message'] ?? "Failed to load profile") : "Failed to load profile");
+          _snack(
+            decoded is Map
+                ? (decoded['message'] ?? "Failed to load profile")
+                : "Failed to load profile",
+          );
         }
       } else {
         _snack("HTTP ${resp.statusCode} while loading profile");
@@ -127,7 +144,9 @@ class _EmployerEditProfilePageState extends State<EmployerEditProfilePage> {
     if (res != null && res.files.isNotEmpty) {
       final f = res.files.first;
       if (kDebugMode) {
-        debugPrint('📸 Picked image: name=${f.name}, size=${f.size}, ext=${f.extension}, hasBytes=${f.bytes != null}');
+        debugPrint(
+          '📸 Picked image: name=${f.name}, size=${f.size}, ext=${f.extension}, hasBytes=${f.bytes != null}',
+        );
       }
       setState(() {
         _pickedImage = f;
@@ -176,7 +195,9 @@ class _EmployerEditProfilePageState extends State<EmployerEditProfilePage> {
       if (kDebugMode) {
         debugPrint('— edit-user-profile REQUEST —');
         _debugPrintMap('fields', req.fields.map((k, v) => MapEntry(k, v)));
-        debugPrint('files: ${req.files.map((f) => '${f.field}: ${f.filename} (${f.length} bytes)').join(', ')}');
+        debugPrint(
+          'files: ${req.files.map((f) => '${f.field}: ${f.filename} (${f.length} bytes)').join(', ')}',
+        );
         debugPrint('url: $url');
       }
 
@@ -188,11 +209,15 @@ class _EmployerEditProfilePageState extends State<EmployerEditProfilePage> {
         decoded = jsonDecode(resp.body);
       } catch (e, st) {
         _logError(e, st, where: 'jsonDecode(edit-user-profile)');
-        _snack("Server returned non-JSON (HTTP ${resp.statusCode}). See console.");
+        _snack(
+          "Server returned non-JSON (HTTP ${resp.statusCode}). See console.",
+        );
         return;
       }
 
-      if (resp.statusCode == 200 && decoded is Map && decoded['success'] == true) {
+      if (resp.statusCode == 200 &&
+          decoded is Map &&
+          decoded['success'] == true) {
         _snack(decoded['message'] ?? "Profile updated");
         await _loadProfile(); // refresh
         setState(() {
@@ -237,7 +262,10 @@ class _EmployerEditProfilePageState extends State<EmployerEditProfilePage> {
                 iconTheme: const IconThemeData(color: Colors.white),
                 title: const Text(
                   "Edit Profile",
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 backgroundColor: AppColors.primary,
                 elevation: 2,
@@ -278,15 +306,72 @@ class _EmployerEditProfilePageState extends State<EmployerEditProfilePage> {
               // Avatar + change/remove actions
               Row(
                 children: [
+                  // Replace the CircleAvatar(...) block with this:
                   CircleAvatar(
-                    radius: 44,
-                    backgroundImage:
-                        _pickedImage != null && _pickedImage!.bytes != null
-                            ? MemoryImage(_pickedImage!.bytes!)
-                            : (avatarUrl != null && avatarUrl.isNotEmpty && !_removeImage)
-                                ? NetworkImage(avatarUrl) as ImageProvider
-                                : const AssetImage('assets/job_bgr.png'),
+                    radius: 50,
+                    // width: 88, // 2 * radius (44)
+                    // height: 88,
+                    child: ClipOval(
+                      child:
+                          (_pickedImage != null && _pickedImage!.bytes != null)
+                          // 1) Picked (local) image
+                          ? Image.memory(
+                              _pickedImage!.bytes!,
+                              width: 88,
+                              height: 88,
+                              fit: BoxFit.cover,
+                            )
+                          : (avatarUrl != null &&
+                                avatarUrl.isNotEmpty &&
+                                !_removeImage)
+                          // 2) Network image with fallback to asset if loading fails
+                          ? Image.network(
+                              avatarUrl!,
+                              width: 88,
+                              height: 88,
+                              fit: BoxFit.cover,
+                              // show asset if server image fails to load
+                              errorBuilder: (context, error, stackTrace) {
+                                return Image.asset(
+                                  'assets/job_bgr.png',
+                                  width: 88,
+                                  height: 88,
+                                  fit: BoxFit.cover,
+                                );
+                              },
+                              // optional: small progress indicator while loading
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return Center(
+                                  child: SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      value:
+                                          loadingProgress.expectedTotalBytes !=
+                                              null
+                                          ? loadingProgress
+                                                    .cumulativeBytesLoaded /
+                                                (loadingProgress
+                                                        .expectedTotalBytes ??
+                                                    1)
+                                          : null,
+                                    ),
+                                  ),
+                                );
+                              },
+                            )
+                          // 3) Default asset
+                          : Image.asset(
+                              'assets/job_bgr.png',
+                              width: 88,
+                              height: 88,
+                              fit: BoxFit.cover,
+                            ),
+                    ),
                   ),
+
                   const SizedBox(width: 16),
                   Expanded(
                     child: Wrap(
@@ -298,36 +383,50 @@ class _EmployerEditProfilePageState extends State<EmployerEditProfilePage> {
                           icon: const Icon(Icons.photo_library),
                           label: const Padding(
                             padding: EdgeInsets.all(6.0),
-                            child: Text("Change Photo", style: TextStyle(fontSize: 18)),
+                            child: Text(
+                              "Change Photo",
+                              style: TextStyle(fontSize: 18),
+                            ),
                           ),
                           style: ElevatedButton.styleFrom(
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                             backgroundColor: AppColors.primary,
                             foregroundColor: Colors.white,
                           ),
                         ),
                         OutlinedButton.icon(
                           onPressed: () {
-                            if (kDebugMode) debugPrint('🗑️ Marking photo for removal');
+                            if (kDebugMode)
+                              debugPrint('🗑️ Marking photo for removal');
                             setState(() {
                               _pickedImage = null; // discard picked
                               _removeImage = true; // mark for delete
                             });
                           },
                           style: OutlinedButton.styleFrom(
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
                           icon: const Icon(Icons.delete_outline),
                           label: const Padding(
                             padding: EdgeInsets.all(6.0),
-                            child: Text("Remove Photo", style: TextStyle(fontSize: 18)),
+                            child: Text(
+                              "Remove Photo",
+                              style: TextStyle(fontSize: 18),
+                            ),
                           ),
                         ),
                         if (_pickedImage != null && !_removeImage)
                           Text(
                             _pickedImage!.name,
                             overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(fontSize: 12, color: Colors.black54),
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.black54,
+                            ),
                           ),
                       ],
                     ),
@@ -343,7 +442,9 @@ class _EmployerEditProfilePageState extends State<EmployerEditProfilePage> {
                     child: _buildTextField(
                       controller: _firstController,
                       label: "First Name",
-                      validator: (v) => (v == null || v.trim().isEmpty) ? "First name is required" : null,
+                      validator: (v) => (v == null || v.trim().isEmpty)
+                          ? "First name is required"
+                          : null,
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -351,7 +452,9 @@ class _EmployerEditProfilePageState extends State<EmployerEditProfilePage> {
                     child: _buildTextField(
                       controller: _lastController,
                       label: "Last Name",
-                      validator: (v) => (v == null || v.trim().isEmpty) ? "Last name is required" : null,
+                      validator: (v) => (v == null || v.trim().isEmpty)
+                          ? "Last name is required"
+                          : null,
                     ),
                   ),
                 ],
@@ -359,7 +462,10 @@ class _EmployerEditProfilePageState extends State<EmployerEditProfilePage> {
               const SizedBox(height: 24),
 
               if (_removeImage)
-                const Text("Photo will be removed", style: TextStyle(fontSize: 12, color: Colors.red)),
+                const Text(
+                  "Photo will be removed",
+                  style: TextStyle(fontSize: 12, color: Colors.red),
+                ),
               const SizedBox(height: 10),
 
               // Save button
@@ -371,19 +477,27 @@ class _EmployerEditProfilePageState extends State<EmployerEditProfilePage> {
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   child: _saving
                       ? const SizedBox(
                           height: 22,
                           width: 22,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
                         )
                       : const Padding(
                           padding: EdgeInsets.all(6.0),
                           child: Text(
                             "Save Changes",
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
                         ),
                 ),

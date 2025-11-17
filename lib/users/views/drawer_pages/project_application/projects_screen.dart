@@ -1,341 +1,97 @@
-// import 'package:flutter/material.dart';
-// import 'package:jobshub/users/views/bottomnav_drawer_dashboard/user_sidedrawer.dart';
-// import 'package:jobshub/common/utils/AppColor.dart';
-
-// class ProjectApplication {
-//   final String title;
-//   final String company;
-//   final String appliedDate;
-//   final String location;
-//   final String jobType;
-//   final String salaryOrAmount; // can be monthly or fixed
-//   final String paymentType; // "Monthly" or "Fixed"
-//   String status; // Pending / Accepted / Rejected
-
-//   ProjectApplication({
-//     required this.title,
-//     required this.company,
-//     required this.appliedDate,
-//     required this.location,
-//     required this.jobType,
-//     required this.salaryOrAmount,
-//     required this.paymentType,
-//     this.status = "Pending",
-//   });
-// }
-
-// class Projects extends StatefulWidget {
-//   const Projects({super.key});
-
-//   @override
-//   State<Projects> createState() => _ProjectsState();
-// }
-
-// class _ProjectsState extends State<Projects> {
-//   List<ProjectApplication> applications = [
-//     ProjectApplication(
-//       title: "Flutter Developer (Full App)",
-//       company: "TechNova Pvt. Ltd.",
-//       appliedDate: "Oct 20, 2025",
-//       location: "Remote",
-//       jobType: "Contract",
-//       salaryOrAmount: "₹1,20,000",
-//       paymentType: "Fixed",
-//       status: "Pending",
-//     ),
-//     ProjectApplication(
-//       title: "UI/UX Designer",
-//       company: "PixelCraft Studio",
-//       appliedDate: "Oct 15, 2025",
-//       location: "Bangalore, India",
-//       jobType: "Hybrid",
-//       salaryOrAmount: "₹55,000",
-//       paymentType: "Monthly",
-//       status: "Accepted",
-//     ),
-//     ProjectApplication(
-//       title: "Backend Developer",
-//       company: "CodeWorks",
-//       appliedDate: "Oct 10, 2025",
-//       location: "Mumbai, India",
-//       jobType: "Contract",
-//       salaryOrAmount: "₹80,000",
-//       paymentType: "Monthly",
-//       status: "Rejected",
-//     ),
-//   ];
-
-//   Color _getStatusColor(String status) {
-//     switch (status) {
-//       case "Accepted":
-//         return Colors.green.shade100;
-//       case "Rejected":
-//         return Colors.red.shade100;
-//       default:
-//         return Colors.orange.shade100;
-//     }
-//   }
-
-//   Color _getStatusTextColor(String status) {
-//     switch (status) {
-//       case "Accepted":
-//         return Colors.green.shade800;
-//       case "Rejected":
-//         return Colors.red.shade800;
-//       default:
-//         return Colors.orange.shade800;
-//     }
-//   }
-
-//   IconData _getStatusIcon(String status) {
-//     switch (status) {
-//       case "Accepted":
-//         return Icons.check_circle_outline;
-//       case "Rejected":
-//         return Icons.cancel_outlined;
-//       default:
-//         return Icons.hourglass_empty_outlined;
-//     }
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final isWeb = MediaQuery.of(context).size.width > 800;
-
-//     return Scaffold(
-//       // backgroundColor: Colors.grey[100],
-//       appBar: AppBar(
-//         iconTheme: const IconThemeData(color: Colors.black),
-//         title: const Text(
-//           "My Projects",
-//           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-//         ),
-//         elevation: 0,
-//         // backgroundColor: Colors.white,
-//       ),
-//       body: Row(
-//         children: [
-//           if (isWeb) const AppDrawer(),
-//           Expanded(
-//             child: Padding(
-//               padding: const EdgeInsets.all(10),
-//               child: applications.isEmpty
-//                   ? _buildEmptyState()
-//                   : ListView.builder(
-//                       itemCount: applications.length,
-//                       itemBuilder: (context, index) {
-//                         final app = applications[index];
-//                         return Container(
-//                           margin: const EdgeInsets.symmetric(vertical: 5),
-//                           decoration: BoxDecoration(
-//                             color: Colors.white,
-//                             borderRadius: BorderRadius.circular(16),
-//                             boxShadow: [
-//                               BoxShadow(
-//                                 color: Colors.black.withOpacity(0.05),
-//                                 blurRadius: 8,
-//                                 offset: const Offset(0, 4),
-//                               ),
-//                             ],
-//                           ),
-//                           child: Padding(
-//                             padding: const EdgeInsets.all(16),
-//                             child: Row(
-//                               crossAxisAlignment: CrossAxisAlignment.start,
-//                               children: [
-//                                 // Company Logo
-//                                 CircleAvatar(
-//                                   backgroundColor: Colors.grey.shade200,
-//                                   radius: 28,
-//                                   child: Icon(
-//                                     Icons.business_center,
-//                                     color: AppColors.primary,
-//                                   ),
-//                                 ),
-//                                 const SizedBox(width: 16),
-
-//                                 // Job Info
-//                                 Expanded(
-//                                   child: Column(
-//                                     crossAxisAlignment:
-//                                         CrossAxisAlignment.start,
-//                                     children: [
-//                                       Text(
-//                                         app.title,
-//                                         style: const TextStyle(
-//                                           fontSize: 18,
-//                                           fontWeight: FontWeight.bold,
-//                                         ),
-//                                       ),
-//                                       const SizedBox(height: 4),
-//                                       Text(
-//                                         app.company,
-//                                         style: const TextStyle(
-//                                           fontWeight: FontWeight.w600,
-//                                           color: Colors.black54,
-//                                         ),
-//                                       ),
-//                                       const SizedBox(height: 8),
-
-//                                       Row(
-//                                         children: [
-//                                           const Icon(
-//                                             Icons.location_on_outlined,
-//                                             size: 16,
-//                                             color: Colors.grey,
-//                                           ),
-//                                           const SizedBox(width: 4),
-//                                           Text(
-//                                             app.location,
-//                                             style: const TextStyle(
-//                                               color: Colors.grey,
-//                                             ),
-//                                           ),
-//                                           const SizedBox(width: 16),
-//                                           const Icon(
-//                                             Icons.work_outline,
-//                                             size: 16,
-//                                             color: Colors.grey,
-//                                           ),
-//                                           const SizedBox(width: 4),
-//                                           Text(
-//                                             app.jobType,
-//                                             style: const TextStyle(
-//                                               color: Colors.grey,
-//                                             ),
-//                                           ),
-//                                         ],
-//                                       ),
-
-//                                       const SizedBox(height: 8),
-//                                       Text(
-//                                         app.paymentType == "Fixed"
-//                                             ? "Fixed Price: ${app.salaryOrAmount}"
-//                                             : "Salary: ${app.salaryOrAmount} / month",
-//                                         style: const TextStyle(
-//                                           fontWeight: FontWeight.w500,
-//                                           color: Colors.black87,
-//                                         ),
-//                                       ),
-//                                       const SizedBox(height: 4),
-//                                       Text(
-//                                         "Applied on ${app.appliedDate}",
-//                                         style: const TextStyle(
-//                                           color: Colors.grey,
-//                                           fontSize: 13,
-//                                         ),
-//                                       ),
-
-//                                         Column(
-//                                   mainAxisAlignment: MainAxisAlignment.center,
-//                                   children: [
-//                                     Chip(
-//                                       avatar: Icon(
-//                                         _getStatusIcon(app.status),
-//                                         color: _getStatusTextColor(app.status),
-//                                         size: 18,
-//                                       ),
-//                                       backgroundColor: _getStatusColor(
-//                                         app.status,
-//                                       ),
-//                                       label: Text(
-//                                         app.status,
-//                                         style: TextStyle(
-//                                           color: _getStatusTextColor(
-//                                             app.status,
-//                                           ),
-//                                           fontWeight: FontWeight.w600,
-//                                         ),
-//                                       ),
-//                                     ),
-//                                     if (app.status == "Accepted")
-//                                       TextButton.icon(
-//                                         onPressed: () {
-//                                           // Navigate to project details page
-//                                         },
-//                                         icon: const Icon(
-//                                           Icons.visibility_outlined,
-//                                           size: 18,
-//                                         ),
-//                                         label: const Text("Details"),
-//                                         style: TextButton.styleFrom(
-//                                           foregroundColor: AppColors.primary,
-//                                         ),
-//                                       ),
-//                                   ],
-//                                 ),
-//                                     ],
-//                                   ),
-//                                 ),
-
-//                                 // Status & Action
-
-//                               ],
-//                             ),
-//                           ),
-//                         );
-//                       },
-//                     ),
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-
-//   Widget _buildEmptyState() {
-//     return Center(
-//       child: Column(
-//         mainAxisAlignment: MainAxisAlignment.center,
-//         children: [
-//           Icon(
-//             Icons.folder_off_outlined,
-//             size: 80,
-//             color: Colors.grey.shade400,
-//           ),
-//           const SizedBox(height: 20),
-//           const Text(
-//             "No Applications Yet",
-//             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-//           ),
-//           const SizedBox(height: 8),
-//           const Text(
-//             "You haven’t applied for any projects.\nStart exploring new opportunities!",
-//             textAlign: TextAlign.center,
-//             style: TextStyle(color: Colors.grey),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
-
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:jobshub/users/views/bottomnav_sidebar/user_sidedrawer.dart';
+import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
+import 'package:jobshub/common/constants/base_url.dart';
+import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/common/utils/app_color.dart';
+import 'package:jobshub/users/views/bottomnav_sidebar/user_sidedrawer.dart';
 
-class ProjectApplication {
+/// ------------------ Model ------------------
+class UserProjectApplication {
+  final int projectId;
   final String title;
-  final String company;
-  final String appliedDate;
+  final String category;
   final String location;
-  final String jobType;
-  final String salaryOrAmount; // can be monthly or fixed
-  final String paymentType; // "Monthly" or "Fixed"
-  String status; // Pending / Accepted / Rejected
+  final String budgetMin;
+  final String budgetMax;
+  final String budgetType;
+  final int employerId;
+  final String projectStatus;
+  final int applicantId;
+  final String applicationDate;
+  final String applicantStatus;
+  final int hrApproval;
+  final String remarks;
 
-  ProjectApplication({
+  UserProjectApplication({
+    required this.projectId,
     required this.title,
-    required this.company,
-    required this.appliedDate,
+    required this.category,
     required this.location,
-    required this.jobType,
-    required this.salaryOrAmount,
-    required this.paymentType,
-    this.status = "Pending",
+    required this.budgetMin,
+    required this.budgetMax,
+    required this.budgetType,
+    required this.employerId,
+    required this.projectStatus,
+    required this.applicantId,
+    required this.applicationDate,
+    required this.applicantStatus,
+    required this.hrApproval,
+    required this.remarks,
   });
+
+  factory UserProjectApplication.fromJson(Map<String, dynamic> json) {
+    return UserProjectApplication(
+      projectId: json['project_id'] ?? 0,
+      title: json['title'] ?? '',
+      category: json['category'] ?? '',
+      location: json['location'] ?? 'N/A',
+      budgetMin: json['budget_min']?.toString() ?? '0',
+      budgetMax: json['budget_max']?.toString() ?? '0',
+      budgetType: json['budget_type'] ?? 'Fixed',
+      employerId: json['employer_id'] ?? 0,
+      projectStatus: json['project_status'] ?? '',
+      applicantId: json['applicant_id'] ?? 0,
+      applicationDate: json['application_date'] ?? '',
+      applicantStatus: json['applicant_status'] ?? '',
+      hrApproval: json['hr_approval'] ?? 2,
+      remarks: json['remarks'] ?? '',
+    );
+  }
 }
 
+/// ------------------ Service ------------------
+class _ProjectApi {
+  static Future<List<UserProjectApplication>> fetchUserAppliedProjects() async {
+    try {
+      final userId = await SessionManager.getValue('user_id');
+      if (userId == null || userId.isEmpty) return [];
+
+      final url = Uri.parse("${ApiConstants.baseUrl}projectsAppliedByUser");
+
+      final resp = await http.post(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"user_id": int.parse(userId)}),
+      );
+
+      final body = jsonDecode(resp.body);
+
+      if (resp.statusCode == 200 && body['success'] == true) {
+        final List data = body['data'] ?? [];
+        return data.map((e) => UserProjectApplication.fromJson(e)).toList();
+      }
+
+      return [];
+    } catch (e) {
+      debugPrint("Error: $e");
+      return [];
+    }
+  }
+}
+
+/// ------------------ UI Screen ------------------
 class Projects extends StatefulWidget {
   const Projects({super.key});
 
@@ -344,284 +100,238 @@ class Projects extends StatefulWidget {
 }
 
 class _ProjectsState extends State<Projects> {
-  List<ProjectApplication> applications = [
-    ProjectApplication(
-      title: "Flutter Developer (Full App)",
-      company: "TechNova Pvt. Ltd.",
-      appliedDate: "Oct 20, 2025",
-      location: "Remote",
-      jobType: "Contract",
-      salaryOrAmount: "₹1,20,000",
-      paymentType: "Fixed",
-      status: "Pending",
-    ),
-    ProjectApplication(
-      title: "UI/UX Designer",
-      company: "PixelCraft Studio",
-      appliedDate: "Oct 15, 2025",
-      location: "Bangalore, India",
-      jobType: "Hybrid",
-      salaryOrAmount: "₹55,000",
-      paymentType: "Monthly",
-      status: "Accepted",
-    ),
-    ProjectApplication(
-      title: "Backend Developer",
-      company: "CodeWorks",
-      appliedDate: "Oct 10, 2025",
-      location: "Mumbai, India",
-      jobType: "Contract",
-      salaryOrAmount: "₹80,000",
-      paymentType: "Monthly",
-      status: "Rejected",
-    ),
-  ];
+  late Future<List<UserProjectApplication>> _future;
 
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case "Accepted":
+  @override
+  void initState() {
+    super.initState();
+    _future = _ProjectApi.fetchUserAppliedProjects();
+  }
+
+  Color _statusBg(String appStatus) {
+    switch (appStatus) {
+      case "selected":
         return Colors.green.shade100;
-      case "Rejected":
+      case "rejected":
         return Colors.red.shade100;
+      case "shortlisted":
+        return Colors.blue.shade100;
       default:
         return Colors.orange.shade100;
     }
   }
 
-  Color _getStatusTextColor(String status) {
-    switch (status) {
-      case "Accepted":
+  Color _statusTextColor(String appStatus) {
+    switch (appStatus) {
+      case "selected":
         return Colors.green.shade800;
-      case "Rejected":
+      case "rejected":
         return Colors.red.shade800;
+      case "shortlisted":
+        return Colors.blue.shade800;
       default:
         return Colors.orange.shade800;
     }
   }
 
-  IconData _getStatusIcon(String status) {
-    switch (status) {
-      case "Accepted":
-        return Icons.check_circle_outline;
-      case "Rejected":
-        return Icons.cancel_outlined;
-      default:
-        return Icons.hourglass_empty_outlined;
+  String _formatDate(String date) {
+    try {
+      return DateFormat("dd MMM yyyy").format(DateTime.parse(date));
+    } catch (_) {
+      return date;
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return AppDrawerWrapper(
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final isWeb = constraints.maxWidth > 800;
+  Widget _buildCard(UserProjectApplication p) {
+    final priceText = (p.budgetType.toLowerCase() == 'fixed')
+        ? "₹${p.budgetMin} - ₹${p.budgetMax} (Fixed)"
+        : "₹${p.budgetMin} - ₹${p.budgetMax} / month";
 
-          return Scaffold(
-            backgroundColor: Colors.grey.shade100,
-            appBar: AppBar(
-              automaticallyImplyLeading: false,
-              backgroundColor: Colors.white,
-              elevation: 1,
-              title: const Text(
-                "My Projects",
-                style: TextStyle(
-                  color: Colors.black87,
-                  fontWeight: FontWeight.w600,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
+            offset: const Offset(2, 3),
+          ),
+        ],
+      ),
+      width: double.infinity, // <-- FULL WIDTH
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CircleAvatar(
+            radius: 26,
+            backgroundColor: AppColors.primary.withOpacity(0.12),
+            child: const Icon(Icons.work_outline, color: AppColors.primary),
+          ),
+          const SizedBox(width: 14),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  p.title,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  p.category,
+                  style: const TextStyle(
+                    color: Colors.black54,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.location_on_outlined,
+                      size: 14,
+                      color: Colors.grey,
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        p.location,
+                        style: const TextStyle(color: Colors.grey),
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 10),
+                Text(
+                  priceText,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+
+                const SizedBox(height: 6),
+                Text(
+                  "Applied on ${_formatDate(p.applicationDate)}",
+                  style: const TextStyle(color: Colors.grey, fontSize: 13),
+                ),
+
+                if (p.remarks.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    "Remarks: ${p.remarks}",
+                    style: const TextStyle(color: Colors.black87),
+                  ),
+                ],
+              ],
+            ),
+          ),
+
+          Column(
+            children: [
+              Chip(
+                backgroundColor: _statusBg(p.applicantStatus),
+                label: Text(
+                  p.applicantStatus.toUpperCase(),
+                  style: TextStyle(
+                    color: _statusTextColor(p.applicantStatus),
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ),
-            body: Padding(
-              padding: EdgeInsets.symmetric(
-                horizontal: isWeb
-                    ? MediaQuery.of(context).size.width * 0.2
-                    : 16,
-                vertical: 20,
-              ),
-              child: applications.isEmpty
-                  ? _buildEmptyState()
-                  : ListView.builder(
-                      itemCount: applications.length,
-                      itemBuilder: (context, index) {
-                        final app = applications[index];
-                        return Container(
-                          margin: const EdgeInsets.symmetric(vertical: 8),
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black12,
-                                blurRadius: 6,
-                                offset: const Offset(2, 2),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // Company Logo
-                              CircleAvatar(
-                                backgroundColor: Colors.grey.shade200,
-                                radius: 28,
-                                child: Icon(
-                                  Icons.business_center,
-                                  color: AppColors.primary,
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-
-                              // Job Info
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      app.title,
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      app.company,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.black54,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      children: [
-                                        const Icon(
-                                          Icons.location_on_outlined,
-                                          size: 16,
-                                          color: Colors.grey,
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          app.location,
-                                          style: const TextStyle(
-                                            color: Colors.grey,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 16),
-                                        const Icon(
-                                          Icons.work_outline,
-                                          size: 16,
-                                          color: Colors.grey,
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          app.jobType,
-                                          style: const TextStyle(
-                                            color: Colors.grey,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      app.paymentType == "Fixed"
-                                          ? "Fixed Price: ${app.salaryOrAmount}"
-                                          : "Salary: ${app.salaryOrAmount} / month",
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.black87,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      "Applied on ${app.appliedDate}",
-                                      style: const TextStyle(
-                                        color: Colors.grey,
-                                        fontSize: 13,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 10),
-
-                                    // Status Chip + Details Button
-                                    Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Chip(
-                                          avatar: Icon(
-                                            _getStatusIcon(app.status),
-                                            color: _getStatusTextColor(
-                                              app.status,
-                                            ),
-                                            size: 18,
-                                          ),
-                                          backgroundColor: _getStatusColor(
-                                            app.status,
-                                          ),
-                                          label: Text(
-                                            app.status,
-                                            style: TextStyle(
-                                              color: _getStatusTextColor(
-                                                app.status,
-                                              ),
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ),
-                                        if (app.status == "Accepted")
-                                          TextButton.icon(
-                                            onPressed: () {
-                                              // Navigate to project details page
-                                            },
-                                            icon: const Icon(
-                                              Icons.visibility_outlined,
-                                              size: 18,
-                                            ),
-                                            label: const Text("Details"),
-                                            style: TextButton.styleFrom(
-                                              foregroundColor:
-                                                  AppColors.primary,
-                                            ),
-                                          ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-            ),
-          );
-        },
+            ],
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _emptyState() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
             Icons.folder_off_outlined,
-            size: 80,
-            color: Colors.grey.shade400,
+            size: 90,
+            color: Colors.grey.shade300,
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 18),
           const Text(
             "No Applications Yet",
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           const Text(
-            "You haven’t applied for any projects.\nStart exploring new opportunities!",
+            "You haven't applied for any projects.\nStart exploring opportunities!",
             textAlign: TextAlign.center,
             style: TextStyle(color: Colors.grey),
           ),
         ],
+      ),
+    );
+  }
+
+  Future<void> _refresh() async {
+    setState(() => _future = _ProjectApi.fetchUserAppliedProjects());
+    await _future;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AppDrawerWrapper(
+      child: Scaffold(
+        backgroundColor: Colors.grey.shade100,
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          backgroundColor: AppColors.primary,
+          elevation: 1,
+          title: const Text(
+            "My Projects",
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          actions: [
+            IconButton(
+              onPressed: _refresh,
+              icon: const Icon(Icons.refresh, color: Colors.white),
+            ),
+          ],
+        ),
+
+        body: RefreshIndicator(
+          onRefresh: _refresh,
+          child: FutureBuilder<List<UserProjectApplication>>(
+            future: _future,
+            builder: (context, snap) {
+              if (snap.connectionState != ConnectionState.done) {
+                return const Center(
+                  child: CircularProgressIndicator(color: AppColors.primary),
+                );
+              }
+
+              final items = snap.data ?? [];
+              if (items.isEmpty) return _emptyState();
+
+              return Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 16,
+                  ),
+                  itemCount: items.length,
+                  itemBuilder: (context, idx) => _buildCard(items[idx]),
+                ),
+              );
+            },
+          ),
+        ),
       ),
     );
   }
