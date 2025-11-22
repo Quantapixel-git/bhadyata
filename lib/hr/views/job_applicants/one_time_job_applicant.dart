@@ -1,4 +1,6 @@
+
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jobshub/common/utils/app_color.dart';
@@ -8,11 +10,7 @@ class OneTimeApplicantsPage extends StatefulWidget {
   final int jobId;
   final String? jobTitle; // optional, for AppBar subtitle
 
-  const OneTimeApplicantsPage({
-    super.key,
-    required this.jobId,
-    this.jobTitle,
-  });
+  const OneTimeApplicantsPage({super.key, required this.jobId, this.jobTitle});
 
   @override
   State<OneTimeApplicantsPage> createState() => _OneTimeApplicantsPageState();
@@ -23,9 +21,14 @@ class _OneTimeApplicantsPageState extends State<OneTimeApplicantsPage> {
   String? _error;
   List<Map<String, dynamic>> _applicants = [];
 
-  // 👉 Update to your actual endpoint for {{bhadyata}}oneTimeApplicantsByJob
-  final String apiUrl =
+  // per-row loading flags
+  final Set<int> _rowsLoading = {};
+
+  // endpoints
+  final String _fetchUrl =
       'https://dialfirst.in/quantapixel/badhyata/api/oneTimeApplicantsByJob';
+  final String _updateHrApprovalUrl =
+      'https://dialfirst.in/quantapixel/badhyata/api/updateApplicantHrApproval';
 
   @override
   void initState() {
@@ -41,25 +44,114 @@ class _OneTimeApplicantsPageState extends State<OneTimeApplicantsPage> {
 
     try {
       final res = await http.post(
-        Uri.parse(apiUrl),
+        Uri.parse(_fetchUrl),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({"job_id": widget.jobId}),
       );
 
       if (res.statusCode == 200) {
-        final json = jsonDecode(res.body) as Map<String, dynamic>;
-        final List data = (json['data'] as List?) ?? [];
-        setState(() => _applicants = data.cast<Map<String, dynamic>>());
+        final jsonBody = jsonDecode(res.body) as Map<String, dynamic>;
+        final List data = (jsonBody['data'] as List?) ?? [];
+        _applicants = data.map<Map<String, dynamic>>((e) {
+          if (e is Map) return Map<String, dynamic>.from(e as Map);
+          return <String, dynamic>{};
+        }).toList();
+        if (mounted) setState(() {});
       } else {
-        setState(() => _error = "Error ${res.statusCode}");
+        setState(() => _error = 'Server error: ${res.statusCode}');
       }
     } catch (e) {
-      setState(() => _error = "Network error: $e");
+      setState(() => _error = 'Network error: $e');
     } finally {
       if (mounted) setState(() => _loading = false);
     }
   }
 
+  /// Update a single applicant's hr_approval (1 = Approve, 3 = Reject)
+  Future<bool> _updateHrApprovalRow({
+    required int recordId,
+    required int newValue,
+    required int index,
+  }) async {
+    if (_rowsLoading.contains(index)) return false;
+    setState(() => _rowsLoading.add(index));
+
+    final oldVal = _applicants[index]['hr_approval'];
+
+    // optimistic update locally
+    setState(() => _applicants[index]['hr_approval'] = newValue);
+
+    try {
+      final res = await http.post(
+        Uri.parse(_updateHrApprovalUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({"id": recordId, "hr_approval": newValue}),
+      );
+
+      if (res.statusCode == 200) {
+        final body = jsonDecode(res.body) as Map<String, dynamic>;
+        final ok = (body['success'] == true) || (body['status'] == true);
+
+        if (ok) {
+          // merge returned data if any
+          final updated = body['data'];
+          if (updated is Map) {
+            setState(() {
+              updated.forEach((k, v) => _applicants[index][k] = v);
+            });
+          }
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(body['message'] ?? 'HR approval updated'),
+              behavior: SnackBarBehavior.floating,
+              action: SnackBarAction(
+                label: 'Undo',
+                onPressed: () {
+                  // local revert only — server-side undo would require another API call
+                  setState(() => _applicants[index]['hr_approval'] = oldVal);
+                },
+              ),
+            ),
+          );
+
+          return true;
+        } else {
+          // revert optimistic
+          setState(() => _applicants[index]['hr_approval'] = oldVal);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(body['message'] ?? 'Failed to update'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+          return false;
+        }
+      } else {
+        setState(() => _applicants[index]['hr_approval'] = oldVal);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Server error: ${res.statusCode}'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return false;
+      }
+    } catch (e) {
+      setState(() => _applicants[index]['hr_approval'] = oldVal);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Network error: $e'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return false;
+    } finally {
+      setState(() => _rowsLoading.remove(index));
+    }
+  }
+
+  // simple helpers
   String _safe(dynamic v) {
     if (v == null) return '—';
     final s = v.toString().trim();
@@ -69,22 +161,33 @@ class _OneTimeApplicantsPageState extends State<OneTimeApplicantsPage> {
   String _formatDateTime(dynamic raw) {
     if (raw == null) return '—';
     try {
-      final dt = DateTime.parse(raw.toString());
+      final dt = DateTime.parse(raw.toString()).toLocal();
       final d = dt.day.toString().padLeft(2, '0');
       final m = const [
-        'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
       ][dt.month - 1];
-      final y = dt.year.toString();
       final hh = dt.hour.toString().padLeft(2, '0');
       final mm = dt.minute.toString().padLeft(2, '0');
-      return "$d $m $y, $hh:$mm";
+      return "$d $m ${dt.year}, $hh:$mm";
     } catch (_) {
-      return raw.toString();
+      final s = raw.toString();
+      return s.isEmpty ? '—' : s;
     }
   }
 
   Color _statusColor(String s) {
-    switch (s) {
+    switch (s.toLowerCase()) {
       case 'selected':
         return Colors.green;
       case 'shortlisted':
@@ -97,182 +200,822 @@ class _OneTimeApplicantsPageState extends State<OneTimeApplicantsPage> {
     }
   }
 
-  Widget _pill(String text, Color color) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.10),
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: color.withOpacity(0.25)),
-        ),
-        child: Text(
-          text,
-          style: TextStyle(
-            color: color,
-            fontWeight: FontWeight.w700,
-            fontSize: 12,
+  Widget _statusChip(String text, Color color) => Chip(
+    label: Text(
+      text,
+      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+    ),
+    backgroundColor: color.withOpacity(0.12),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
+    visualDensity: VisualDensity.compact,
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+  );
+
+  double _cardMaxWidth(BoxConstraints constraints) {
+    if (constraints.maxWidth >= 1400) return 1100;
+    if (constraints.maxWidth >= 1100) return 900;
+    if (constraints.maxWidth >= 800) return 720;
+    if (constraints.maxWidth >= 600) return 560;
+    return double.infinity;
+  }
+
+  Future<bool?> _confirm(
+    BuildContext ctx,
+    String title,
+    String content,
+    String confirmLabel,
+  ) {
+    return showDialog<bool>(
+      context: ctx,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: Text(title),
+        content: Text(content),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text(confirmLabel),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _emptyPlaceholder(bool isWeb) {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      children: [
+        SizedBox(height: isWeb ? 72 : 140),
+        Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.people_outline, size: 72, color: Colors.grey.shade300),
+              const SizedBox(height: 12),
+              Text(
+                'No applicants',
+                style: TextStyle(color: Colors.grey.shade700, fontSize: 16),
+              ),
+            ],
           ),
         ),
-      );
-
-  Widget _hrApprovalPill(dynamic v) {
-    final a = int.tryParse(_safe(v)) ?? 2;
-    if (a == 1) return _pill('HR: Approved', Colors.green);
-    if (a == 3) return _pill('HR: Rejected', Colors.red);
-    return _pill('HR: Pending', Colors.orange);
-    }
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, constraints) {
-      final bool isWeb = constraints.maxWidth >= 900;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isWeb = constraints.maxWidth >= 900;
 
-      return HrDashboardWrapper(
-        child: Scaffold(
-          backgroundColor: Colors.grey.shade100,
-          appBar: AppBar(
-            automaticallyImplyLeading: !isWeb,
-            iconTheme: const IconThemeData(color: Colors.white),
-            backgroundColor: AppColors.primary,
-            title: const Text(
-              "Applicants",
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-            ),
-            bottom: widget.jobTitle == null
-                ? null
-                : PreferredSize(
-                    preferredSize: const Size.fromHeight(28),
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          widget.jobTitle!,
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
+        final appBarTitle = widget.jobTitle == null || widget.jobTitle!.isEmpty
+            ? const Text('Applicants')
+            : Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      widget.jobTitle!,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
-            elevation: 2,
-          ),
-          body: _loading
-              ? const Center(child: CircularProgressIndicator())
-              : _error != null
-                  ? Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(_error!, style: const TextStyle(color: Colors.red)),
-                          const SizedBox(height: 8),
-                          OutlinedButton(onPressed: _fetchApplicants, child: const Text('Retry')),
-                        ],
-                      ),
-                    )
-                  : RefreshIndicator(
-                      onRefresh: _fetchApplicants,
-                      child: _applicants.isEmpty
-                          ? ListView(
-                              physics: const AlwaysScrollableScrollPhysics(),
-                              children: [
-                                const SizedBox(height: 120),
-                                Center(
-                                  child: Text(
-                                    'No applicants',
-                                    style: TextStyle(
-                                      color: Colors.grey.shade700,
-                                      fontSize: 16,
+                  const SizedBox(width: 8),
+                  const Text('—', style: TextStyle(color: Colors.white)),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Applicants',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              );
+
+        return HrDashboardWrapper(
+          child: Scaffold(
+            backgroundColor: Colors.grey.shade100,
+            appBar: AppBar(
+              automaticallyImplyLeading: !isWeb,
+              iconTheme: const IconThemeData(color: Colors.white),
+              backgroundColor: AppColors.primary,
+              title: appBarTitle,
+              elevation: 2,
+              actions: [
+                IconButton(
+                  tooltip: 'Refresh',
+                  icon: const Icon(Icons.refresh_outlined),
+                  onPressed: _fetchApplicants,
+                ),
+              ],
+            ),
+            body: _loading
+                ? const Center(child: CircularProgressIndicator())
+                : _error != null
+                ? Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _error!,
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                        const SizedBox(height: 12),
+                        OutlinedButton(
+                          onPressed: _fetchApplicants,
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  )
+                : RefreshIndicator(
+                    onRefresh: _fetchApplicants,
+                    child: _applicants.isEmpty
+                        ? _emptyPlaceholder(isWeb)
+                        : ListView.separated(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: isWeb ? 28 : 12,
+                              vertical: 18,
+                            ),
+                            separatorBuilder: (_, __) =>
+                                const SizedBox(height: 12),
+                            itemCount: _applicants.length,
+                            itemBuilder: (context, i) {
+                              final a = _applicants[i];
+                              final firstName = _safe(a['first_name']);
+                              final lastName = _safe(a['last_name']);
+                              final name = [firstName, lastName]
+                                  .where((e) => e != '—' && e.isNotEmpty)
+                                  .join(' ');
+                              final mobile = _safe(a['mobile']);
+                              final email = _safe(a['email']);
+                              final rawDate =
+                                  a['application_date'] ?? a['created_at'];
+                              final applied = _formatDateTime(rawDate);
+                              final status = _safe(a['status']);
+                              final statusColor = _statusColor(status);
+
+                              final profileImg = _safe(a['profile_image']);
+                              final hasImg =
+                                  profileImg != '—' &&
+                                  (profileImg.startsWith('http') ||
+                                      profileImg.startsWith('https'));
+
+                              final int recordId = (() {
+                                final cand =
+                                    a['id'] ??
+                                    a['applicant_id'] ??
+                                    a['applicantId'];
+                                if (cand == null) return 0;
+                                return int.tryParse(cand.toString()) ?? 0;
+                              })();
+
+                              final int hrApproval =
+                                  int.tryParse(_safe(a['hr_approval'])) ?? 2;
+                              final bool rowLoading = _rowsLoading.contains(i);
+
+                              final indicatorColor = hrApproval == 1
+                                  ? Colors.green.shade400
+                                  : hrApproval == 3
+                                  ? Colors.red.shade400
+                                  : Colors.orange.shade400;
+
+                              return Center(
+                                child: ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    maxWidth: _cardMaxWidth(constraints),
+                                  ),
+                                  child: MouseRegion(
+                                    cursor: SystemMouseCursors.click,
+                                    child: Material(
+                                      color: Colors.transparent,
+                                      child: AnimatedContainer(
+                                        duration: const Duration(
+                                          milliseconds: 180,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black.withOpacity(
+                                                0.03,
+                                              ),
+                                              blurRadius: 8,
+                                              offset: const Offset(0, 3),
+                                            ),
+                                          ],
+                                        ),
+                                        child: InkWell(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                          onTap: () {
+                                            // quick preview if desired — we keep tap minimal here
+                                          },
+                                          child: Column(
+                                            children: [
+                                              Row(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  // accent bar
+                                                  Container(
+                                                    width: 6,
+                                                    height: 140,
+                                                    decoration: BoxDecoration(
+                                                      color: indicatorColor,
+                                                      borderRadius:
+                                                          const BorderRadius.only(
+                                                            topLeft:
+                                                                Radius.circular(
+                                                                  12,
+                                                                ),
+                                                            bottomLeft:
+                                                                Radius.circular(
+                                                                  12,
+                                                                ),
+                                                          ),
+                                                    ),
+                                                  ),
+                                                  // main area
+                                                  Expanded(
+                                                    child: Padding(
+                                                      padding:
+                                                          const EdgeInsets.symmetric(
+                                                            horizontal: 14.0,
+                                                            vertical: 12.0,
+                                                          ),
+                                                      child: Row(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          CircleAvatar(
+                                                            radius: 28,
+                                                            backgroundColor:
+                                                                AppColors
+                                                                    .primary
+                                                                    .withOpacity(
+                                                                      0.12,
+                                                                    ),
+                                                            foregroundImage:
+                                                                hasImg
+                                                                ? NetworkImage(
+                                                                    profileImg,
+                                                                  )
+                                                                : null,
+                                                            child: hasImg
+                                                                ? null
+                                                                : Text(
+                                                                    (name.isEmpty
+                                                                            ? '?'
+                                                                            : name.split(' ').first[0])
+                                                                        .toUpperCase(),
+                                                                    style: TextStyle(
+                                                                      color: AppColors
+                                                                          .primary,
+                                                                      fontSize:
+                                                                          18,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .w700,
+                                                                    ),
+                                                                  ),
+                                                          ),
+                                                          const SizedBox(
+                                                            width: 12,
+                                                          ),
+                                                          Expanded(
+                                                            child: Column(
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .start,
+                                                              children: [
+                                                                Row(
+                                                                  children: [
+                                                                    Expanded(
+                                                                      child: Text(
+                                                                        name.isEmpty
+                                                                            ? '—'
+                                                                            : name,
+                                                                        style: const TextStyle(
+                                                                          fontSize:
+                                                                              16,
+                                                                          fontWeight:
+                                                                              FontWeight.w700,
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                    const SizedBox(
+                                                                      width: 8,
+                                                                    ),
+                                                                    _statusChip(
+                                                                      'Status: $status',
+                                                                      statusColor,
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                                const SizedBox(
+                                                                  height: 8,
+                                                                ),
+                                                                if (mobile !=
+                                                                    '—')
+                                                                  Text(
+                                                                    'Mobile: $mobile',
+                                                                    style: TextStyle(
+                                                                      color: Colors
+                                                                          .grey
+                                                                          .shade700,
+                                                                    ),
+                                                                  ),
+                                                                if (email !=
+                                                                    '—')
+                                                                  Text(
+                                                                    'Email: $email',
+                                                                    style: TextStyle(
+                                                                      color: Colors
+                                                                          .grey
+                                                                          .shade700,
+                                                                    ),
+                                                                  ),
+                                                                const SizedBox(
+                                                                  height: 12,
+                                                                ),
+                                                                Column(
+                                                                  crossAxisAlignment:
+                                                                      CrossAxisAlignment
+                                                                          .start,
+                                                                  children: [
+                                                                    Text(
+                                                                      'Applied: $applied',
+                                                                      style: TextStyle(
+                                                                        color: Colors
+                                                                            .grey
+                                                                            .shade600,
+                                                                        fontSize:
+                                                                            12.5,
+                                                                      ),
+                                                                    ),
+                                                                    const SizedBox(
+                                                                      height: 8,
+                                                                    ),
+                                                                    if ((a['remarks'] ??
+                                                                            '')
+                                                                        .toString()
+                                                                        .isNotEmpty)
+                                                                      Container(
+                                                                        padding: const EdgeInsets.symmetric(
+                                                                          horizontal:
+                                                                              10,
+                                                                          vertical:
+                                                                              8,
+                                                                        ),
+                                                                        decoration: BoxDecoration(
+                                                                          color: Colors
+                                                                              .grey
+                                                                              .shade50,
+                                                                          borderRadius:
+                                                                              BorderRadius.circular(
+                                                                                8,
+                                                                              ),
+                                                                        ),
+                                                                        child: Text(
+                                                                          a['remarks']
+                                                                              .toString(),
+                                                                          style: TextStyle(
+                                                                            color:
+                                                                                Colors.grey.shade700,
+                                                                            fontSize:
+                                                                                13,
+                                                                          ),
+                                                                        ),
+                                                                      ),
+                                                                  ],
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                          const SizedBox(
+                                                            width: 8,
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                              // divider
+                                              Divider(
+                                                height: 1,
+                                                color: Colors.grey.shade100,
+                                              ),
+                                              // bottom action row
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 14.0,
+                                                      vertical: 10.0,
+                                                    ),
+                                                child: Row(
+                                                  children: [
+                                                    _statusChip(
+                                                      hrApproval == 1
+                                                          ? 'HR: Approved'
+                                                          : hrApproval == 3
+                                                          ? 'HR: Rejected'
+                                                          : 'HR: Pending',
+                                                      hrApproval == 1
+                                                          ? Colors.green
+                                                          : hrApproval == 3
+                                                          ? Colors.red
+                                                          : Colors.orange,
+                                                    ),
+                                                    const Spacer(),
+                                                    if (rowLoading)
+                                                      SizedBox(
+                                                        width: isWeb ? 120 : 36,
+                                                        height: isWeb ? 36 : 36,
+                                                        child: Center(
+                                                          child: SizedBox(
+                                                            width: 18,
+                                                            height: 18,
+                                                            child:
+                                                                CircularProgressIndicator(
+                                                                  strokeWidth:
+                                                                      2.2,
+                                                                ),
+                                                          ),
+                                                        ),
+                                                      )
+                                                    else
+                                                      Row(
+                                                        children: [
+                                                          if (isWeb)
+                                                            ElevatedButton.icon(
+                                                              onPressed:
+                                                                  hrApproval ==
+                                                                      1
+                                                                  ? null
+                                                                  : () async {
+                                                                      final confirm = await _confirm(
+                                                                        context,
+                                                                        'Approve applicant?',
+                                                                        'Approve ${name.isEmpty ? 'this applicant' : name}?',
+                                                                        'Approve',
+                                                                      );
+                                                                      if (confirm !=
+                                                                          true)
+                                                                        return;
+                                                                      await _updateHrApprovalRow(
+                                                                        recordId:
+                                                                            recordId,
+                                                                        newValue:
+                                                                            1,
+                                                                        index:
+                                                                            i,
+                                                                      );
+                                                                    },
+                                                              icon: const Icon(
+                                                                Icons.check,
+                                                                size: 16,
+                                                              ),
+                                                              label: const Text(
+                                                                'Approve',
+                                                              ),
+                                                              style: ElevatedButton.styleFrom(
+                                                                backgroundColor:
+                                                                    hrApproval ==
+                                                                        1
+                                                                    ? Colors
+                                                                          .green
+                                                                          .shade700
+                                                                    : AppColors
+                                                                          .primary,
+                                                                foregroundColor:
+                                                                    Colors
+                                                                        .white,
+                                                                padding:
+                                                                    const EdgeInsets.symmetric(
+                                                                      horizontal:
+                                                                          12,
+                                                                      vertical:
+                                                                          8,
+                                                                    ),
+                                                                shape: RoundedRectangleBorder(
+                                                                  borderRadius:
+                                                                      BorderRadius.circular(
+                                                                        8,
+                                                                      ),
+                                                                ),
+                                                              ),
+                                                            )
+                                                          else
+                                                            IconButton(
+                                                              tooltip:
+                                                                  hrApproval ==
+                                                                      1
+                                                                  ? 'Approved'
+                                                                  : 'Approve',
+                                                              onPressed:
+                                                                  hrApproval ==
+                                                                      1
+                                                                  ? null
+                                                                  : () async {
+                                                                      final confirm = await _confirm(
+                                                                        context,
+                                                                        'Approve applicant?',
+                                                                        'Approve ${name.isEmpty ? 'this applicant' : name}?',
+                                                                        'Approve',
+                                                                      );
+                                                                      if (confirm !=
+                                                                          true)
+                                                                        return;
+                                                                      await _updateHrApprovalRow(
+                                                                        recordId:
+                                                                            recordId,
+                                                                        newValue:
+                                                                            1,
+                                                                        index:
+                                                                            i,
+                                                                      );
+                                                                    },
+                                                              icon: Icon(
+                                                                Icons
+                                                                    .check_circle,
+                                                                color:
+                                                                    hrApproval ==
+                                                                        1
+                                                                    ? Colors
+                                                                          .green
+                                                                          .shade700
+                                                                    : Colors
+                                                                          .grey
+                                                                          .shade600,
+                                                              ),
+                                                            ),
+                                                          const SizedBox(
+                                                            width: 8,
+                                                          ),
+                                                          if (isWeb)
+                                                            OutlinedButton.icon(
+                                                              onPressed:
+                                                                  hrApproval ==
+                                                                      3
+                                                                  ? null
+                                                                  : () async {
+                                                                      final confirm = await _confirm(
+                                                                        context,
+                                                                        'Reject applicant?',
+                                                                        'Reject ${name.isEmpty ? 'this applicant' : name}?',
+                                                                        'Reject',
+                                                                      );
+                                                                      if (confirm !=
+                                                                          true)
+                                                                        return;
+                                                                      await _updateHrApprovalRow(
+                                                                        recordId:
+                                                                            recordId,
+                                                                        newValue:
+                                                                            3,
+                                                                        index:
+                                                                            i,
+                                                                      );
+                                                                    },
+                                                              icon: const Icon(
+                                                                Icons.close,
+                                                                size: 16,
+                                                              ),
+                                                              label: const Text(
+                                                                'Reject',
+                                                              ),
+                                                              style: OutlinedButton.styleFrom(
+                                                                foregroundColor:
+                                                                    Colors
+                                                                        .red
+                                                                        .shade700,
+                                                                side: BorderSide(
+                                                                  color: Colors
+                                                                      .red
+                                                                      .shade100,
+                                                                ),
+                                                                padding:
+                                                                    const EdgeInsets.symmetric(
+                                                                      horizontal:
+                                                                          12,
+                                                                      vertical:
+                                                                          8,
+                                                                    ),
+                                                                shape: RoundedRectangleBorder(
+                                                                  borderRadius:
+                                                                      BorderRadius.circular(
+                                                                        8,
+                                                                      ),
+                                                                ),
+                                                              ),
+                                                            )
+                                                          else
+                                                            IconButton(
+                                                              tooltip:
+                                                                  hrApproval ==
+                                                                      3
+                                                                  ? 'Rejected'
+                                                                  : 'Reject',
+                                                              onPressed:
+                                                                  hrApproval ==
+                                                                      3
+                                                                  ? null
+                                                                  : () async {
+                                                                      final confirm = await _confirm(
+                                                                        context,
+                                                                        'Reject applicant?',
+                                                                        'Reject ${name.isEmpty ? 'this applicant' : name}?',
+                                                                        'Reject',
+                                                                      );
+                                                                      if (confirm !=
+                                                                          true)
+                                                                        return;
+                                                                      await _updateHrApprovalRow(
+                                                                        recordId:
+                                                                            recordId,
+                                                                        newValue:
+                                                                            3,
+                                                                        index:
+                                                                            i,
+                                                                      );
+                                                                    },
+                                                              icon: Icon(
+                                                                Icons.cancel,
+                                                                color:
+                                                                    hrApproval ==
+                                                                        3
+                                                                    ? Colors
+                                                                          .red
+                                                                          .shade700
+                                                                    : Colors
+                                                                          .grey
+                                                                          .shade600,
+                                                              ),
+                                                            ),
+                                                          const SizedBox(
+                                                            width: 8,
+                                                          ),
+                                                          // view button (eye)
+                                                          IconButton(
+                                                            tooltip:
+                                                                'View profile',
+                                                            onPressed: () {
+                                                              // Navigator.push(
+                                                              //   context,
+                                                              //   MaterialPageRoute(
+                                                              //     builder: (_) =>
+                                                              //         ViewProfilePage(
+                                                              //           applicant:
+                                                              //               a,
+                                                              //         ),
+                                                              //   ),
+                                                              // );
+                                                            },
+                                                            icon: Icon(
+                                                              Icons
+                                                                  .remove_red_eye,
+                                                              color: Colors
+                                                                  .grey
+                                                                  .shade700,
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ],
-                            )
-                          : ListView.builder(
-                              padding: const EdgeInsets.all(16),
-                              itemCount: _applicants.length,
-                              itemBuilder: (context, i) {
-                                final a = _applicants[i];
+                              );
+                            },
+                          ),
+                  ),
+          ),
+        );
+      },
+    );
+  }
+}
 
-                                final firstName = _safe(a['first_name']);
-                                final lastName = _safe(a['last_name']);
-                                final name = [firstName, lastName]
-                                    .where((e) => e != '—' && e.isNotEmpty)
-                                    .join(' ');
-                                final email = _safe(a['email']);
-                                final mobile = _safe(a['mobile']);
-                                final appDate = _formatDateTime(a['application_date']);
-                                final status = _safe(a['status']);
-                                final statusClr = _statusColor(status);
-                                final profileImg = _safe(a['profile_image']);
-                                final hasImg = profileImg != '—' && profileImg.startsWith('http');
+/// Simple placeholder profile page - replace with your real profile screen
+class ViewProfilePage extends StatelessWidget {
+  final Map<String, dynamic> applicant;
+  const ViewProfilePage({super.key, required this.applicant});
 
-                                return Container(
-                                  margin: const EdgeInsets.only(bottom: 14),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(12),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.grey.shade200,
-                                        blurRadius: 6,
-                                        offset: const Offset(0, 3),
-                                      ),
-                                    ],
-                                  ),
-                                  child: ListTile(
-                                    contentPadding: const EdgeInsets.all(16),
-                                    leading: CircleAvatar(
-                                      backgroundColor: AppColors.primary.withOpacity(0.12),
-                                      foregroundImage: hasImg ? NetworkImage(profileImg) : null,
-                                      child: Icon(Icons.person, color: AppColors.primary),
-                                    ),
-                                    title: Text(
-                                      name.isEmpty ? '—' : name,
-                                      style: const TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 15,
-                                      ),
-                                    ),
-                                    subtitle: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        const SizedBox(height: 4),
-                                        if (mobile != '—') Text("Mobile: $mobile"),
-                                        if (email != '—') Text("Email: $email"),
-                                        Text("Applied: $appDate"),
-                                        const SizedBox(height: 8),
-                                        Wrap(
-                                          spacing: 8,
-                                          runSpacing: 6,
-                                          children: [
-                                            _pill('Status: $status', statusClr),
-                                            _hrApprovalPill(a['hr_approval']),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                    trailing: IconButton(
-                                      tooltip: 'Action (placeholder)',
-                                      icon: const Icon(Icons.more_horiz, color: Colors.black87),
-                                      onPressed: () {
-                                        // TODO: replace with your action (e.g., update status / open profile)
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(
-                                            behavior: SnackBarBehavior.floating,
-                                            content: Text('Placeholder action for this applicant'),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                    ),
+  @override
+  Widget build(BuildContext context) {
+    final name =
+        ((applicant['first_name'] ?? '') + ' ' + (applicant['last_name'] ?? ''))
+            .trim();
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(name.isEmpty ? 'Profile' : name),
+        backgroundColor: AppColors.primary,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(18.0),
+        child: ListView(
+          children: [
+            Center(
+              child: CircleAvatar(
+                radius: 48,
+                backgroundColor: AppColors.primary.withOpacity(0.12),
+                backgroundImage:
+                    (applicant['profile_image'] ?? '').toString().startsWith(
+                      'http',
+                    )
+                    ? NetworkImage(applicant['profile_image'])
+                    : null,
+                child: (applicant['profile_image'] ?? '').toString().isEmpty
+                    ? Text(
+                        (name.isEmpty ? '?' : name[0]).toUpperCase(),
+                        style: const TextStyle(fontSize: 28),
+                      )
+                    : null,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Name',
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              name.isEmpty ? '—' : name,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Email',
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+            ),
+            const SizedBox(height: 4),
+            Text(applicant['email']?.toString() ?? '—'),
+            const SizedBox(height: 12),
+            Text(
+              'Mobile',
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+            ),
+            const SizedBox(height: 4),
+            Text(applicant['mobile']?.toString() ?? '—'),
+            const SizedBox(height: 12),
+            Text(
+              'Applied on',
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              applicant['application_date']?.toString() ??
+                  applicant['created_at']?.toString() ??
+                  '—',
+            ),
+            const SizedBox(height: 12),
+            if ((applicant['remarks'] ?? '').toString().isNotEmpty) ...[
+              Text(
+                'Remarks',
+                style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
+              ),
+              const SizedBox(height: 4),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(applicant['remarks'].toString()),
+              ),
+            ],
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(Icons.arrow_back),
+              label: const Text('Back'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+              ),
+            ),
+          ],
         ),
-      );
-    });
+      ),
+    );
   }
 }

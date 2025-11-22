@@ -2,10 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jobshub/common/utils/app_color.dart';
+import 'package:jobshub/hr/views/job_approval/one_time_job_detail.dart';
 import 'package:jobshub/hr/views/sidebar_dashboard/hr_sidebar.dart';
-
-// TODO: Replace with your actual detail page import
-// import 'package:jobshub/hr/views/onetime/hr_one_time_job_detail.dart';
 
 class HrOneTimeViewPostedJobsPage extends StatelessWidget {
   const HrOneTimeViewPostedJobsPage({super.key});
@@ -70,7 +68,7 @@ class JobsList extends StatefulWidget {
 
 class _JobsListState extends State<JobsList> {
   bool isLoading = true;
-  
+
   List<Map<String, dynamic>> jobs = [];
   final String apiUrlApproval =
       'https://dialfirst.in/quantapixel/badhyata/api/updateOneTimeRecruitmentJobApproval';
@@ -83,6 +81,10 @@ class _JobsListState extends State<JobsList> {
       'https://dialfirst.in/quantapixel/badhyata/api/getApprovedOneTimeJobs';
   final String apiUrlRejected =
       'https://dialfirst.in/quantapixel/badhyata/api/getRejectedOneTimeJobs';
+
+  // VIEW API added so eye button works in all tabs
+  final String apiUrlView =
+      'https://dialfirst.in/quantapixel/badhyata/api/OneTimeRecruitmentJobView';
 
   @override
   void initState() {
@@ -246,7 +248,6 @@ class _JobsListState extends State<JobsList> {
           final title = job["title"]?.toString() ?? "Unknown Title";
           final jobType = job["category"] ?? "N/A";
           final salaryMin = job["payment_amount"] ?? "-";
-          // final salaryMax = job["salary_max"] ?? "-";
           final location = job["location"] ?? "N/A";
           final createdAt = _formatDate(job["created_at"]);
 
@@ -296,6 +297,7 @@ class _JobsListState extends State<JobsList> {
                 ],
               ),
 
+              // Eye button present in all tabs; for pending we still keep approve/reject UI
               trailing: widget.status == "Pending"
                   ? (_processing.contains(jobId)
                         ? const SizedBox(
@@ -326,6 +328,16 @@ class _JobsListState extends State<JobsList> {
                                     ? null
                                     : () => _updateApproval(jobId, 3),
                               ),
+                              IconButton(
+                                tooltip: "View",
+                                icon: const Icon(
+                                  Icons.visibility,
+                                  color: AppColors.primary,
+                                ),
+                                onPressed: jobId == -1
+                                    ? null
+                                    : () => _openJobDetail(context, jobId),
+                              ),
                             ],
                           ))
                   : IconButton(
@@ -333,13 +345,22 @@ class _JobsListState extends State<JobsList> {
                         Icons.visibility,
                         color: AppColors.primary,
                       ),
-                      onPressed: () {
-                        // navigate to detail page here if needed
-                      },
+                      onPressed: jobId == -1
+                          ? null
+                          : () => _openJobDetail(context, jobId),
                     ),
             ),
           );
         },
+      ),
+    );
+  }
+
+  void _openJobDetail(BuildContext context, int jobId) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => OneTimeJobDetailPage(jobId: jobId, viewUrl: apiUrlView),
       ),
     );
   }

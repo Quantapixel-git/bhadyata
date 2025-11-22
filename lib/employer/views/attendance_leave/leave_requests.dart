@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jobshub/common/utils/app_color.dart';
 import 'package:jobshub/employer/views/sidebar_dashboard/employer_sidebar.dart';
+import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class LeaveRequestsPage extends StatefulWidget {
@@ -33,10 +34,33 @@ class _LeaveRequestsPageState extends State<LeaveRequestsPage> {
     });
 
     try {
+      // Read employer id from session
+      final dynamic userIdRaw = await SessionManager.getValue('employer_id');
+
+      int? employerId;
+      if (userIdRaw == null) {
+        employerId = null;
+      } else if (userIdRaw is int) {
+        employerId = userIdRaw;
+      } else if (userIdRaw is String) {
+        employerId = int.tryParse(userIdRaw);
+      } else {
+        employerId = null;
+      }
+
+      if (employerId == null) {
+        setState(() {
+          _error =
+              'Could not read employer id from session. Please login again.';
+          _loading = false;
+        });
+        return;
+      }
+
       final res = await http.post(
         Uri.parse(apiUrl),
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"employer_id": 14}), // 🔥 Auto employer id for now
+        body: jsonEncode({"employer_id": employerId}),
       );
 
       if (res.statusCode >= 200 && res.statusCode < 300) {
@@ -47,7 +71,9 @@ class _LeaveRequestsPageState extends State<LeaveRequestsPage> {
             leaveList = jsonBody["data"] ?? [];
           });
         } else {
-          setState(() => _error = jsonBody["message"]);
+          setState(
+            () => _error = jsonBody["message"] ?? 'API returned failure',
+          );
         }
       } else {
         setState(() => _error = "Server Error (${res.statusCode})");
@@ -63,7 +89,14 @@ class _LeaveRequestsPageState extends State<LeaveRequestsPage> {
   Future<void> _openUrl(String url) async {
     final uri = Uri.tryParse(url);
     if (uri != null && await canLaunchUrl(uri)) {
-      launchUrl(uri, mode: LaunchMode.externalApplication);
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      // ignore launch errors silently or show a snackbar
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not open attachment')),
+        );
+      }
     }
   }
 
@@ -141,9 +174,13 @@ class _LeaveRequestsPageState extends State<LeaveRequestsPage> {
                             size: 40,
                           ),
                           const SizedBox(height: 8),
-                          Text(
-                            _error!,
-                            style: const TextStyle(color: Colors.red),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: Text(
+                              _error!,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(color: Colors.red),
+                            ),
                           ),
                           const SizedBox(height: 12),
                           ElevatedButton(
@@ -165,9 +202,9 @@ class _LeaveRequestsPageState extends State<LeaveRequestsPage> {
                       itemCount: leaveList.length,
                       itemBuilder: (context, index) {
                         final item = leaveList[index];
-                        final leave = item["leave"];
-                        final emp = item["employee"];
-                        final job = item["job"];
+                        final leave = item["leave"] ?? {};
+                        final emp = item["employee"] ?? {};
+                        final job = item["job"] ?? {};
 
                         return Container(
                           margin: const EdgeInsets.only(bottom: 12),
@@ -214,7 +251,7 @@ class _LeaveRequestsPageState extends State<LeaveRequestsPage> {
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
-                                          "${job["job_title"]}",
+                                          "${job["job_title"] ?? ''}",
                                           style: const TextStyle(
                                             fontSize: 13,
                                             color: Colors.black54,
@@ -231,7 +268,7 @@ class _LeaveRequestsPageState extends State<LeaveRequestsPage> {
                                       ],
                                     ),
                                   ),
-                                  statusBadge(leave["approval"]),
+                                  statusBadge((leave["approval"] ?? 2) as int),
                                 ],
                               ),
 
@@ -239,7 +276,7 @@ class _LeaveRequestsPageState extends State<LeaveRequestsPage> {
 
                               // Leave Dates
                               Text(
-                                "${leave["start_date"]} → ${leave["end_date"]}",
+                                "${leave["start_date"] ?? ''} → ${leave["end_date"] ?? ''}",
                                 style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
@@ -250,7 +287,7 @@ class _LeaveRequestsPageState extends State<LeaveRequestsPage> {
 
                               // Reason
                               Text(
-                                leave["reason"],
+                                leave["reason"] ?? "",
                                 style: const TextStyle(
                                   fontSize: 13.5,
                                   color: Colors.black87,
@@ -260,8 +297,9 @@ class _LeaveRequestsPageState extends State<LeaveRequestsPage> {
                               const SizedBox(height: 10),
 
                               // Attachment button
-                              // Attachment button
-                              if (leave["attachment"] != null)
+                              if ((leave["attachment"] ?? "")
+                                  .toString()
+                                  .isNotEmpty)
                                 TextButton.icon(
                                   onPressed: () =>
                                       _openUrl(leave["attachment"]),
@@ -273,13 +311,15 @@ class _LeaveRequestsPageState extends State<LeaveRequestsPage> {
                                 ),
 
                               // Accept / Reject buttons (only for pending)
-                              if (leave["approval"] == 2) ...[
+                              if ((leave["approval"] ?? 2) == 2) ...[
                                 const SizedBox(height: 10),
                                 Row(
                                   children: [
                                     Expanded(
                                       child: ElevatedButton(
-                                        onPressed: () {},
+                                        onPressed: () {
+                                          // wire up accept action
+                                        },
                                         style: ElevatedButton.styleFrom(
                                           backgroundColor: Colors.green,
                                           padding: const EdgeInsets.symmetric(
@@ -303,7 +343,9 @@ class _LeaveRequestsPageState extends State<LeaveRequestsPage> {
                                     const SizedBox(width: 10),
                                     Expanded(
                                       child: OutlinedButton(
-                                        onPressed: () {},
+                                        onPressed: () {
+                                          // wire up reject action
+                                        },
                                         style: OutlinedButton.styleFrom(
                                           side: const BorderSide(
                                             color: Colors.red,

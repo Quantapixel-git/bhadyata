@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:jobshub/common/utils/fetch_user_profile.dart';
-import 'package:jobshub/users/views/main_pages/all_type_jobs/all_type_jobs_screen.dart';
-import 'package:jobshub/users/views/main_pages/home_screen.dart';
-import 'package:jobshub/users/views/main_pages/search/search_screen.dart';
-import 'package:jobshub/users/views/main_pages/reward_screen.dart';
+import 'package:jobshub/users/views/main_pages/assigned_job/assigned_jobs_page.dart';
+import 'package:jobshub/users/views/main_pages/jobs/all_type_jobs_screen.dart';
+import 'package:jobshub/users/views/main_pages/home/home_screen.dart';
+import 'package:jobshub/users/views/main_pages/search/search_bottom_nav_page.dart';
+import 'package:jobshub/users/views/main_pages/reward/reward_screen.dart';
 import 'package:jobshub/common/utils/app_color.dart';
 import 'package:jobshub/users/views/bottomnav_sidebar/user_sidedrawer.dart'; // contains AppDrawerWrapper
 
@@ -15,12 +16,7 @@ class MainBottomNav extends StatefulWidget {
 }
 
 class _MainBottomNavState extends State<MainBottomNav> {
-  @override
-  void initState() {
-    super.initState();
-    fetchAndStoreUserProfile(); // <--- IMPORTANT
-  }
-
+  bool _profileLoading = true; // <-- wait flag
   int _currentIndex = 0;
 
   final List<Widget> _pages = [
@@ -28,21 +24,62 @@ class _MainBottomNavState extends State<MainBottomNav> {
     SearchPage(),
     AllJobsPage(),
     RewardScreen(),
+    const AssignedJobsPage(), // new page
   ];
 
-  final List<String> _titles = ["Home", "Search", "Jobs", "Rewards"];
+  final List<String> _titles = [
+    "Home",
+    "Search",
+    "Jobs",
+    "Rewards",
+    "Assigned",
+  ];
   final List<IconData> _icons = [
     Icons.home,
     Icons.search,
     Icons.work_outline,
     Icons.card_giftcard_outlined,
+    Icons.assignment_turned_in, // assigned icon
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfileBeforeShow();
+  }
+
+  Future<void> _loadProfileBeforeShow() async {
+    setState(() => _profileLoading = true);
+    try {
+      final ok = await fetchAndStoreUserProfile();
+      if (!mounted) return;
+      setState(() => _profileLoading = false);
+      if (!ok) {
+        debugPrint('MainBottomNav: profile fetch returned false');
+      }
+    } catch (e, st) {
+      debugPrint('MainBottomNav: error fetching profile: $e\n$st');
+      if (!mounted) return;
+      setState(() => _profileLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return AppDrawerWrapper(
       child: LayoutBuilder(
         builder: (context, constraints) {
+          // while profile is loading, show a centered loader (inside drawer wrapper)
+          if (_profileLoading) {
+            return const Center(
+              child: SizedBox(
+                width: 120,
+                height: 120,
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            );
+          }
+
           final bool isWeb = constraints.maxWidth > 800;
 
           if (isWeb) {

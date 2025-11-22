@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jobshub/common/utils/app_color.dart';
+import 'package:jobshub/hr/views/job_applicants/salary_job_applicants.dart';
 import 'package:jobshub/hr/views/sidebar_dashboard/hr_sidebar.dart';
 
 class HrSalaryBasedJobApplicantsPage extends StatefulWidget {
@@ -18,8 +19,6 @@ class _HrSalaryBasedJobApplicantsPageState
   String? _error;
   List<Map<String, dynamic>> _jobs = [];
 
-  // 👉 Update this to your actual endpoint for {{bhadyata}}oneTimeJobsWithApplicants
-  // Example based on your existing pattern:
   final String apiUrl =
       'https://dialfirst.in/quantapixel/badhyata/api/salaryBasedjobsWithApplicants';
 
@@ -43,11 +42,16 @@ class _HrSalaryBasedJobApplicantsPageState
       );
 
       if (res.statusCode == 200) {
-        final json = jsonDecode(res.body) as Map<String, dynamic>;
-        final List data = (json['data'] as List?) ?? [];
-        setState(() {
-          _jobs = data.cast<Map<String, dynamic>>();
-        });
+        final jsonBody = jsonDecode(res.body) as Map<String, dynamic>;
+        final List data = (jsonBody['data'] as List?) ?? [];
+        // ensure each element is Map<String, dynamic>
+        _jobs = data.map<Map<String, dynamic>>((e) {
+          if (e is Map) {
+            return Map<String, dynamic>.from(e as Map);
+          }
+          return <String, dynamic>{};
+        }).toList();
+        if (mounted) setState(() {});
       } else {
         setState(() => _error = "Error ${res.statusCode}");
       }
@@ -67,10 +71,11 @@ class _HrSalaryBasedJobApplicantsPageState
   String _formatDate(dynamic raw) {
     if (raw == null) return '—';
     try {
-      final dt = DateTime.parse(raw.toString());
+      final dt = DateTime.parse(raw.toString()).toLocal();
       return "${dt.day.toString().padLeft(2, '0')} ${_month(dt.month)} ${dt.year}";
     } catch (_) {
-      return raw.toString();
+      final s = raw.toString();
+      return s.isEmpty ? '—' : s;
     }
   }
 
@@ -89,7 +94,8 @@ class _HrSalaryBasedJobApplicantsPageState
       "Nov",
       "Dec",
     ];
-    return months[(m.clamp(1, 12)) - 1];
+    final idx = (m.clamp(1, 12)) - 1;
+    return months[idx];
   }
 
   Widget _countPill(int count) => Container(
@@ -108,6 +114,16 @@ class _HrSalaryBasedJobApplicantsPageState
       ),
     ),
   );
+
+  /// Robust job id extractor: supports common keys like `id`, `job_id`, `jobId`.
+  int _extractJobId(Map<String, dynamic> job) {
+    final raw =
+        job['id'] ?? job['job_id'] ?? job['jobId'] ?? job['jobId']?.toString();
+    if (raw == null) return 0;
+    if (raw is int) return raw;
+    final parsed = int.tryParse(raw.toString());
+    return parsed ?? 0;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -177,14 +193,53 @@ class _HrSalaryBasedJobApplicantsPageState
                               final title = _safe(j['title']);
                               final category = _safe(j['category']);
                               final location = _safe(j['location']);
-                              final payment = _safe(j['payment_amount']);
-                              final paymentType = _safe(j['payment_type']);
-                              final jobDate = _formatDate(j['job_date']);
+
+                              // Payment: prefer payment_amount; fallback to salary_min/salary_max if present
+                              String paymentDisplay() {
+                                final pAmount = j['payment_amount']?.toString();
+                                if (pAmount != null &&
+                                    pAmount.trim().isNotEmpty) {
+                                  return "₹${pAmount.trim()}";
+                                }
+                                final sMin = j['salary_min']?.toString();
+                                final sMax = j['salary_max']?.toString();
+                                if ((sMin?.isNotEmpty ?? false) ||
+                                    (sMax?.isNotEmpty ?? false)) {
+                                  final min = sMin?.isNotEmpty == true
+                                      ? sMin
+                                      : '-';
+                                  final max = sMax?.isNotEmpty == true
+                                      ? sMax
+                                      : '-';
+                                  return "₹$min - ₹$max";
+                                }
+                                return '—';
+                              }
+
+                              final payment = paymentDisplay();
+
+                              // Job date: try job_date else created_at
+                              final jobDate = j['job_date'] != null
+                                  ? _formatDate(j['job_date'])
+                                  : _formatDate(j['created_at']);
+
                               final startTime = _safe(j['start_time']);
                               final endTime = _safe(j['end_time']);
-                              final count =
-                                  int.tryParse(_safe(j['applicants_count'])) ??
-                                  0;
+
+                              // applicants_count may be int or string — normalize to int
+                              int applicantsCount = 0;
+                              final rawCount = j['applicants_count'];
+                              if (rawCount is int) {
+                                applicantsCount = rawCount;
+                              } else if (rawCount is String) {
+                                applicantsCount = int.tryParse(rawCount) ?? 0;
+                              } else if (rawCount != null) {
+                                applicantsCount =
+                                    int.tryParse(rawCount.toString()) ?? 0;
+                              }
+
+                              // Extract job id safely
+                              final int jobId = _extractJobId(j);
 
                               return Container(
                                 margin: const EdgeInsets.only(bottom: 14),
@@ -221,20 +276,17 @@ class _HrSalaryBasedJobApplicantsPageState
                                         CrossAxisAlignment.start,
                                     children: [
                                       const SizedBox(height: 4),
-                                      Text(
-                                        "$category • ₹$payment ($paymentType)",
-                                      ),
+                                      Text("$category • $payment"),
                                       const SizedBox(height: 2),
                                       Text("Location: $location"),
                                       const SizedBox(height: 2),
                                       Text(
-                                        "Job Date: $jobDate • $startTime – $endTime",
+                                        "Created Date: $jobDate ${startTime != '—' ? '• $startTime' : ''}${endTime != '—' ? ' – $endTime' : ''}",
                                       ),
                                       const SizedBox(height: 8),
-                                      _countPill(count),
+                                      _countPill(applicantsCount),
                                     ],
                                   ),
-                                  // 👉 trailing button with placeholder action
                                   trailing: IconButton(
                                     tooltip: "View applicants",
                                     icon: const Icon(
@@ -242,17 +294,31 @@ class _HrSalaryBasedJobApplicantsPageState
                                       color: Colors.black87,
                                     ),
                                     onPressed: () {
-                                      // Placeholder: replace with navigation to applicants list
-                                      // ScaffoldMessenger.of(
-                                      //   context,
-                                      // ).showSnackBar(
-                                      //   const SnackBar(
-                                      //     behavior: SnackBarBehavior.floating,
-                                      //     content: Text(
-                                      //       'TODO: Navigate to applicants list for this job',
-                                      //     ),
-                                      //   ),
-                                      // );
+                                      if (jobId == 0) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Job id not available for this entry.',
+                                            ),
+                                            behavior: SnackBarBehavior.floating,
+                                          ),
+                                        );
+                                        return;
+                                      }
+
+                                      // Navigate to the applicants page with correct id and title
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) =>
+                                              SalaryBasedApplicantsPage(
+                                                jobId: jobId,
+                                                jobTitle: title,
+                                              ),
+                                        ),
+                                      );
                                     },
                                   ),
                                 ),

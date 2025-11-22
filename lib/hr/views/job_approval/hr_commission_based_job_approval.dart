@@ -2,10 +2,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jobshub/common/utils/app_color.dart';
+import 'package:jobshub/hr/views/job_approval/commission_job_detail.dart';
 import 'package:jobshub/hr/views/sidebar_dashboard/hr_sidebar.dart';
-
-// TODO: Replace with your actual detail page import
-// import 'package:jobshub/hr/views/commission/hr_commission_job_detail.dart';
 
 class HrCommissionBasedJobsApproval extends StatelessWidget {
   const HrCommissionBasedJobsApproval({super.key});
@@ -82,6 +80,10 @@ class _JobsListState extends State<JobsList> {
       'https://dialfirst.in/quantapixel/badhyata/api/getApprovedCommissionJobs';
   final String apiUrlRejected =
       'https://dialfirst.in/quantapixel/badhyata/api/getRejectedCommissionJobs';
+
+  // VIEW API so eye button works in all tabs
+  final String apiUrlView =
+      'https://dialfirst.in/quantapixel/badhyata/api/CommissionBasedJobView';
 
   @override
   void initState() {
@@ -295,6 +297,7 @@ class _JobsListState extends State<JobsList> {
                 ],
               ),
 
+              // Eye button present in all tabs; for pending we still keep approve/reject UI
               trailing: widget.status == "Pending"
                   ? (_processing.contains(jobId)
                         ? const SizedBox(
@@ -325,6 +328,16 @@ class _JobsListState extends State<JobsList> {
                                     ? null
                                     : () => _updateApproval(jobId, 3),
                               ),
+                              IconButton(
+                                tooltip: "View",
+                                icon: const Icon(
+                                  Icons.visibility,
+                                  color: AppColors.primary,
+                                ),
+                                onPressed: jobId == -1
+                                    ? null
+                                    : () => _openJobDetail(context, jobId),
+                              ),
                             ],
                           ))
                   : IconButton(
@@ -332,13 +345,23 @@ class _JobsListState extends State<JobsList> {
                         Icons.visibility,
                         color: AppColors.primary,
                       ),
-                      onPressed: () {
-                        // navigate to detail page here if needed
-                      },
+                      onPressed: jobId == -1
+                          ? null
+                          : () => _openJobDetail(context, jobId),
                     ),
             ),
           );
         },
+      ),
+    );
+  }
+
+  void _openJobDetail(BuildContext context, int jobId) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) =>
+            CommissionJobDetailPage(jobId: jobId, viewUrl: apiUrlView),
       ),
     );
   }

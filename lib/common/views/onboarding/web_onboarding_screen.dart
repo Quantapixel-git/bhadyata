@@ -18,8 +18,8 @@ import 'package:jobshub/employer/views/auth/employer_login.dart';
 import 'package:jobshub/hr/views/auth/hr_login_screen.dart';
 import 'package:jobshub/users/views/auth/login_screen.dart';
 
-class OnboardingPage extends StatelessWidget {
-  const OnboardingPage({super.key});
+class WebOnboardingPage extends StatelessWidget {
+  const WebOnboardingPage({super.key});
 
   @override
   Widget build(BuildContext context) {

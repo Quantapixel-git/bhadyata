@@ -267,6 +267,7 @@ class _UserEditProfilePageState extends State<UserEditProfilePage> {
           return Scaffold(
              backgroundColor: AppColors.white,
             appBar: AppBar(
+              
               automaticallyImplyLeading: !isWeb,
               backgroundColor: AppColors.primary,
               elevation: 2,

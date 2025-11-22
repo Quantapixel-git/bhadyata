@@ -2,7 +2,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jobshub/common/utils/app_color.dart';
-// import 'package:jobshub/hr/views/job_applicants/one_time_job_applicant.dart';
+import 'package:jobshub/hr/views/job_applicants/commissionbased_applicants.dart';
+// <-- import your Commission applicants page (adjust path if needed)
+// import 'package:jobshub/hr/views/job_applicants/commission_applicants_page.dart';
 import 'package:jobshub/hr/views/sidebar_dashboard/hr_sidebar.dart';
 
 class HrCommissionBasedJobApplicants extends StatefulWidget {
@@ -19,8 +21,7 @@ class _HrCommissionBasedJobApplicantsState
   String? _error;
   List<Map<String, dynamic>> _jobs = [];
 
-  // 👉 Update this to your actual endpoint for {{bhadyata}}oneTimeJobsWithApplicants
-  // Example based on your existing pattern:
+  // endpoint for commission jobs with applicants
   final String apiUrl =
       'https://dialfirst.in/quantapixel/badhyata/api/commissionBasedJobsWithApplicants';
 
@@ -28,6 +29,40 @@ class _HrCommissionBasedJobApplicantsState
   void initState() {
     super.initState();
     _fetchJobs();
+  }
+
+  /// Robust job id extractor: supports common keys and int/string types.
+  /// Checks: `job_id`, `jobId`, `id`, and falls back to parsing any numeric-like value.
+  int _extractJobIdFromMap(Map<String, dynamic> item) {
+    if (item == null) return 0;
+
+    // common keys
+    final candidates = [
+      item['job_id'],
+      item['jobId'],
+      item['id'],
+      item['jobID'],
+      item['Id'],
+    ];
+
+    for (final raw in candidates) {
+      if (raw == null) continue;
+      if (raw is int) return raw;
+      final s = raw.toString().trim();
+      if (s.isEmpty) continue;
+      final parsed = int.tryParse(s);
+      if (parsed != null) return parsed;
+    }
+
+    // final attempt: search the map for a numeric-looking value (rare)
+    for (final v in item.values) {
+      if (v == null) continue;
+      final s = v.toString().trim();
+      final p = int.tryParse(s);
+      if (p != null) return p;
+    }
+
+    return 0;
   }
 
   Future<void> _fetchJobs() async {
@@ -187,6 +222,9 @@ class _HrCommissionBasedJobApplicantsState
                                   int.tryParse(_safe(j['applicants_count'])) ??
                                   0;
 
+                              // pull job_id (ensure it exists and is int)
+                              final int jobId = _extractJobIdFromMap(j);
+
                               return Container(
                                 margin: const EdgeInsets.only(bottom: 14),
                                 decoration: BoxDecoration(
@@ -235,7 +273,7 @@ class _HrCommissionBasedJobApplicantsState
                                       _countPill(count),
                                     ],
                                   ),
-                                  // 👉 trailing button with placeholder action
+                                  // Navigate to Commission applicants page (same pattern as one-time)
                                   trailing: IconButton(
                                     tooltip: "View applicants",
                                     icon: const Icon(
@@ -243,14 +281,29 @@ class _HrCommissionBasedJobApplicantsState
                                       color: Colors.black87,
                                     ),
                                     onPressed: () {
-                                      // Placeholder: replace with navigation to applicants list
-                                      // Navigator.push(
-                                      //   context,
-                                      //   MaterialPageRoute(
-                                      //     builder: (context) =>
-                                      //         OneTimeApplicantsPage(jobId: 2),
-                                      //   ),
-                                      // );
+                                      if (jobId <= 0) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Invalid job id for this item',
+                                            ),
+                                          ),
+                                        );
+                                        return;
+                                      }
+
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              CommissionApplicantsPage(
+                                                jobId: jobId,
+                                                jobTitle: title, // optional
+                                              ),
+                                        ),
+                                      );
                                     },
                                   ),
                                 ),

@@ -9,17 +9,17 @@ import 'package:jobshub/users/views/info_collector/user_complete_profile.dart';
 import 'package:jobshub/common/utils/app_color.dart';
 import 'package:http/http.dart' as http;
 
-class OtpScreen extends StatefulWidget {
+class UserOtpScreen extends StatefulWidget {
   final String mobile;
   final String? otp; // 👈 optional dev OTP display
 
-  const OtpScreen({super.key, required this.mobile, this.otp});
+  const UserOtpScreen({super.key, required this.mobile, this.otp});
 
   @override
-  State<OtpScreen> createState() => _OtpScreenState();
+  State<UserOtpScreen> createState() => _UserOtpScreenState();
 }
 
-class _OtpScreenState extends State<OtpScreen> {
+class _UserOtpScreenState extends State<UserOtpScreen> {
   final List<TextEditingController> _controllers = List.generate(
     6,
     (_) => TextEditingController(),
@@ -135,7 +135,6 @@ class _OtpScreenState extends State<OtpScreen> {
         // 🚀 Navigate based on user type
         if (isNewUser) {
           // ✅ Save mobile also to SharedPreferences for later use
-          // await prefs.setString('mobile', widget.mobile);
           await SessionManager.setValue('mobile', widget.mobile);
 
           Navigator.pushReplacement(
@@ -146,12 +145,51 @@ class _OtpScreenState extends State<OtpScreen> {
             ),
           );
         } else {
-         
-          await fetchAndStoreUserProfile();
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const MainBottomNav()),
+          // show a loader while we fetch profile
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (_) => const Center(child: CircularProgressIndicator()),
           );
+
+          bool fetchedOk = false;
+          try {
+            // attempt to fetch and store profile (await it)
+            await fetchAndStoreUserProfile();
+
+            // verify at least one reliable field exists in session (e.g. first_name or user_id)
+            final storedFirst =
+                await SessionManager.getValue('first_name') ?? '';
+            final storedUserId = await SessionManager.getValue('user_id') ?? '';
+
+            if (storedUserId.toString().isNotEmpty ||
+                storedFirst.toString().isNotEmpty) {
+              fetchedOk = true;
+            } else {
+              fetchedOk = false;
+            }
+          } catch (e) {
+            fetchedOk = false;
+            debugPrint('Error while fetching profile after OTP: $e');
+          } finally {
+            // close loader
+            if (Navigator.canPop(context)) Navigator.pop(context);
+          }
+
+          if (fetchedOk) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const MainBottomNav()),
+            );
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Could not fetch profile. Please try again.'),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+            // optionally: remain on OTP screen so user can retry or go back
+          }
         }
       } else {
         // ❌ Invalid or expired OTP
@@ -184,11 +222,111 @@ class _OtpScreenState extends State<OtpScreen> {
     super.dispose();
   }
 
+  /// Responsive OTP fields:
+  /// - On mobile: try to fit all 6 boxes on a single line by calculating boxWidth.
+  /// - If boxWidth would be too small (< minBoxWidth) then fallback to a scrollable row.
+  Widget _buildOtpFields(double totalAvailableWidth, bool isWeb) {
+    // Visual constants
+    const double horizontalPadding =
+        70; // matches surrounding horizontal padding (30 left + 30 right)
+    const double spacing = 6; // space between boxes
+    const double maxBoxWidth =
+        40; // desired max width for a box on wide screens
+    const double minBoxWidth =
+        40; // minimum acceptable width before we fallback to scroll
+
+    // total spacing between boxes = spacing * (n - 1)
+    final totalSpacing = spacing * (6 - 1);
+
+    // compute available width for boxes (subtract typical paddings)
+    // totalAvailableWidth typically is MediaQuery.of(context).size.width
+    final availableForBoxes =
+        totalAvailableWidth - horizontalPadding - totalSpacing;
+
+    // computed box width
+    final computedBoxWidth = (availableForBoxes / 6).clamp(0.0, maxBoxWidth);
+
+    // if computed width is too small, fallback to horizontal scroll; otherwise layout single line
+    final shouldScroll = computedBoxWidth < minBoxWidth;
+
+    Widget buildField(int index, double boxWidth) {
+      return SizedBox(
+        width: boxWidth,
+        child: TextField(
+          controller: _controllers[index],
+          onChanged: (value) {
+            // only accept digits — trim to single char
+            if (value.length > 1) {
+              final digit = value.replaceAll(RegExp(r'[^0-9]'), '');
+              _controllers[index].text = digit.isNotEmpty ? digit[0] : '';
+            }
+            if (value.isNotEmpty && index < 5) {
+              FocusScope.of(context).nextFocus();
+            } else if (value.isEmpty && index > 0) {
+              FocusScope.of(context).previousFocus();
+            }
+            setState(() {}); // to update any visual state if needed
+          },
+          maxLength: 1,
+          textAlign: TextAlign.center,
+          keyboardType: TextInputType.number,
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+          decoration: InputDecoration(
+            counterText: "",
+            filled: true,
+            fillColor: Colors.grey[100],
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderSide: const BorderSide(
+                color: AppColors.primary,
+                width: 1.5,
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (!shouldScroll) {
+      // Single-line, non-scrollable row with computed widths
+      final boxWidth = computedBoxWidth;
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: List.generate(6, (i) {
+          return Padding(
+            padding: EdgeInsets.only(right: i == 5 ? 0 : spacing),
+            child: buildField(i, boxWidth),
+          );
+        }),
+      );
+    } else {
+      // Fallback: horizontally scrollable row (only when screen is tiny)
+      final fallbackBoxWidth = minBoxWidth;
+      return SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: Row(
+          children: List.generate(6, (i) {
+            return Padding(
+              padding: EdgeInsets.only(right: i == 5 ? 0 : spacing),
+              child: buildField(i, fallbackBoxWidth),
+            );
+          }),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         bool isWeb = constraints.maxWidth > 800;
+        final screenWidth = MediaQuery.of(context).size.width;
 
         Widget otpContent = Column(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -225,50 +363,8 @@ class _OtpScreenState extends State<OtpScreen> {
             ),
             const SizedBox(height: 35),
 
-            // 🔹 OTP Input Fields
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              alignment: WrapAlignment.center,
-              children: List.generate(6, (index) {
-                return SizedBox(
-                  width: isWeb ? 60 : 50,
-                  child: TextField(
-                    controller: _controllers[index],
-                    onChanged: (value) {
-                      if (value.isNotEmpty && index < 5) {
-                        FocusScope.of(context).nextFocus();
-                      } else if (value.isEmpty && index > 0) {
-                        FocusScope.of(context).previousFocus();
-                      }
-                    },
-                    maxLength: 1,
-                    textAlign: TextAlign.center,
-                    keyboardType: TextInputType.number,
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    decoration: InputDecoration(
-                      counterText: "",
-                      filled: true,
-                      fillColor: Colors.grey[100],
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(
-                          color: AppColors.primary,
-                          width: 1.5,
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                );
-              }),
-            ),
+            // 🔹 OTP Input Fields (single line on mobile without scrolling when possible)
+            _buildOtpFields(screenWidth, isWeb),
 
             if (_otpError != null)
               Padding(
@@ -327,11 +423,12 @@ class _OtpScreenState extends State<OtpScreen> {
         // 🔹 Responsive Layout
         return Scaffold(
           backgroundColor: AppColors.white,
-          appBar: AppBar(
-            backgroundColor: AppColors.white,
-            elevation: 0.5,
-            iconTheme: const IconThemeData(color: Colors.black87),
-          ),
+          // appBar: AppBar(
+          //   automaticallyImplyLeading: false,
+          //   backgroundColor: AppColors.white,
+          //   elevation: 0.5,
+          //   iconTheme: const IconThemeData(color: Colors.black87),
+          // ),
           body: Center(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 40),

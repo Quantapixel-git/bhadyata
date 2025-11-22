@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jobshub/common/utils/app_color.dart';
+import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/employer/views/sidebar_dashboard/employer_sidebar.dart';
 
 class PostProjectPage extends StatefulWidget {
@@ -35,43 +36,127 @@ class _PostProjectPageState extends State<PostProjectPage> {
 
   DateTime? _applicationDeadline;
 
+  // store server-side field errors (keyed by server field name)
+  final Map<String, String?> _fieldErrors = {};
+
+  @override
+  void dispose() {
+    // Dispose controllers
+    for (final c in [
+      _projectTitleController,
+      _projectDescriptionController,
+      _categoryController,
+      _budgetMinController,
+      _budgetMaxController,
+      _skillsRequiredController,
+      _experienceLevelController,
+      _durationController,
+      _locationController,
+      _deliverablesController,
+      _contactEmailController,
+      _contactPhoneController,
+      _vacanciesController,
+    ]) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
   Future<void> _postProject() async {
     FocusScope.of(context).unfocus(); // Hide keyboard
-    setState(() => isLoading = true);
+
+    // clear previous server-side errors
+    setState(() {
+      _fieldErrors.clear();
+      isLoading = true;
+    });
+
+    // basic client-side checks (title & description required)
+    if (_projectTitleController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter Project Title'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      setState(() => isLoading = false);
+      return;
+    }
+    if (_projectDescriptionController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter Project Description'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      setState(() => isLoading = false);
+      return;
+    }
 
     try {
+      // 🔑 get employer_id from session (instead of static id)
+      final userIdStr = await SessionManager.getValue('employer_id');
+      if (userIdStr == null || userIdStr.toString().isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Employer ID not found. Please log in again.'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        setState(() => isLoading = false);
+        return;
+      }
+      // parse to int if possible, otherwise keep as string (API may accept either)
+      final employerId = int.tryParse(userIdStr.toString()) ?? userIdStr;
+
       final url = Uri.parse(
         'https://dialfirst.in/quantapixel/badhyata/api/ProjectCreate',
       );
 
-      final body = {
-        "employer_id": 14,
+      // Build request body only with values present (avoid sending nulls)
+      final Map<String, dynamic> body = {
+        "employer_id": employerId,
         "title": _projectTitleController.text.trim(),
         "category": _categoryController.text.trim(),
         "description": _projectDescriptionController.text.trim(),
-        "budget_min": double.tryParse(_budgetMinController.text) ?? 0,
-        "budget_max": double.tryParse(_budgetMaxController.text) ?? 0,
-        "budget_type":
-            "Fixed", // You can modify based on additional input if needed
+        "budget_min": _budgetMinController.text.trim().isEmpty
+            ? null
+            : double.tryParse(_budgetMinController.text.trim()),
+        "budget_max": _budgetMaxController.text.trim().isEmpty
+            ? null
+            : double.tryParse(_budgetMaxController.text.trim()),
+        "budget_type": "Fixed",
         "skills_required": _skillsRequiredController.text.trim(),
         "experience_level": _experienceLevelController.text.trim(),
         "duration": _durationController.text.trim(),
         "location": _locationController.text.trim(),
         "deliverables": _deliverablesController.text.trim(),
-        "preferred_freelancer_type": "Individual", // Modify based on input
+        "preferred_freelancer_type": "Individual",
         "application_deadline": _applicationDeadline != null
-            ? "${_applicationDeadline!.year}-${_applicationDeadline!.month.toString().padLeft(2, '0')}-${_applicationDeadline!.day.toString().padLeft(2, '0')}"
+            ? "${_applicationDeadline!.year.toString().padLeft(4, '0')}-${_applicationDeadline!.month.toString().padLeft(2, '0')}-${_applicationDeadline!.day.toString().padLeft(2, '0')}"
             : null,
-        "openings": int.tryParse(_vacanciesController.text) ?? 1,
+        "openings": _vacanciesController.text.trim().isEmpty
+            ? null
+            : int.tryParse(_vacanciesController.text.trim()),
         "contact_email": _contactEmailController.text.trim(),
         "contact_phone": _contactPhoneController.text.trim(),
       };
 
+      // Remove nulls and empty strings (server doesn't receive unwanted fields)
+      final sanitizedBody = Map<String, dynamic>.from(body)
+        ..removeWhere((k, v) => v == null || (v is String && v.isEmpty));
+
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(body),
+        body: jsonEncode(sanitizedBody),
       );
+
+      // debug logs - remove in production if needed
+      // ignore: avoid_print
+      print('POST ${url.toString()} -> status ${response.statusCode}');
+      // ignore: avoid_print
+      print('response body: ${response.body}');
 
       final data = jsonDecode(response.body);
 
@@ -83,23 +168,53 @@ class _PostProjectPageState extends State<PostProjectPage> {
             behavior: SnackBarBehavior.floating,
           ),
         );
-        _formKey.currentState!.reset();
+        _formKey.currentState?.reset();
         _clearControllers();
       } else {
+        // Surface sensible server-side validation feedback if available
+        String message =
+            data['message']?.toString() ?? 'Failed to post project';
+
+        if (data['errors'] != null && data['errors'] is Map) {
+          final Map errorsMap = data['errors'] as Map;
+          errorsMap.forEach((key, value) {
+            if (value is List && value.isNotEmpty) {
+              _fieldErrors[key.toString()] = value[0].toString();
+            } else {
+              _fieldErrors[key.toString()] = value.toString();
+            }
+          });
+          final firstErr = _fieldErrors.values.firstWhere(
+            (e) => e != null && e.isNotEmpty,
+            orElse: () => null,
+          );
+          if (firstErr != null) message = firstErr!;
+        }
+
+        // Sometimes APIs return field messages in different keys:
+        if (data['data'] != null && data['data'] is Map) {
+          final Map maybeErrors = data['data'] as Map;
+          maybeErrors.forEach((k, v) {
+            if (v is String && v.isNotEmpty) {
+              _fieldErrors[k.toString()] = v;
+            }
+          });
+        }
+
+        if (_fieldErrors.isNotEmpty) {
+          setState(() {}); // re-render to show inline errors
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(data['message'] ?? 'Failed to post project'),
-            behavior: SnackBarBehavior.floating,
-            // backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
         );
       }
     } catch (e) {
+      // network / parse error
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text("Error: $e"),
           behavior: SnackBarBehavior.floating,
-          // backgroundColor: Colors.red,
         ),
       );
     } finally {
@@ -127,8 +242,130 @@ class _PostProjectPageState extends State<PostProjectPage> {
     }
     setState(() {
       _applicationDeadline = null;
+      _fieldErrors.clear();
     });
   }
+
+  Widget _buildTextField(
+    TextEditingController controller,
+    String label, {
+    TextInputType keyboardType = TextInputType.text,
+    int maxLines = 1,
+    String? fieldKey,
+    bool required = true,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: TextFormField(
+        controller: controller,
+        keyboardType: keyboardType,
+        maxLines: maxLines,
+        decoration: InputDecoration(
+          labelText: label,
+          filled: true,
+          fillColor: Colors.grey.shade50,
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+          errorText: fieldKey != null ? _fieldErrors[fieldKey] : null,
+        ),
+        validator: (val) {
+          if (!required) return null;
+          if (val == null || val.trim().isEmpty) return "Please enter $label";
+          if (fieldKey == 'contact_email') {
+            final email = val.trim();
+            final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
+            if (!emailRegex.hasMatch(email)) return 'Enter a valid email';
+          }
+          if (fieldKey == 'contact_phone') {
+            final phone = val.trim();
+            final phoneRegex = RegExp(r'^\d{7,15}$');
+            if (!phoneRegex.hasMatch(phone))
+              return 'Enter a valid phone number';
+          }
+          if (fieldKey == 'budget_min' || fieldKey == 'budget_max') {
+            if (val != null &&
+                val.trim().isNotEmpty &&
+                double.tryParse(val.trim()) == null) {
+              return 'Enter a valid number';
+            }
+          }
+          if (fieldKey == 'openings') {
+            if (val != null &&
+                val.trim().isNotEmpty &&
+                int.tryParse(val.trim()) == null) {
+              return 'Enter a valid integer';
+            }
+          }
+          return null;
+        },
+      ),
+    );
+  }
+
+  Widget _buildBudgetFields() {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildTextField(
+            _budgetMinController,
+            "Min Budget",
+            keyboardType: TextInputType.number,
+            fieldKey: 'budget_min',
+            required: false,
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: _buildTextField(
+            _budgetMaxController,
+            "Max Budget",
+            keyboardType: TextInputType.number,
+            fieldKey: 'budget_max',
+            required: false,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDatePicker(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: InputDecorator(
+            decoration: InputDecoration(
+              labelText: "Application Deadline",
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              errorText: _fieldErrors['application_deadline'],
+            ),
+            child: Text(
+              _applicationDeadline != null
+                  ? "${_applicationDeadline!.day.toString().padLeft(2, '0')}/${_applicationDeadline!.month.toString().padLeft(2, '0')}/${_applicationDeadline!.year}"
+                  : "Select Date",
+            ),
+          ),
+        ),
+        IconButton(
+          icon: const Icon(Icons.calendar_today),
+          onPressed: () async {
+            final picked = await showDatePicker(
+              context: context,
+              initialDate: DateTime.now(),
+              firstDate: DateTime.now(),
+              lastDate: DateTime.now().add(const Duration(days: 365 * 2)),
+            );
+            if (picked != null) {
+              setState(() => _applicationDeadline = picked);
+            }
+          },
+        ),
+      ],
+    );
+  }
+
+  String _formatDateForDisplay(DateTime d) =>
+      "${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}";
 
   @override
   Widget build(BuildContext context) {
@@ -174,49 +411,73 @@ class _PostProjectPageState extends State<PostProjectPage> {
                                     _buildTextField(
                                       _projectTitleController,
                                       "Project Title",
+                                      fieldKey: 'title',
+                                      required: true,
                                     ),
                                     _buildTextField(
                                       _categoryController,
                                       "Category",
+                                      fieldKey: 'category',
+                                      required: false,
                                     ),
                                     _buildTextField(
                                       _projectDescriptionController,
                                       "Project Description",
                                       maxLines: 4,
+                                      fieldKey: 'description',
+                                      required: true,
                                     ),
                                     _buildBudgetFields(),
                                     _buildTextField(
                                       _skillsRequiredController,
                                       "Skills Required",
+                                      fieldKey: 'skills_required',
+                                      required: false,
                                     ),
                                     _buildTextField(
                                       _experienceLevelController,
                                       "Experience Level",
+                                      fieldKey: 'experience_level',
+                                      required: false,
                                     ),
                                     _buildTextField(
                                       _durationController,
                                       "Duration",
+                                      fieldKey: 'duration',
+                                      required: false,
                                     ),
                                     _buildTextField(
                                       _locationController,
                                       "Location",
+                                      fieldKey: 'location',
+                                      required: false,
                                     ),
                                     _buildTextField(
                                       _deliverablesController,
                                       "Deliverables",
+                                      fieldKey: 'deliverables',
+                                      required: false,
                                     ),
                                     _buildTextField(
                                       _contactEmailController,
                                       "Contact Email",
+                                      keyboardType: TextInputType.emailAddress,
+                                      fieldKey: 'contact_email',
+                                      required: false,
                                     ),
                                     _buildTextField(
                                       _contactPhoneController,
                                       "Contact Phone",
+                                      keyboardType: TextInputType.phone,
+                                      fieldKey: 'contact_phone',
+                                      required: false,
                                     ),
                                     _buildTextField(
                                       _vacanciesController,
                                       "Number of Vacancies",
                                       keyboardType: TextInputType.number,
+                                      fieldKey: 'openings',
+                                      required: false,
                                     ),
                                     const SizedBox(height: 14),
                                     _buildDatePicker(context),
@@ -225,10 +486,13 @@ class _PostProjectPageState extends State<PostProjectPage> {
                                       onPressed: isLoading
                                           ? null
                                           : () {
-                                              if (_formKey.currentState!
-                                                  .validate()) {
-                                                _postProject();
-                                              }
+                                              // First run client-side validators
+                                              final ok =
+                                                  _formKey.currentState
+                                                      ?.validate() ??
+                                                  false;
+                                              if (!ok) return;
+                                              _postProject();
                                             },
                                       icon: const Icon(
                                         Icons.post_add,
@@ -294,88 +558,6 @@ class _PostProjectPageState extends State<PostProjectPage> {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildTextField(
-    TextEditingController controller,
-    String label, {
-    TextInputType keyboardType = TextInputType.text,
-    int maxLines = 1,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
-      child: TextFormField(
-        controller: controller,
-        keyboardType: keyboardType,
-        maxLines: maxLines,
-        decoration: InputDecoration(
-          labelText: label,
-          filled: true,
-          fillColor: Colors.grey.shade50,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-        ),
-        validator: (val) =>
-            val == null || val.isEmpty ? "Please enter $label" : null,
-      ),
-    );
-  }
-
-  Widget _buildBudgetFields() {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildTextField(
-            _budgetMinController,
-            "Min Budget",
-            keyboardType: TextInputType.number,
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: _buildTextField(
-            _budgetMaxController,
-            "Max Budget",
-            keyboardType: TextInputType.number,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDatePicker(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: InputDecorator(
-            decoration: InputDecoration(
-              labelText: "Application Deadline",
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            child: Text(
-              _applicationDeadline != null
-                  ? "${_applicationDeadline!.day}/${_applicationDeadline!.month}/${_applicationDeadline!.year}"
-                  : "Select Date",
-            ),
-          ),
-        ),
-        IconButton(
-          icon: const Icon(Icons.calendar_today),
-          onPressed: () async {
-            final picked = await showDatePicker(
-              context: context,
-              initialDate: DateTime.now(),
-              firstDate: DateTime.now(),
-              lastDate: DateTime.now().add(const Duration(days: 365)),
-            );
-            if (picked != null) {
-              setState(() => _applicationDeadline = picked);
-            }
-          },
-        ),
-      ],
     );
   }
 }

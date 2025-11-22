@@ -1,11 +1,16 @@
-// CategoryJobsPage with Indeed/WorkIndia style filters (client-side)
-import 'package:flutter/material.dart';
+// category_jobs_page.dart
+// ignore_for_file: use_build_context_synchronously, deprecated_member_use
+
 import 'dart:async';
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
 import 'package:jobshub/common/utils/app_color.dart';
-import 'package:jobshub/users/views/main_pages/search_placeholder.dart';
+import 'package:jobshub/common/utils/session_manager.dart';
+import 'package:jobshub/users/views/main_pages/search/job_detail_page.dart';
 
 const String kApiBase = 'https://dialfirst.in/quantapixel/badhyata/api/';
 
@@ -29,15 +34,13 @@ class _CategoryJobsPageState extends State<CategoryJobsPage> {
   String _keyword = '';
   String _sort = 'newest'; // newest, oldest, salary_high, salary_low
 
-  // advanced filters
-  String _approvalFilter =
-      '1'; // default: approved (you mentioned fetching approved)
+  // filters (kept same)
+  String _approvalFilter = '1';
   final Set<String> _selectedJobTypes = {};
   String _experienceFilter = 'any';
   String _locationFilter = '';
   RangeValues _salaryRange = const RangeValues(0, 100000);
 
-  // derived sets for filter controls
   final Set<String> _jobTypes = {};
   final Set<String> _experienceLevels = {};
 
@@ -45,11 +48,25 @@ class _CategoryJobsPageState extends State<CategoryJobsPage> {
   int _perPage = 10;
   int _page = 1;
 
+  // derived totals
+  int get _totalItems => _filteredItems.length;
+  int get _lastPage =>
+      _perPage > 0 ? ((_totalItems + _perPage - 1) ~/ _perPage) : 1;
+
+  // stored profile job type (read from SessionManager)
+  String _profileJobType = '';
+
+  // cached filtered (before slicing for pagination)
+  List<Map<String, dynamic>> _filteredItems = [];
+
+  // set of job ids currently being applied to (for per-item loading)
+  final Set<String> _applyingJobIds = {};
+
   @override
   void initState() {
     super.initState();
     _searchCtrl.addListener(_onSearchChanged);
-    _fetchJobsByCategory();
+    _loadAndFetch();
   }
 
   @override
@@ -71,6 +88,12 @@ class _CategoryJobsPageState extends State<CategoryJobsPage> {
     });
   }
 
+  Future<void> _loadAndFetch() async {
+    final stored = (await SessionManager.getValue('job_type')) ?? '';
+    setState(() => _profileJobType = stored.toString());
+    await _fetchJobsByCategory();
+  }
+
   Future<void> _refresh() async {
     await _fetchJobsByCategory();
   }
@@ -86,12 +109,40 @@ class _CategoryJobsPageState extends State<CategoryJobsPage> {
       _selectedJobTypes.clear();
       _experienceFilter = 'any';
       _locationFilter = '';
-
       _salaryRange = const RangeValues(0, 100000);
       _page = 1;
+      _filteredItems = [];
     });
 
-    final uri = Uri.parse('${kApiBase}salaryJobsByCategory');
+    final jtLower = _profileJobType.toLowerCase();
+
+    String endpoint;
+    if (jtLower.contains('commission')) {
+      endpoint = 'commissionJobsByCategory';
+    } else if (jtLower.contains('one') ||
+        jtLower.contains('one-time') ||
+        jtLower.contains('one time') ||
+        jtLower.contains('onetime')) {
+      endpoint = 'oneTimeJobsByCategory';
+    } else if (jtLower.contains('project') ||
+        jtLower.contains('projects') ||
+        jtLower.contains('freelance') ||
+        jtLower.contains('it')) {
+      endpoint = 'getProjectsByCategory';
+    } else {
+      endpoint = 'salaryJobsByCategory';
+    }
+
+    final uri = Uri.parse('$kApiBase$endpoint');
+
+    if (kDebugMode) {
+      print('🔁 CategoryJobs -> endpoint: $endpoint');
+      print('🔁 URL: $uri');
+      print(
+        '🔁 POST body (only category): ${jsonEncode({'category': widget.category})}',
+      );
+      print('🔁 Stored job_type: "$_profileJobType"');
+    }
 
     try {
       final res = await http.post(
@@ -103,9 +154,16 @@ class _CategoryJobsPageState extends State<CategoryJobsPage> {
         body: jsonEncode({'category': widget.category}),
       );
 
+      if (kDebugMode) {
+        print('⬅️ Status: ${res.statusCode}');
+        print('⬅️ Body: ${res.body}');
+      }
+
       if (res.statusCode >= 200 && res.statusCode < 300) {
         final jsonBody = jsonDecode(res.body) as Map<String, dynamic>;
-        if (jsonBody['success'] == true) {
+        final success =
+            (jsonBody['success'] == true) || (jsonBody['status'] == 1);
+        if (success) {
           final data = (jsonBody['data'] as List<dynamic>?) ?? [];
           final parsed = data.map<Map<String, dynamic>>((e) {
             if (e is Map<String, dynamic>) return e;
@@ -133,7 +191,6 @@ class _CategoryJobsPageState extends State<CategoryJobsPage> {
           if (minSalary == double.infinity) minSalary = 0.0;
           if (maxSalary == 0 && minSalary > 0) maxSalary = minSalary;
           if (maxSalary == 0 && minSalary == 0) {
-            // fallback range
             minSalary = 0;
             maxSalary = 100000;
           }
@@ -144,7 +201,7 @@ class _CategoryJobsPageState extends State<CategoryJobsPage> {
               minSalary,
               maxSalary == 0 ? minSalary : maxSalary,
             );
-            _visibleJobs = List.from(parsed);
+            _filteredItems = List.from(parsed);
           });
 
           _applyFilters();
@@ -158,10 +215,9 @@ class _CategoryJobsPageState extends State<CategoryJobsPage> {
           _error = 'Failed (${res.statusCode}). ${res.reasonPhrase ?? ''}';
         });
       }
-    } catch (e) {
-      setState(() {
-        _error = 'Error: $e';
-      });
+    } catch (e, st) {
+      if (kDebugMode) print('❌ fetch error: $e\n$st');
+      setState(() => _error = 'Error: $e');
     } finally {
       setState(() => _loading = false);
     }
@@ -170,7 +226,7 @@ class _CategoryJobsPageState extends State<CategoryJobsPage> {
   void _applyFilters() {
     List<Map<String, dynamic>> items = List.from(_jobs);
 
-    // approval (if you already fetch approved ones on server, this is mostly a no-op)
+    // approval
     if (_approvalFilter != 'all') {
       items = items
           .where((it) => it['approval']?.toString() == _approvalFilter)
@@ -215,7 +271,6 @@ class _CategoryJobsPageState extends State<CategoryJobsPage> {
       final b = double.tryParse((it['salary_max'] ?? '').toString()) ?? 0.0;
       final low = _salaryRange.start;
       final high = _salaryRange.end;
-      // treat missing as match
       if (a == 0 && b == 0) return true;
       final within =
           (a >= low && a <= high) ||
@@ -224,7 +279,7 @@ class _CategoryJobsPageState extends State<CategoryJobsPage> {
       return within;
     }).toList();
 
-    // keyword search (title, skills, location)
+    // keyword search
     final q = _keyword.trim().toLowerCase();
     if (q.isNotEmpty) {
       items = items.where((it) {
@@ -246,7 +301,6 @@ class _CategoryJobsPageState extends State<CategoryJobsPage> {
             DateTime(1970);
         return _sort == 'newest' ? db.compareTo(da) : da.compareTo(db);
       } else {
-        // salary sort
         final sa =
             (double.tryParse((a['salary_max'] ?? '').toString()) ??
             double.tryParse((a['salary_min'] ?? '').toString()) ??
@@ -259,30 +313,163 @@ class _CategoryJobsPageState extends State<CategoryJobsPage> {
       }
     });
 
+    // store filtered items and then slice for page
+    _filteredItems = items;
     final start = (_page - 1) * _perPage;
     final end = start + _perPage;
-    final paged = items.sublist(0, items.length < end ? items.length : end);
+    final paged = items.sublist(start, items.length < end ? items.length : end);
 
     setState(() {
       _visibleJobs = paged;
     });
   }
 
-  void _loadMore() {
+  void _setPage(int p) {
+    if (p < 1) p = 1;
+    if (p > _lastPage) p = _lastPage;
+    if (p == _page) return;
     setState(() {
-      _page++;
+      _page = p;
       _applyFilters();
     });
   }
 
+  void _openJobDetail(Map<String, String> job) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => JobDetailPage(job: job)),
+    );
+  }
+
+  /// -----------------------
+  /// APPLY LOGIC (uses profile job type from SessionManager)
+  /// -----------------------
+  Future<void> _applyForJob(Map<String, String> job) async {
+    // determine job id
+    final jobId = job['id'] ?? job['job_id'] ?? '';
+    if (jobId.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Job id missing')));
+      return;
+    }
+
+    // prevent double click
+    if (_applyingJobIds.contains(jobId)) return;
+
+    // read employee_id from session
+    final emp = await SessionManager.getValue('user_id') ?? '';
+    final employeeId = emp.toString();
+    if (employeeId.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Employee not logged in')));
+      return;
+    }
+
+    // choose endpoint based on stored profile job type
+    final jtLower = _profileJobType.toLowerCase();
+
+    String endpoint;
+    if (jtLower.contains('salary')) {
+      endpoint = 'applySalayBased';
+    } else if (jtLower.contains('commission')) {
+      endpoint = 'applyCommissionBased';
+    } else if (jtLower.contains('one') ||
+        jtLower.contains('one-time') ||
+        jtLower.contains('onetime') ||
+        jtLower.contains('one time')) {
+      // adapt if your backend endpoint name differs (e.g. applyOneTime)
+      endpoint = 'applyOneTimeBased';
+    } else if (jtLower.contains('project') ||
+        jtLower.contains('projects') ||
+        jtLower.contains('freelance')) {
+      endpoint = 'applyProject';
+    } else {
+      // Fallback: try to use job's own job_type field to decide
+
+      endpoint = 'applySalayBased';
+    }
+
+    final uri = Uri.parse('$kApiBase$endpoint');
+    final body = {
+      "job_id": jobId,
+      "employee_id": employeeId,
+      "remarks": "Available for the job.",
+    };
+
+    setState(() => _applyingJobIds.add(jobId));
+    if (kDebugMode) {
+      print(
+        '➡️ Applying to $jobId via $endpoint with body: ${jsonEncode(body)}',
+      );
+    }
+
+    try {
+      final res = await http.post(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode(body),
+      );
+
+      if (kDebugMode) {
+        print('⬅️ Apply status: ${res.statusCode}');
+        print('⬅️ Apply body: ${res.body}');
+      }
+
+      if (res.statusCode >= 200 && res.statusCode < 300) {
+        final jsonBody = jsonDecode(res.body) as Map<String, dynamic>;
+        final message = jsonBody['message']?.toString() ?? 'Response received';
+
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(message)));
+      } else {
+        String msg = 'Failed to apply (${res.statusCode})';
+        try {
+          final bodyJson = jsonDecode(res.body);
+          if (bodyJson is Map && bodyJson['message'] != null) {
+            msg = bodyJson['message'].toString();
+          }
+        } catch (_) {}
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(msg)));
+      }
+    } catch (e, st) {
+      if (kDebugMode) print('❌ apply error: $e\n$st');
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error applying: $e')));
+    } finally {
+      setState(() => _applyingJobIds.remove(jobId));
+    }
+  }
+
+  bool _isApplying(String jobId) => _applyingJobIds.contains(jobId);
+
   @override
   Widget build(BuildContext context) {
-    final bool isWide = MediaQuery.of(context).size.width > 900;
+    final width = MediaQuery.of(context).size.width;
+    final bool isMobile = width < 600;
+    final bool isTablet = width >= 600 && width < 1000;
+    final bool isDesktop = width >= 1000;
+
+    final sidePadding = isDesktop ? 56.0 : (isTablet ? 24.0 : 12.0);
+
+    final showingFrom = _totalItems == 0 ? 0 : ((_page - 1) * _perPage) + 1;
+    final showingTo = ((_page * _perPage) > _totalItems)
+        ? _totalItems
+        : (_page * _perPage);
 
     return Scaffold(
       appBar: AppBar(
+        iconTheme: const IconThemeData(color: Colors.white),
         backgroundColor: AppColors.primary,
-        automaticallyImplyLeading: false,
+        automaticallyImplyLeading: true,
         elevation: 2,
         title: Text(
           widget.category,
@@ -294,102 +481,63 @@ class _CategoryJobsPageState extends State<CategoryJobsPage> {
       ),
       backgroundColor: Colors.grey.shade100,
       body: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: isWide ? 28 : 12,
-          vertical: 12,
-        ),
+        padding: EdgeInsets.symmetric(horizontal: sidePadding, vertical: 12),
         child: Column(
           children: [
-            // Top quick filter row: keyword + active chips
-            Row(
-              children: [
-                Expanded(
-                  child: SizedBox(
-                    height: 48,
-                    child: TextField(
-                      readOnly: true,
-                      onTap: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => const SearchScreen(),
-                          ),
-                        );
-                      },
-                      decoration: InputDecoration(
-                        hintText: "Search jobs...",
-                        prefixIcon: const Icon(Icons.search),
-                        filled: true,
-                        fillColor: Colors.grey.shade100,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                // sort dropdown compact
-                Container(
-                  height: 48,
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: _sort,
-                      items: const [
-                        DropdownMenuItem(
-                          value: 'newest',
-                          child: Text('Newest'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'oldest',
-                          child: Text('Oldest'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'salary_high',
-                          child: Text('Salary: High → Low'),
-                        ),
-                        DropdownMenuItem(
-                          value: 'salary_low',
-                          child: Text('Salary: Low → High'),
-                        ),
-                      ],
-                      onChanged: (v) {
-                        if (v != null) {
-                          setState(() {
-                            _sort = v;
-                            _page = 1;
-                            _applyFilters();
-                          });
-                        }
-                      },
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-
-            // Body list
             Expanded(
               child: RefreshIndicator(
                 onRefresh: _refresh,
-                child: _buildBody(isWide),
+                child: _buildBodyResponsive(isMobile, isDesktop),
               ),
             ),
-            const SizedBox(height: 8),
+            if (_totalItems > 0)
+              Container(
+                padding: const EdgeInsets.only(top: 6, left: 8, right: 8),
+                color: Colors.transparent,
+                child: Row(
+                  children: [
+                    Text(
+                      'Showing $showingFrom - $showingTo of $_totalItems',
+                      style: const TextStyle(fontSize: 13),
+                    ),
+                    const Spacer(),
 
-            // Show load more if there could be more (client-side unknown total - we attempt)
-            if ((_jobs.length > _visibleJobs.length))
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _loadMore,
-                  child: const Text('Load more'),
+                    IconButton(
+                      tooltip: 'Previous',
+                      onPressed: (_page > 1 && !_loading)
+                          ? () => _setPage(_page - 1)
+                          : null,
+                      icon: const Icon(Icons.chevron_left),
+                    ),
+                    SizedBox(
+                      width: 36,
+                      child: TextFormField(
+                        initialValue: '$_page',
+                        textAlign: TextAlign.center,
+                        decoration: const InputDecoration(
+                          isDense: true,
+                          contentPadding: EdgeInsets.symmetric(
+                            vertical: 8,
+                            horizontal: 8,
+                          ),
+                          border: OutlineInputBorder(),
+                        ),
+                        keyboardType: TextInputType.number,
+                        onFieldSubmitted: (v) {
+                          final p = int.tryParse(v) ?? _page;
+                          _setPage(p.clamp(1, _lastPage));
+                        },
+                      ),
+                    ),
+                    Text(' / $_lastPage'),
+                    IconButton(
+                      tooltip: 'Next',
+                      onPressed: ((_page < _lastPage) && !_loading)
+                          ? () => _setPage(_page + 1)
+                          : null,
+                      icon: const Icon(Icons.chevron_right),
+                    ),
+                  ],
                 ),
               ),
           ],
@@ -398,10 +546,8 @@ class _CategoryJobsPageState extends State<CategoryJobsPage> {
     );
   }
 
-  Widget _buildBody(bool isWide) {
-    if (_loading) {
-      return const Center(child: CircularProgressIndicator());
-    }
+  Widget _buildBodyResponsive(bool isMobile, bool isDesktop) {
+    if (_loading) return const Center(child: CircularProgressIndicator());
     if (_error != null) {
       return Center(
         child: Column(
@@ -421,11 +567,41 @@ class _CategoryJobsPageState extends State<CategoryJobsPage> {
       );
     }
     if (_visibleJobs.isEmpty) {
-      return const Center(child: Text('No jobs match your filters.'));
+      return ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: const [
+          SizedBox(height: 120),
+          Center(child: Text('No jobs match your filters.')),
+        ],
+      );
     }
 
+    if (isDesktop) {
+      return GridView.builder(
+        padding: const EdgeInsets.only(bottom: 18, top: 6),
+        itemCount: _visibleJobs.length,
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          mainAxisSpacing: 12,
+          crossAxisSpacing: 12,
+          childAspectRatio: 3.2,
+        ),
+        itemBuilder: (context, idx) {
+          final j = _visibleJobs[idx];
+          final jobMap = j.map(
+            (key, value) => MapEntry(key.toString(), value?.toString() ?? ''),
+          );
+          return JobCard(
+            job: jobMap,
+            onTap: () => _openJobDetail(jobMap),
+            onApply: () => _applyForJob(jobMap),
+            isApplying: _isApplying(jobMap['id'] ?? jobMap['job_id'] ?? ''),
+          );
+        },
+      );
+    }
     return ListView.separated(
-      padding: const EdgeInsets.only(bottom: 18),
+      padding: const EdgeInsets.only(bottom: 18, top: 6),
       itemCount: _visibleJobs.length,
       separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
@@ -433,26 +609,30 @@ class _CategoryJobsPageState extends State<CategoryJobsPage> {
         final jobMap = j.map(
           (key, value) => MapEntry(key.toString(), value?.toString() ?? ''),
         );
-        return JobCard(job: jobMap, onTap: () => _openJobDetail(jobMap));
+        return JobCard(
+          job: jobMap,
+          onTap: () => _openJobDetail(jobMap),
+          onApply: () => _applyForJob(jobMap),
+          isApplying: _isApplying(jobMap['id'] ?? jobMap['job_id'] ?? ''),
+        );
       },
-    );
-  }
-
-  void _openJobDetail(Map<String, String> job) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => JobDetailPage(job: job)),
     );
   }
 }
 
-/// Job card and detail page (kept neat)
 class JobCard extends StatefulWidget {
   final Map<String, String> job;
   final VoidCallback onTap;
+  final VoidCallback onApply;
+  final bool isApplying;
 
-  JobCard({super.key, required Map<String, dynamic> job, required this.onTap})
-    : job = job.map((k, v) => MapEntry(k.toString(), v?.toString() ?? ''));
+  JobCard({
+    super.key,
+    required Map<String, dynamic> job,
+    required this.onTap,
+    required this.onApply,
+    this.isApplying = false,
+  }) : job = job.map((k, v) => MapEntry(k.toString(), v?.toString() ?? ''));
 
   @override
   State<JobCard> createState() => _JobCardState();
@@ -460,32 +640,6 @@ class JobCard extends StatefulWidget {
 
 class _JobCardState extends State<JobCard> {
   bool _hover = false;
-
-  Color _approvalColor(String s) {
-    switch (s) {
-      case '1':
-        return Colors.green.shade700;
-      case '2':
-        return Colors.orange.shade700;
-      case '3':
-        return Colors.red.shade600;
-      default:
-        return Colors.grey.shade600;
-    }
-  }
-
-  String _approvalLabel(String s) {
-    switch (s) {
-      case '1':
-        return 'Approved';
-      case '2':
-        return 'Pending';
-      case '3':
-        return 'Rejected';
-      default:
-        return 'Unknown';
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -498,7 +652,6 @@ class _JobCardState extends State<JobCard> {
     final experience = m['experience_required'] ?? '';
     final location = m['location'] ?? '';
     final openings = m['openings'] ?? '';
-    final approval = m['approval'] ?? '';
     final skillsRaw = m['skills'] ?? '';
 
     final salaryText = (salaryMin.isNotEmpty || salaryMax.isNotEmpty)
@@ -514,190 +667,311 @@ class _JobCardState extends State<JobCard> {
         .take(6)
         .toList();
 
-    final bool isWeb = MediaQuery.of(context).size.width > 900;
+    final width = MediaQuery.of(context).size.width;
+    final bool isWide = width > 900;
+    Widget card = LayoutBuilder(
+      builder: (context, constraints) {
+        final maxW = constraints.maxWidth;
+        final narrow = maxW < 520;
 
-    Widget card = Material(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
-      elevation: 3,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: widget.onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-          child: Row(
-            children: [
-              Container(
-                width: 68,
-                height: 68,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(
-                  Icons.work_outline,
-                  color: AppColors.primary,
-                  size: 34,
-                ),
+        Widget icon = Container(
+          width: narrow ? 56 : 68,
+          height: narrow ? 56 : 68,
+          decoration: BoxDecoration(
+            color: AppColors.primary.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(
+            Icons.work_outline,
+            color: AppColors.primary,
+            size: narrow ? 30 : 34,
+          ),
+        );
+
+        Widget content = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: narrow ? 15 : 16,
+                fontWeight: FontWeight.w800,
               ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            title,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: _approvalColor(approval).withOpacity(0.12),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: _approvalColor(approval).withOpacity(0.18),
-                            ),
-                          ),
-                          child: Text(
-                            _approvalLabel(approval),
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: _approvalColor(approval),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.location_on,
-                          size: 14,
-                          color: Colors.grey.shade600,
-                        ),
-                        const SizedBox(width: 6),
-                        Flexible(
-                          child: Text(
-                            location,
-                            style: TextStyle(color: Colors.grey.shade700),
-                          ),
-                        ),
-                        if (experience.isNotEmpty) ...[
-                          const SizedBox(width: 12),
-                          Icon(
-                            Icons.timeline,
-                            size: 14,
-                            color: Colors.grey.shade600,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            experience,
-                            style: TextStyle(color: Colors.grey.shade700),
-                          ),
-                        ],
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.monetization_on_outlined,
-                          size: 14,
-                          color: Colors.grey.shade600,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          salaryText,
-                          style: const TextStyle(fontWeight: FontWeight.w700),
-                        ),
-                        const SizedBox(width: 12),
-                        if (jobType.isNotEmpty) ...[
-                          Icon(
-                            Icons.work_outline,
-                            size: 14,
-                            color: Colors.grey.shade600,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            jobType,
-                            style: TextStyle(color: Colors.grey.shade700),
-                          ),
-                        ],
-                        const Spacer(),
-                        if (openings.isNotEmpty)
-                          Text(
-                            '$openings openings',
-                            style: TextStyle(color: Colors.grey.shade600),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 6,
-                      children: skills.map((s) => _skillChip(s)).toList(),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    _formatDate(
-                      widget.job['application_deadline'] ??
-                          widget.job['created_at'],
-                    ),
-                    style: TextStyle(color: Colors.grey.shade600),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(Icons.location_on, size: 14, color: Colors.grey.shade600),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    location,
+                    style: TextStyle(color: Colors.grey.shade700),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    width: 84,
-                    child: ElevatedButton(
-                      onPressed: widget.onTap,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
+                ),
+                if (experience.isNotEmpty) ...[
+                  const SizedBox(width: 10),
+                  Icon(Icons.timeline, size: 14, color: Colors.grey.shade600),
+                  const SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      experience,
+                      style: TextStyle(color: Colors.grey.shade700),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Icon(
+                  Icons.monetization_on_outlined,
+                  size: 14,
+                  color: Colors.grey.shade600,
+                ),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(
+                    salaryText,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                if (jobType.isNotEmpty) ...[
+                  Icon(
+                    Icons.work_outline,
+                    size: 14,
+                    color: Colors.grey.shade600,
+                  ),
+                  const SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      jobType,
+                      style: TextStyle(color: Colors.grey.shade700),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+                const SizedBox(width: 6),
+                const Text(" | "),
+                const SizedBox(width: 6),
+                if (openings.isNotEmpty)
+                  Flexible(
+                    child: Text(
+                      '$openings openings',
+                      style: TextStyle(color: Colors.grey.shade600),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              children: skills.map((s) => _skillChip(s)).toList(),
+            ),
+          ],
+        );
+
+        Widget actionsColumn() {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                _formatDate(
+                  widget.job['application_deadline'] ??
+                      widget.job['created_at'],
+                ),
+                style: TextStyle(color: Colors.grey.shade600),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: 84,
+                child: ElevatedButton(
+                  onPressed: () => _onViewPressed(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                  ),
+                  child: const Text('View', style: TextStyle(fontSize: 13, color: Colors.white)),
+                ),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: 84,
+                child: widget.isApplying
+                    ? const SizedBox(
+                        height: 36,
+                        child: Center(
+                          child: SizedBox(
+                            height: 18,
+                            width: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2.2),
+                          ),
+                        ),
+                      )
+                    : OutlinedButton(
+                        onPressed: () => _onApplyPressed(),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: AppColors.primary),
+                        ),
+                        child: const Text(
+                          'Apply',
+                          style: TextStyle(fontSize: 13, color: AppColors.primary),
+                        ),
                       ),
-                      child: const Text('View'),
+              ),
+            ],
+          );
+        }
+
+        Widget actionsRowForNarrow() {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                _formatDate(
+                  widget.job['application_deadline'] ??
+                      widget.job['created_at'],
+                ),
+                style: TextStyle(color: Colors.grey.shade600),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: SizedBox(
+                      height: 40,
+                      child: ElevatedButton(
+                        onPressed: () => _onViewPressed(),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                        ),
+                        child: const Text(
+                          'View',
+                          style: TextStyle(fontSize: 14, color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: SizedBox(
+                      height: 40,
+                      child: widget.isApplying
+                          ? const Center(
+                              child: SizedBox(
+                                height: 18,
+                                width: 18,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2.2,
+                                ),
+                              ),
+                            )
+                          : OutlinedButton(
+                              onPressed: () => _onApplyPressed(),
+                              style: OutlinedButton.styleFrom(
+                                side: BorderSide(color: AppColors.primary),
+                              ),
+                              child: const Text(
+                                'Apply',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                            ),
                     ),
                   ),
                 ],
               ),
             ],
+          );
+        }
+
+        Widget inner;
+        if (narrow) {
+          inner = Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  icon,
+                  const SizedBox(width: 12),
+                  Expanded(child: content),
+                ],
+              ),
+              const SizedBox(height: 12),
+              actionsRowForNarrow(),
+            ],
+          );
+        } else {
+          inner = Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              icon,
+              const SizedBox(width: 14),
+              Expanded(child: content),
+              const SizedBox(width: 12),
+              ConstrainedBox(
+                constraints: const BoxConstraints(minWidth: 80, maxWidth: 110),
+                child: actionsColumn(),
+              ),
+            ],
+          );
+        }
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+          child: Material(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            elevation: 3,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(12),
+              onTap: widget.onTap,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 14,
+                ),
+                child: inner,
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
 
-    if (isWeb) {
+    if (isWide) {
       return MouseRegion(
         onEnter: (_) => setState(() => _hover = true),
         onExit: (_) => setState(() => _hover = false),
-        cursor: SystemMouseCursors.click,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 140),
           transform: _hover
-              ? (Matrix4.identity()..translate(0, -6))
+              ? (Matrix4.identity()..translate(0, -3))
               : Matrix4.identity(),
           child: card,
         ),
       );
     }
     return card;
+  }
+
+  void _onApplyPressed() {
+    widget.onApply();
+  }
+
+  void _onViewPressed() {
+    widget.onTap();
   }
 
   Widget _skillChip(String label) {
@@ -716,279 +990,9 @@ class _JobCardState extends State<JobCard> {
     try {
       final dt = DateTime.parse(d);
       final fmt = DateFormat('dd MMM');
-      return '${fmt.format(dt)}';
+      return fmt.format(dt);
     } catch (_) {
       return d;
     }
-  }
-}
-
-class JobDetailPage extends StatelessWidget {
-  final Map<String, String> job;
-  const JobDetailPage({super.key, required this.job});
-
-  String _formatFullDate(String? d) {
-    if (d == null || d.isEmpty) return '-';
-    try {
-      final dt = DateTime.parse(d);
-      return DateFormat('EEE, dd MMM yyyy • hh:mm a').format(dt);
-    } catch (_) {
-      return d;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final title = job['title'] ?? 'Job';
-    final location = job['location'] ?? 'Location unavailable';
-    final salaryMin = job['salary_min'] ?? '';
-    final salaryMax = job['salary_max'] ?? '';
-    final salaryType = job['salary_type'] ?? '';
-    final salaryText = (salaryMin.isNotEmpty || salaryMax.isNotEmpty)
-        ? (salaryMin == salaryMax
-              ? '₹$salaryMin / $salaryType'
-              : '₹$salaryMin - ₹$salaryMax / $salaryType')
-        : 'Not specified';
-    final jobType = job['job_type'] ?? '';
-    final experience = job['experience_required'] ?? '';
-    final qualification = job['qualification'] ?? '';
-    final skills = (job['skills'] ?? '')
-        .split(',')
-        .map((s) => s.trim())
-        .where((s) => s.isNotEmpty)
-        .toList();
-    final deadline = job['application_deadline'];
-    final description = job['job_description'] ?? '-';
-    final responsibilities = job['responsibilities'] ?? '-';
-    final benefits = job['benefits'] ?? '-';
-    final contactEmail = job['contact_email'] ?? '';
-    final contactPhone = job['contact_phone'] ?? '';
-
-    final bool isWide = MediaQuery.of(context).size.width > 900;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(title, style: const TextStyle(color: Colors.white)),
-        backgroundColor: AppColors.primary,
-        centerTitle: false,
-      ),
-      backgroundColor: Colors.grey.shade100,
-      body: Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: isWide ? 1100 : double.infinity,
-          ),
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 18),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Card(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  elevation: 2,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 18,
-                      vertical: 16,
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 72,
-                          height: 72,
-                          decoration: BoxDecoration(
-                            color: AppColors.primary.withOpacity(0.08),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Icon(
-                            Icons.work_outline,
-                            color: AppColors.primary,
-                            size: 36,
-                          ),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                title,
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.location_on,
-                                    size: 14,
-                                    color: Colors.grey.shade600,
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    location,
-                                    style: TextStyle(
-                                      color: Colors.grey.shade700,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  if (jobType.isNotEmpty) ...[
-                                    Icon(
-                                      Icons.work_outline,
-                                      size: 14,
-                                      color: Colors.grey.shade600,
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      jobType,
-                                      style: TextStyle(
-                                        color: Colors.grey.shade700,
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              salaryText,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'Experience: $experience',
-                              style: TextStyle(color: Colors.grey.shade600),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                _sectionCard(
-                  title: 'Job Description',
-                  child: Text(description, style: const TextStyle(height: 1.6)),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _sectionCard(
-                        title: 'Responsibilities',
-                        child: Text(responsibilities),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _sectionCard(
-                        title: 'Benefits',
-                        child: Text(benefits),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                _sectionCard(
-                  title: 'Skills & Qualification',
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (qualification.isNotEmpty)
-                        Text('Qualification: $qualification'),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: skills
-                            .map((s) => Chip(label: Text(s)))
-                            .toList(),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-                _sectionCard(
-                  title: 'Meta',
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Application deadline: ${deadline != null ? _formatFullDate(deadline) : 'Not specified'}',
-                      ),
-                      const SizedBox(height: 6),
-                      if (contactEmail.isNotEmpty)
-                        Text('Contact: $contactEmail'),
-                      if (contactPhone.isNotEmpty) Text('Phone: $contactPhone'),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () =>
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Apply (demo)')),
-                            ),
-                        icon: const Icon(Icons.send),
-                        label: const Text('Apply Now'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    OutlinedButton.icon(
-                      onPressed: () =>
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Saved (demo)')),
-                          ),
-                      icon: const Icon(Icons.bookmark_border),
-                      label: const Text('Save'),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 30),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _sectionCard({required String title, required Widget child}) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 1,
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: const TextStyle(fontWeight: FontWeight.w800)),
-            const SizedBox(height: 8),
-            child,
-          ],
-        ),
-      ),
-    );
   }
 }

@@ -139,7 +139,7 @@ class SalaryDuePage extends StatelessWidget {
                                                 color: Colors.black54,
                                               ),
                                             ),
-                                            const SizedBox(height: 12),
+                                            const SizedBox(height: 22),
               
                                             // Duration
                                             Row(
@@ -151,7 +151,7 @@ class SalaryDuePage extends StatelessWidget {
                                                 ),
                                                 const SizedBox(width: 6),
                                                 Text(
-                                                  "${item["start_date"]} → ${item["end_date"]}",
+                                                  "${item["start_date"]} \n→ ${item["end_date"]}",
                                                   style: const TextStyle(
                                                     fontSize: 13.5,
                                                     color: Colors.black87,

@@ -85,6 +85,9 @@ class _JobsListState extends State<JobsList> {
   final String apiUrlView =
       'https://dialfirst.in/quantapixel/badhyata/api/SalaryBasedJobView';
 
+  // Local toggle state for Approved tab (UI-only for now)
+  final Set<int> _approvedToggles = {};
+
   @override
   void initState() {
     super.initState();
@@ -234,6 +237,68 @@ class _JobsListState extends State<JobsList> {
           final location = job["location"] ?? "N/A";
           final createdAt = _formatDate(job["created_at"]);
 
+          // Build the subtitle column, injecting the toggle below status when on Approved tab
+          final subtitleChildren = <Widget>[
+            const SizedBox(height: 4),
+            Text("$jobType | ₹$salaryMin - ₹$salaryMax"),
+            const SizedBox(height: 2),
+            Text("Location: $location"),
+            const SizedBox(height: 2),
+            Text("Posted on: $createdAt"),
+            const SizedBox(height: 6),
+            Text(
+              "Status: ${widget.status}",
+              style: TextStyle(
+                fontWeight: FontWeight.w500,
+                color: widget.status == "Approved"
+                    ? Colors.green
+                    : widget.status == "Rejected"
+                        ? Colors.red
+                        : Colors.orange,
+              ),
+            ),
+          ];
+
+          // If Approved tab, append the UI-only toggle below the status line
+          if (widget.status == "Approved") {
+            subtitleChildren.add(const SizedBox(height: 8));
+            subtitleChildren.add(
+              Row(
+                children: [
+                  const SizedBox(width: 2),
+                  const Text(
+                    'Featured:',
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500),
+                  ),
+                  const SizedBox(width: 12),
+                  Transform.scale(
+                    scale: 0.95,
+                    child: Switch(
+                      value: _approvedToggles.contains(jobId),
+                      onChanged: (val) {
+                        setState(() {
+                          if (val) {
+                            _approvedToggles.add(jobId);
+                          } else {
+                            _approvedToggles.remove(jobId);
+                          }
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            behavior: SnackBarBehavior.floating,
+                            content: Text(
+                              val ? 'Toggled ON (UI-only)' : 'Toggled OFF (UI-only)',
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
           return Container(
             margin: const EdgeInsets.only(bottom: 14),
             decoration: BoxDecoration(
@@ -258,71 +323,55 @@ class _JobsListState extends State<JobsList> {
               ),
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 4),
-                  Text("$jobType | ₹$salaryMin - ₹$salaryMax"),
-                  const SizedBox(height: 2),
-                  Text("Location: $location"),
-                  const SizedBox(height: 2),
-                  Text("Posted on: $createdAt"),
-                  const SizedBox(height: 6),
-                  Text(
-                    "Status: ${widget.status}",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w500,
-                      color: widget.status == "Approved"
-                          ? Colors.green
-                          : widget.status == "Rejected"
-                          ? Colors.red
-                          : Colors.orange,
-                    ),
-                  ),
-                ],
+                children: subtitleChildren,
               ),
 
-              // Eye button present in all tabs; for pending we still keep approve/reject UI
+              // Trailing UI:
+              // - Pending: Approve / Reject / View
+              // - Approved: View only (toggle moved below status)
+              // - Rejected: View only
               trailing: widget.status == "Pending"
                   ? (_processing.contains(jobId)
-                        ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                tooltip: "Approve",
-                                icon: const Icon(
-                                  Icons.check_circle_outline,
-                                  color: Colors.green,
-                                ),
-                                onPressed: jobId == -1
-                                    ? null
-                                    : () => _updateApproval(jobId, 1),
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              tooltip: "Approve",
+                              icon: const Icon(
+                                Icons.check_circle_outline,
+                                color: Colors.green,
                               ),
-                              IconButton(
-                                tooltip: "Reject",
-                                icon: const Icon(
-                                  Icons.cancel_outlined,
-                                  color: Colors.red,
-                                ),
-                                onPressed: jobId == -1
-                                    ? null
-                                    : () => _updateApproval(jobId, 3),
+                              onPressed: jobId == -1
+                                  ? null
+                                  : () => _updateApproval(jobId, 1),
+                            ),
+                            IconButton(
+                              tooltip: "Reject",
+                              icon: const Icon(
+                                Icons.cancel_outlined,
+                                color: Colors.red,
                               ),
-                              IconButton(
-                                tooltip: "View",
-                                icon: const Icon(
-                                  Icons.visibility,
-                                  color: AppColors.primary,
-                                ),
-                                onPressed: jobId == -1
-                                    ? null
-                                    : () => _openJobDetail(context, jobId),
+                              onPressed: jobId == -1
+                                  ? null
+                                  : () => _updateApproval(jobId, 3),
+                            ),
+                            IconButton(
+                              tooltip: "View",
+                              icon: const Icon(
+                                Icons.visibility,
+                                color: AppColors.primary,
                               ),
-                            ],
-                          ))
+                              onPressed: jobId == -1
+                                  ? null
+                                  : () => _openJobDetail(context, jobId),
+                            ),
+                          ],
+                        ))
                   : IconButton(
                       icon: const Icon(
                         Icons.visibility,

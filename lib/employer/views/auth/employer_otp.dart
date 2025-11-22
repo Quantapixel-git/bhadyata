@@ -116,7 +116,7 @@ class _EmployerOtpScreenState extends State<EmployerOtpScreen> {
         final employerId = employerData?['id'];
         final isNew = data['is_new_user'] ?? false;
 
-        // ✅ Save to SessionManager (instead of SharedPreferences)
+        // ✅ Save to SessionManager
         await SessionManager.setValue(
           'employer_id',
           employerId?.toString() ?? '0',
@@ -178,11 +178,106 @@ class _EmployerOtpScreenState extends State<EmployerOtpScreen> {
     super.dispose();
   }
 
+  /// Responsive OTP fields:
+  /// - On mobile: try to fit all 6 boxes on a single line by calculating boxWidth.
+  /// - If boxWidth would be too small (< minBoxWidth) then fallback to a scrollable row.
+  Widget _buildOtpFields(double totalAvailableWidth, bool isWeb) {
+    // Visual constants (match UserOtpScreen style)
+    const double horizontalPadding = 70; // surrounding padding (30 left + 30 right + small buffer)
+    const double spacing = 6; // space between boxes
+    const double maxBoxWidth = 40; // desired max width for a box on wide screens
+    const double minBoxWidth = 40; // minimum acceptable width before we fallback to scroll
+
+    // total spacing between boxes = spacing * (n - 1)
+    final totalSpacing = spacing * (6 - 1);
+
+    // compute available width for boxes (subtract typical paddings)
+    final availableForBoxes = totalAvailableWidth - horizontalPadding - totalSpacing;
+
+    // computed box width
+    final computedBoxWidth = (availableForBoxes / 6).clamp(0.0, maxBoxWidth);
+
+    // if computed width is too small, fallback to horizontal scroll; otherwise layout single line
+    final shouldScroll = computedBoxWidth < minBoxWidth;
+
+    Widget buildField(int index, double boxWidth) {
+      return SizedBox(
+        width: boxWidth,
+        child: TextField(
+          controller: _controllers[index],
+          onChanged: (value) {
+            // only accept digits — trim to single char
+            if (value.length > 1) {
+              final digit = value.replaceAll(RegExp(r'[^0-9]'), '');
+              _controllers[index].text = digit.isNotEmpty ? digit[0] : '';
+            }
+            if (value.isNotEmpty && index < 5) {
+              FocusScope.of(context).nextFocus();
+            } else if (value.isEmpty && index > 0) {
+              FocusScope.of(context).previousFocus();
+            }
+            setState(() {}); // update visual state if needed
+          },
+          maxLength: 1,
+          textAlign: TextAlign.center,
+          keyboardType: TextInputType.number,
+          style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+          decoration: InputDecoration(
+            counterText: "",
+            filled: true,
+            fillColor: Colors.grey[100],
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderSide: const BorderSide(
+                color: AppColors.primary,
+                width: 1.5,
+              ),
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (!shouldScroll) {
+      // Single-line, non-scrollable row with computed widths
+      final boxWidth = computedBoxWidth;
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: List.generate(6, (i) {
+          return Padding(
+            padding: EdgeInsets.only(right: i == 5 ? 0 : spacing),
+            child: buildField(i, boxWidth),
+          );
+        }),
+      );
+    } else {
+      // Fallback: horizontally scrollable row
+      final fallbackBoxWidth = minBoxWidth;
+      return SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: Row(
+          children: List.generate(6, (i) {
+            return Padding(
+              padding: EdgeInsets.only(right: i == 5 ? 0 : spacing),
+              child: buildField(i, fallbackBoxWidth),
+            );
+          }),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         bool isWeb = constraints.maxWidth > 800;
+        final screenWidth = MediaQuery.of(context).size.width;
 
         Widget otpContent = Column(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -219,50 +314,8 @@ class _EmployerOtpScreenState extends State<EmployerOtpScreen> {
             ),
             const SizedBox(height: 35),
 
-            // 🔹 OTP Fields
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              alignment: WrapAlignment.center,
-              children: List.generate(6, (index) {
-                return SizedBox(
-                  width: isWeb ? 60 : 50,
-                  child: TextField(
-                    controller: _controllers[index],
-                    onChanged: (value) {
-                      if (value.isNotEmpty && index < 5) {
-                        FocusScope.of(context).nextFocus();
-                      } else if (value.isEmpty && index > 0) {
-                        FocusScope.of(context).previousFocus();
-                      }
-                    },
-                    maxLength: 1,
-                    textAlign: TextAlign.center,
-                    keyboardType: TextInputType.number,
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    decoration: InputDecoration(
-                      counterText: "",
-                      filled: true,
-                      fillColor: Colors.grey[100],
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide.none,
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: const BorderSide(
-                          color: AppColors.primary,
-                          width: 1.5,
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                );
-              }),
-            ),
+            // 🔹 OTP Fields (responsive single-line on mobile)
+            _buildOtpFields(screenWidth, isWeb),
 
             if (_otpError != null)
               Padding(
@@ -320,11 +373,11 @@ class _EmployerOtpScreenState extends State<EmployerOtpScreen> {
 
         return Scaffold(
           backgroundColor: AppColors.white,
-          appBar: AppBar(
-            backgroundColor: AppColors.white,
-            elevation: 0.5,
-            iconTheme: const IconThemeData(color: Colors.black87),
-          ),
+          // appBar: AppBar(
+          //   backgroundColor: AppColors.white,
+          //   elevation: 0.5,
+          //   iconTheme: const IconThemeData(color: Colors.black87),
+          // ),
           body: Center(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 40),

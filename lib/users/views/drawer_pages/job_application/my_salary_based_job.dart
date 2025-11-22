@@ -300,7 +300,9 @@ class _SalaryJobsScreenState extends State<SalaryJobsScreen> {
       child: Scaffold(
         backgroundColor: Colors.grey.shade100,
         appBar: AppBar(
-          automaticallyImplyLeading: false,
+          iconTheme: IconThemeData(color: Colors.white),
+
+          automaticallyImplyLeading: true,
           backgroundColor: AppColors.primary,
           title: const Text(
             "My Salary Jobs",

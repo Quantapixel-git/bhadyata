@@ -132,7 +132,8 @@ class _JobDetailPageState extends State<JobDetailPage> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          elevation: 2,
+                          elevation: 0,
+                          color: Colors.white,
                           child: Padding(
                             padding: const EdgeInsets.all(14.0),
                             child: Column(
@@ -208,6 +209,7 @@ class _JobDetailPageState extends State<JobDetailPage> {
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
+                          color: Colors.white,
                           elevation: 0,
                           child: Padding(
                             padding: const EdgeInsets.all(12.0),
@@ -287,6 +289,7 @@ class _JobDetailPageState extends State<JobDetailPage> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             elevation: 0,
+                            color: Colors.white,
                             child: Padding(
                               padding: const EdgeInsets.all(12.0),
                               child: Text(_job!['job_description']!.toString()),
@@ -308,6 +311,7 @@ class _JobDetailPageState extends State<JobDetailPage> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             elevation: 0,
+                            color: Colors.white,
                             child: Padding(
                               padding: const EdgeInsets.all(12.0),
                               child: Text(
@@ -331,6 +335,7 @@ class _JobDetailPageState extends State<JobDetailPage> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             elevation: 0,
+                            color: Colors.white,
                             child: Padding(
                               padding: const EdgeInsets.all(12.0),
                               child: Text(_job!['benefits']!.toString()),
@@ -345,6 +350,7 @@ class _JobDetailPageState extends State<JobDetailPage> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           elevation: 0,
+                          color: Colors.white,
                           child: Padding(
                             padding: const EdgeInsets.all(12.0),
                             child: Column(
@@ -380,6 +386,7 @@ class _JobDetailPageState extends State<JobDetailPage> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                           elevation: 0,
+                          color: Colors.white,
                           child: Padding(
                             padding: const EdgeInsets.all(12.0),
                             child: Column(

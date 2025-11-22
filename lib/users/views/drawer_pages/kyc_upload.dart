@@ -234,12 +234,14 @@ class _KycUploadPageState extends State<KycUploadPage> {
       child: Scaffold(
         backgroundColor: AppColors.white,
         appBar: AppBar(
-          automaticallyImplyLeading: false,
+          iconTheme: IconThemeData(color: Colors.white),
+
+          // automaticallyImplyLeading: false,
           backgroundColor: AppColors.primary,
           elevation: 1,
           title: const Text(
             "KYC Verification",
-            style: TextStyle( fontWeight: FontWeight.bold, color: Colors.white),
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
           ),
         ),
         body: isFetching

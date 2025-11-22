@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jobshub/common/utils/app_color.dart';
+import 'package:jobshub/hr/views/job_applicants/project_applicants_hr.dart';
 // import 'package:jobshub/hr/views/job_applicants/one_time_job_applicant.dart';
 import 'package:jobshub/hr/views/sidebar_dashboard/hr_sidebar.dart';
 
@@ -17,8 +18,7 @@ class _HrProjectApplicantsState extends State<HrProjectApplicants> {
   String? _error;
   List<Map<String, dynamic>> _jobs = [];
 
-  // 👉 Update this to your actual endpoint for {{bhadyata}}oneTimeJobsWithApplicants
-  // Example based on your existing pattern:
+  // endpoint
   final String apiUrl =
       'https://dialfirst.in/quantapixel/badhyata/api/projectsWithApplicants';
 
@@ -45,7 +45,11 @@ class _HrProjectApplicantsState extends State<HrProjectApplicants> {
         final json = jsonDecode(res.body) as Map<String, dynamic>;
         final List data = (json['data'] as List?) ?? [];
         setState(() {
-          _jobs = data.cast<Map<String, dynamic>>();
+          // ensure each element is a Map<String, dynamic>
+          _jobs = data.map<Map<String, dynamic>>((e) {
+            if (e is Map) return Map<String, dynamic>.from(e as Map);
+            return <String, dynamic>{};
+          }).toList();
         });
       } else {
         setState(() => _error = "Error ${res.statusCode}");
@@ -107,6 +111,14 @@ class _HrProjectApplicantsState extends State<HrProjectApplicants> {
       ),
     ),
   );
+
+  /// Robust extractor for project id: supports `id`, `project_id`, `projectId`
+  int _extractProjectId(Map<String, dynamic> j) {
+    final raw = j['id'] ?? j['project_id'] ?? j['projectId'];
+    if (raw == null) return 0;
+    if (raw is int) return raw;
+    return int.tryParse(raw.toString()) ?? 0;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -185,6 +197,9 @@ class _HrProjectApplicantsState extends State<HrProjectApplicants> {
                                   int.tryParse(_safe(j['applicants_count'])) ??
                                   0;
 
+                              // Extract project id and pass it along
+                              final int projectId = _extractProjectId(j);
+
                               return Container(
                                 margin: const EdgeInsets.only(bottom: 14),
                                 decoration: BoxDecoration(
@@ -233,7 +248,6 @@ class _HrProjectApplicantsState extends State<HrProjectApplicants> {
                                       _countPill(count),
                                     ],
                                   ),
-                                  // 👉 trailing button with placeholder action
                                   trailing: IconButton(
                                     tooltip: "View applicants",
                                     icon: const Icon(
@@ -241,14 +255,30 @@ class _HrProjectApplicantsState extends State<HrProjectApplicants> {
                                       color: Colors.black87,
                                     ),
                                     onPressed: () {
-                                      // Placeholder: replace with navigation to applicants list
-                                      // Navigator.push(
-                                      //   context,
-                                      //   MaterialPageRoute(
-                                      //     builder: (context) =>
-                                      //         OneTimeApplicantsPage(jobId: 2),
-                                      //   ),
-                                      // );
+                                      if (projectId == 0) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              "Project ID missing for this item",
+                                            ),
+                                            behavior: SnackBarBehavior.floating,
+                                          ),
+                                        );
+                                        return;
+                                      }
+
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              ProjectApplicantsPage(
+                                                jobId: projectId,
+                                                jobTitle: title,
+                                              ),
+                                        ),
+                                      );
                                     },
                                   ),
                                 ),

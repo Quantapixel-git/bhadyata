@@ -1,10 +1,12 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
-import 'package:jobshub/common/views/onboarding/onboarding_screen.dart';
+import 'package:jobshub/common/views/onboarding/mobile_onboarding_screen.dart';
+import 'package:jobshub/common/views/onboarding/web_onboarding_screen.dart';
 import 'package:jobshub/employer/views/commission_job/post_commission_job.dart';
 import 'package:jobshub/employer/views/commission_job/view_commission_job.dart';
 import 'package:jobshub/employer/views/schedule_interview/commission_jobs_applicants.dart';
-import 'package:jobshub/employer/views/schedule_interview/salary_jobs_applicants.dart';
+import 'package:jobshub/employer/views/schedule_interview/employer_salary_jobs_applicants.dart';
 import 'package:jobshub/employer/views/one_time_job/view_one_time_job.dart';
 import 'package:jobshub/employer/views/project_job/post_project.dart';
 import 'package:jobshub/employer/views/one_time_job/post_one_time_job.dart';
@@ -15,7 +17,10 @@ import 'package:jobshub/employer/views/attendance_leave/employer_attendance.dart
 import 'package:jobshub/employer/views/my_employees/commision_job.dart';
 import 'package:jobshub/employer/views/notes/employer_commision_job_note.dart';
 import 'package:jobshub/employer/views/employer_details/employer_detail.dart';
+import 'package:jobshub/employer/views/schedule_interview/one-time_applicates.dart';
+import 'package:jobshub/employer/views/schedule_interview/project_employees.dart';
 import 'package:jobshub/employer/views/sidebar_dashboard/employer_dashboard.dart';
+import 'package:jobshub/employer/views/sidebar_dashboard/leads_page.dart';
 import 'package:jobshub/employer/views/wallet_deposit/employer_deposit.dart';
 import 'package:jobshub/employer/views/my_employees/one_time_job.dart';
 import 'package:jobshub/employer/views/notes/employer_one_time_job_note.dart';
@@ -34,7 +39,6 @@ import 'package:jobshub/common/utils/app_color.dart';
 import 'package:jobshub/employer/views/kyc/employer_upload_kyc.dart';
 import 'package:jobshub/employer/views/salary_management/salary_structure.dart';
 import 'package:jobshub/employer/views/wallet_deposit/employer_wallet.dart';
-
 
 class EmployerSidebar extends StatelessWidget {
   final bool isWeb;
@@ -321,26 +325,28 @@ class EmployerSidebarMobile extends StatelessWidget {
                       Icons.schedule_outlined,
                       color: AppColors.primary,
                     ),
-                    title: const Text("Schedule Interviews"),
+                    title: const Text("Schedule Interviews (Job)"),
                     iconColor: AppColors.primary,
                     collapsedIconColor: AppColors.primary,
                     childrenPadding: const EdgeInsets.only(left: 20, bottom: 8),
                     children: [
                       _expTileChild(context, "Commission-based Jobs", () {
-                        // Navigator.push(
-                        //   context,
-                        //   MaterialPageRoute(
-                        //     builder: (_) => EmployerDashboardPage(),
-                        //   ),
-                        // );
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                EmployerCommissionBasedJobsWithApplicantsPage(),
+                          ),
+                        );
                       }),
                       _expTileChild(context, "One-time Recruitment", () {
-                        // Navigator.push(
-                        //   context,
-                        //   MaterialPageRoute(
-                        //     builder: (_) => EmployerDashboardPage(),
-                        //   ),
-                        // );
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                EmployerOneTimeJobsWithApplicantsPage(),
+                          ),
+                        );
                       }),
                       _expTileChild(context, "Salary-based Jobs", () {
                         Navigator.push(
@@ -351,19 +357,11 @@ class EmployerSidebarMobile extends StatelessWidget {
                           ),
                         );
                       }),
-                      _expTileChild(context, "Projects", () {
-                        // Navigator.push(
-                        //   context,
-                        //   MaterialPageRoute(
-                        //     builder: (_) => EmployerDashboardPage(),
-                        //   ),
-                        // );
-                      }),
                     ],
                   ),
 
                   const Divider(height: 25),
-                  _sectionTitle("📊 Projects & Finance"),
+                  _sectionTitle("📊 Projects"),
 
                   ExpansionTile(
                     leading: Icon(Icons.work_outline, color: AppColors.primary),
@@ -391,6 +389,31 @@ class EmployerSidebarMobile extends StatelessWidget {
                       }),
                     ],
                   ),
+
+                  ExpansionTile(
+                    leading: Icon(
+                      Icons.schedule_outlined,
+                      color: AppColors.primary,
+                    ),
+                    title: const Text("Schedule Interviews (Project)"),
+                    iconColor: AppColors.primary,
+                    collapsedIconColor: AppColors.primary,
+                    childrenPadding: const EdgeInsets.only(left: 20, bottom: 8),
+                    children: [
+                      _expTileChild(context, "Projects", () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                EmployerProjectsWithApplicantsPage(),
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
+
+                  const Divider(height: 25),
+                  _sectionTitle("📊 Finance"),
                   _sidebarItem(
                     context,
                     Icons.account_balance_wallet,
@@ -418,7 +441,7 @@ class EmployerSidebarMobile extends StatelessWidget {
                   ),
 
                   const Divider(height: 25),
-                  _sectionTitle("👥 Employees & HR"),
+                  _sectionTitle("👥 Employees"),
 
                   ExpansionTile(
                     leading: Icon(
@@ -430,18 +453,14 @@ class EmployerSidebarMobile extends StatelessWidget {
                     collapsedIconColor: AppColors.primary,
                     childrenPadding: const EdgeInsets.only(left: 20, bottom: 8),
                     children: [
-                      _expTileChild(
-                        context,
-                        "Commission-Based Lead Generator",
-                        () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => CommissionBasedEmployeesPage(),
-                            ),
-                          );
-                        },
-                      ),
+                      _expTileChild(context, "Commission-Based Employees", () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => CommissionEmployeesPage(),
+                          ),
+                        );
+                      }),
                       _expTileChild(context, "Salary-Based Employees", () {
                         Navigator.push(
                           context,
@@ -450,18 +469,14 @@ class EmployerSidebarMobile extends StatelessWidget {
                           ),
                         );
                       }),
-                      _expTileChild(
-                        context,
-                        "One-Time Recruited Employees",
-                        () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => OneTimeRecruitedEmployeesPage(),
-                            ),
-                          );
-                        },
-                      ),
+                      _expTileChild(context, "One-Time Employees", () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => OneTimeEmployeesPage(),
+                          ),
+                        );
+                      }),
                       _expTileChild(context, "Project Employees", () {
                         Navigator.push(
                           context,
@@ -543,6 +558,19 @@ class EmployerSidebarMobile extends StatelessWidget {
                   ),
 
                   const Divider(height: 25),
+                  _sectionTitle("👥 Commission & Leads"),
+                  _sidebarItem(
+                    context,
+                    Icons.attach_money_outlined,
+                    "Leads",
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => LeadsPage()),
+                      );
+                    },
+                  ),
+                  const Divider(height: 25),
                   _sectionTitle("🧭 Support & Others"),
 
                   ExpansionTile(
@@ -581,9 +609,16 @@ class EmployerSidebarMobile extends StatelessWidget {
                       ),
                     );
 
+                    final bool isWebPlatform =
+                        kIsWeb || MediaQuery.of(context).size.width > 800;
+
                     Navigator.pushAndRemoveUntil(
                       context,
-                      MaterialPageRoute(builder: (_) => const OnboardingPage()),
+                      MaterialPageRoute(
+                        builder: (_) => isWebPlatform
+                            ? const WebOnboardingPage() // your web onboarding
+                            : const MobileOnboardingPage(), // your mobile onboarding
+                      ),
                       (route) => false,
                     );
                   }),
@@ -890,7 +925,7 @@ class EmployerSidebarWeb extends StatelessWidget {
                   _expansionGroup(
                     context,
                     Icons.schedule_outlined,
-                    "Schedule Interviews",
+                    "Schedule Interviews (Job)",
                     [
                       _expTileChild(context, "Commission-based Jobs", () {
                         Navigator.push(
@@ -902,12 +937,13 @@ class EmployerSidebarWeb extends StatelessWidget {
                         );
                       }),
                       _expTileChild(context, "One-time Recruitment", () {
-                        // Navigator.push(
-                        //   context,
-                        //   MaterialPageRoute(
-                        //     builder: (_) => EmployerDashboardPage(),
-                        //   ),
-                        // );
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                EmployerOneTimeJobsWithApplicantsPage(),
+                          ),
+                        );
                       }),
                       _expTileChild(context, "Salary-based Jobs", () {
                         Navigator.push(
@@ -918,18 +954,10 @@ class EmployerSidebarWeb extends StatelessWidget {
                           ),
                         );
                       }),
-                      _expTileChild(context, "Projects", () {
-                        // Navigator.push(
-                        //   context,
-                        //   MaterialPageRoute(
-                        //     builder: (_) => EmployerDashboardPage(),
-                        //   ),
-                        // );
-                      }),
                     ],
                   ),
                   _divider(),
-                  _sectionTitle("📊 Projects & Finance"),
+                  _sectionTitle("📊 Projects"),
                   _expansionGroup(context, Icons.work_outline, "Projects", [
                     _expTileChild(context, "Post Project", () {
                       // PostProjectPage();
@@ -940,6 +968,7 @@ class EmployerSidebarWeb extends StatelessWidget {
                         ),
                       );
                     }),
+
                     _expTileChild(context, "View Projects", () {
                       Navigator.push(
                         context,
@@ -949,6 +978,25 @@ class EmployerSidebarWeb extends StatelessWidget {
                       );
                     }),
                   ]),
+
+                  _expansionGroup(
+                    context,
+                    Icons.schedule_outlined,
+                    "Schedule Interviews (Project)",
+                    [
+                      _expTileChild(context, "Projects", () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                EmployerProjectsWithApplicantsPage(),
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
+                  _divider(),
+                  _sectionTitle("📊 Finance"),
                   _menuItem(
                     context,
                     Icons.account_balance_wallet,
@@ -972,24 +1020,20 @@ class EmployerSidebarWeb extends StatelessWidget {
                     },
                   ),
                   _divider(),
-                  _sectionTitle("👥 Employees & HR"),
+                  _sectionTitle("👥 Employees"),
                   _expansionGroup(
                     context,
                     Icons.people_alt_outlined,
                     "My Employees",
                     [
-                      _expTileChild(
-                        context,
-                        "Commission-Based Lead Generator",
-                        () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => CommissionBasedEmployeesPage(),
-                            ),
-                          );
-                        },
-                      ),
+                      _expTileChild(context, "Commission-Based Employees", () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => CommissionEmployeesPage(),
+                          ),
+                        );
+                      }),
                       _expTileChild(context, "Salary-Based Employees", () {
                         Navigator.push(
                           context,
@@ -998,18 +1042,14 @@ class EmployerSidebarWeb extends StatelessWidget {
                           ),
                         );
                       }),
-                      _expTileChild(
-                        context,
-                        "One-Time Recruited Employees",
-                        () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => OneTimeRecruitedEmployeesPage(),
-                            ),
-                          );
-                        },
-                      ),
+                      _expTileChild(context, "One-Time Employees", () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => OneTimeEmployeesPage(),
+                          ),
+                        );
+                      }),
                       _expTileChild(context, "Project Employees", () {
                         Navigator.push(
                           context,
@@ -1106,9 +1146,16 @@ class EmployerSidebarWeb extends StatelessWidget {
                       ),
                     );
 
+                    final bool isWebPlatform =
+                        kIsWeb || MediaQuery.of(context).size.width > 800;
+
                     Navigator.pushAndRemoveUntil(
                       context,
-                      MaterialPageRoute(builder: (_) => const OnboardingPage()),
+                      MaterialPageRoute(
+                        builder: (_) => isWebPlatform
+                            ? const WebOnboardingPage() // your web onboarding
+                            : const MobileOnboardingPage(), // your mobile onboarding
+                      ),
                       (route) => false,
                     );
                   }),

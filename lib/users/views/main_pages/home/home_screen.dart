@@ -2,11 +2,15 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/users/views/bottomnav_sidebar/user_sidedrawer.dart';
 import 'package:jobshub/common/utils/app_color.dart';
 import 'package:http/http.dart' as http;
 import 'package:jobshub/common/constants/base_url.dart';
-import 'package:jobshub/users/views/main_pages/search_placeholder.dart';
+import 'package:jobshub/users/views/main_pages/common_search/search_placeholder.dart';
+import 'package:jobshub/users/views/main_pages/home/jobs_trending_cat.dart';
+import 'package:jobshub/users/views/main_pages/search/job_detail_page.dart'
+    show JobDetailPage;
 
 class HomePage extends StatelessWidget {
   HomePage({super.key});
@@ -116,10 +120,8 @@ class HomePage extends StatelessWidget {
                             ),
                           ),
 
-                        const SizedBox(height: 30),
+                        const SizedBox(height: 10),
 
-                        // 🔹 Trending Jobs
-                        // 🔹 Trending Jobs (fetched from API)
                         Padding(
                           padding: const EdgeInsets.all(12.0),
                           child: Text(
@@ -147,60 +149,6 @@ class HomePage extends StatelessWidget {
                         ),
                         const SizedBox(height: 10),
                         FeaturedJobs(isWeb: isWeb),
-
-                        // ✅ Featured Jobs both web & mobile
-                        // isWeb
-                        //     ? GridView.count(
-                        //         crossAxisCount: 3,
-                        //         shrinkWrap: true,
-                        //         physics: const NeverScrollableScrollPhysics(),
-                        //         crossAxisSpacing: 20,
-                        //         mainAxisSpacing: 20,
-                        //         childAspectRatio: 1.3,
-                        //         children: const [
-                        //           _HoverJobCard(
-                        //             "UI/UX Designer",
-                        //             "Google",
-                        //             "Remote",
-                        //           ),
-                        //           _HoverJobCard(
-                        //             "Flutter Developer",
-                        //             "Microsoft",
-                        //             "Bangalore",
-                        //           ),
-                        //           _HoverJobCard(
-                        //             "Delivery Executive",
-                        //             "Zomato",
-                        //             "Mumbai",
-                        //           ),
-                        //         ],
-                        //       )
-                        //     : SizedBox(
-                        //         height: 160,
-                        //         child: ListView(
-                        //           scrollDirection: Axis.horizontal,
-                        //           padding: const EdgeInsets.symmetric(
-                        //             horizontal: 16,
-                        //           ),
-                        //           children: [
-                        //             _jobCard(
-                        //               "UI/UX Designer",
-                        //               "Google",
-                        //               "Remote",
-                        //             ),
-                        //             _jobCard(
-                        //               "Flutter Developer",
-                        //               "Microsoft",
-                        //               "Bangalore",
-                        //             ),
-                        //             _jobCard(
-                        //               "Delivery Executive",
-                        //               "Zomato",
-                        //               "Mumbai",
-                        //             ),
-                        //           ],
-                        //         ),
-                        //       ),
                       ],
                     ),
                   ),
@@ -285,7 +233,6 @@ class HomePage extends StatelessWidget {
       ),
     );
   }
-
 }
 
 /// Step Widget
@@ -466,7 +413,11 @@ class _TrendingCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        // navigate to category listing or filter by category
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => TrendingCategoryJobsPage(category: item.name),
+          ),
+        );
       },
       child: Container(
         padding: const EdgeInsets.all(10),
@@ -539,7 +490,12 @@ class _MobileTrendingItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        // navigate/ filter
+        // navigate to the category jobs page on mobile as well
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => TrendingCategoryJobsPage(category: item.name),
+          ),
+        );
       },
       child: Container(
         width: 120,
@@ -590,17 +546,6 @@ class _MobileTrendingItem extends StatelessWidget {
   }
 }
 
-// -------------- Usage --------------
-// In HomePage build replace the hard-coded Featured Jobs block with:
-//   FeaturedJobs(isWeb: isWeb)
-// ------------------------------------
-
-// import 'dart:convert';
-// import 'package:flutter/material.dart';
-// import 'package:http/http.dart' as http;
-// import 'package:jobshub/common/constants/base_url.dart';
-// import 'package:jobshub/common/utils/app_color.dart';
-
 class FeaturedJobs extends StatefulWidget {
   final bool isWeb;
   final int limit;
@@ -616,10 +561,118 @@ class _FeaturedJobsState extends State<FeaturedJobs> {
   String? _error;
   List<_JobModel> _jobs = [];
 
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   _fetchFeatured();
+  // }
+  final Set<String> _applyingJobIds = {};
+  String _profileJobType = '';
+
   @override
   void initState() {
     super.initState();
+    _loadJobType();
     _fetchFeatured();
+  }
+
+  Future<void> _applyForJob(Map<String, String> job) async {
+    final jobId = job['id'] ?? job['job_id'] ?? '';
+    if (jobId.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Job id missing')));
+      return;
+    }
+
+    if (_applyingJobIds.contains(jobId)) return;
+
+    final emp = await SessionManager.getValue('user_id') ?? '';
+    final employeeId = emp.toString();
+    if (employeeId.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Employee not logged in')));
+      return;
+    }
+
+    // Decide endpoint based on job_type in profile
+    final jtLower = _profileJobType.toLowerCase();
+
+    String endpoint;
+    if (jtLower.contains('salary')) {
+      endpoint = 'applySalayBased';
+    } else if (jtLower.contains('commission')) {
+      endpoint = 'applyCommissionBased';
+    } else if (jtLower.contains('one') ||
+        jtLower.contains('one-time') ||
+        jtLower.contains('onetime') ||
+        jtLower.contains('one time')) {
+      endpoint = 'applyOneTimeBased';
+    } else if (jtLower.contains('project') ||
+        jtLower.contains('projects') ||
+        jtLower.contains('freelance')) {
+      endpoint = 'applyProject';
+    } else {
+      endpoint = 'applySalayBased';
+    }
+
+    final uri = Uri.parse("${ApiConstants.baseUrl}$endpoint");
+
+    final body = {
+      "job_id": jobId,
+      "employee_id": employeeId,
+      "remarks": "Available for the job.",
+    };
+
+    setState(() => _applyingJobIds.add(jobId));
+
+    try {
+      final res = await http.post(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode(body),
+      );
+
+      final json = jsonDecode(res.body);
+      final msg = json["message"]?.toString() ?? "Response received";
+
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    } catch (e) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Error applying: $e")));
+    } finally {
+      setState(() => _applyingJobIds.remove(jobId));
+    }
+  }
+
+  bool _isApplying(String jobId) => _applyingJobIds.contains(jobId);
+
+  Future<void> _loadJobType() async {
+    final stored = await SessionManager.getValue('job_type') ?? '';
+    setState(() => _profileJobType = stored.toString());
+  }
+
+  // Returns the endpoint path (not full URL) based on stored job_type
+  String _chooseEndpointFromJobType(String jobType) {
+    final jt = jobType.toLowerCase();
+    if (jt.contains('commission')) return 'getFeaturedCommissionJobs';
+    if (jt.contains('one') ||
+        jt.contains('one-time') ||
+        jt.contains('onetime') ||
+        jt.contains('one time'))
+      return 'getFeaturedOneTimeJobs';
+    if (jt.contains('project') ||
+        jt.contains('projects') ||
+        jt.contains('freelance') ||
+        jt.contains('it'))
+      return 'getFeaturedProjects';
+    // default to salary featured
+    return 'SalaryBasedgetFeaturedJobs';
   }
 
   Future<void> _fetchFeatured() async {
@@ -629,8 +682,27 @@ class _FeaturedJobsState extends State<FeaturedJobs> {
     });
 
     try {
-      final uri = Uri.parse('${ApiConstants.baseUrl}getFeaturedJobs');
+      // read stored job_type from session
+      final stored = (await SessionManager.getValue('job_type')) ?? '';
+      final jobType = stored?.toString() ?? '';
+
+      // choose endpoint path (you can adjust the strings below to match server routes)
+      final endpoint = _chooseEndpointFromJobType(jobType);
+
+      final uri = Uri.parse('${ApiConstants.baseUrl}$endpoint');
+
+      if (kDebugMode) {
+        print('🔁 Fetch featured endpoint: $endpoint');
+        print('🔁 Full URL: $uri');
+        print('🔁 Stored job_type: "$jobType"');
+      }
+
       final res = await http.get(uri, headers: {'Accept': 'application/json'});
+
+      if (kDebugMode) {
+        print('⬅️ Status: ${res.statusCode}');
+        print('⬅️ Body: ${res.body}');
+      }
 
       if (res.statusCode < 200 || res.statusCode >= 300) {
         setState(() => _error = 'Failed to fetch (${res.statusCode})');
@@ -648,18 +720,57 @@ class _FeaturedJobsState extends State<FeaturedJobs> {
       }
 
       final List data = (raw['data'] as List? ?? []);
+
+      // Normalize each item into _JobModel (handle salary/min/max/payment/budget variants)
       final items = data.map<_JobModel>((e) {
         final m = Map<String, dynamic>.from(e as Map);
+
+        // Generic title/category/jobType/location extraction
+        final title = (m['title'] ?? m['name'] ?? '').toString();
+        final category = (m['category'] ?? '').toString();
+        final jobTypeField =
+            (m['job_type'] ?? m['payment_type'] ?? m['commission_type'] ?? '')
+                .toString();
+        final location = (m['location'] ?? '').toString();
+
+        // Salary/budget/payment normalization (pick best available)
+        String salaryMin = '';
+        String salaryMax = '';
+
+        // salary-based keys
+        if (m.containsKey('salary_min') || m.containsKey('salary_max')) {
+          salaryMin = (m['salary_min'] ?? '').toString();
+          salaryMax = (m['salary_max'] ?? '').toString();
+        } else if (m.containsKey('budget_min') || m.containsKey('budget_max')) {
+          salaryMin = (m['budget_min'] ?? '').toString();
+          salaryMax = (m['budget_max'] ?? '').toString();
+        } else if (m.containsKey('payment_amount')) {
+          salaryMin = (m['payment_amount'] ?? '').toString();
+          salaryMax = salaryMin;
+        } else if (m.containsKey('potential_earning')) {
+          salaryMin = (m['potential_earning'] ?? '').toString();
+          salaryMax = salaryMin;
+        } else {
+          // fallback: use generic 'salary' or empty
+          salaryMin = (m['salary'] ?? '').toString();
+          salaryMax = salaryMin;
+        }
+
+        final id = (m['id'] as num?)?.toInt() ?? 0;
+        final approval = (m['approval'] as num?)?.toInt() ?? 2;
+        final featured = (m['featured'] as num?)?.toInt() ?? 0;
+
         return _JobModel(
-          id: (m['id'] as num?)?.toInt() ?? 0,
-          title: m['title']?.toString() ?? '',
-          category: m['category']?.toString() ?? '',
-          jobType: m['job_type']?.toString() ?? '',
-          location: m['location']?.toString() ?? '',
-          salaryMin: m['salary_min']?.toString() ?? '',
-          salaryMax: m['salary_max']?.toString() ?? '',
-          approval: (m['approval'] as num?)?.toInt() ?? 2,
-          featured: (m['featured'] as num?)?.toInt() ?? 2,
+          id: id,
+          title: title,
+          category: category,
+          jobType: jobTypeField,
+          location: location,
+          salaryMin: salaryMin,
+          salaryMax: salaryMax,
+          approval: approval,
+          featured: featured,
+          raw: m,
         );
       }).toList();
 
@@ -749,6 +860,7 @@ class _JobModel {
   final String salaryMax;
   final int approval;
   final int featured;
+  final Map<String, dynamic>? raw; // raw response if you need it
 
   _JobModel({
     required this.id,
@@ -760,211 +872,305 @@ class _JobModel {
     required this.salaryMax,
     required this.approval,
     required this.featured,
+    this.raw,
   });
 }
 
 class _FeaturedJobCard extends StatelessWidget {
   final _JobModel item;
-  const _FeaturedJobCard({Key? key, required this.item}) : super(key: key);
+  final void Function()? onView;
+  final void Function()? onApply;
+
+  const _FeaturedJobCard({
+    Key? key,
+    required this.item,
+    this.onView,
+    this.onApply,
+  }) : super(key: key);
 
   String _salaryText() {
-    if ((item.salaryMin.isEmpty ||
-            item.salaryMin == '0' ||
-            item.salaryMin == '0.00') &&
-        (item.salaryMax.isEmpty ||
-            item.salaryMax == '0' ||
-            item.salaryMax == '0.00')) {
-      return 'Salary not disclosed';
-    }
-    if (item.salaryMin.isEmpty || item.salaryMax.isEmpty) {
-      return '₹${item.salaryMin.isNotEmpty ? item.salaryMin : item.salaryMax}';
-    }
-    return '₹${item.salaryMin} - ₹${item.salaryMax}';
+    final a = item.salaryMin;
+    final b = item.salaryMax;
+    if ((a.isEmpty || a == '0' || a == '0.00') &&
+        (b.isEmpty || b == '0' || b == '0.00'))
+      return 'Not specified';
+    if (a.isEmpty && b.isNotEmpty) return '₹$b';
+    if (b.isEmpty && a.isNotEmpty) return '₹$a';
+    if (a == b) return '₹$a';
+    return '₹$a - ₹$b';
   }
 
-  String _companyInitials() {
-    // Try category as company-ish label; fall back to title first letter
-    final source = (item.category.isNotEmpty) ? item.category : item.title;
-    if (source.trim().isEmpty) return 'J';
-    final parts = source.trim().split(RegExp(r'\s+'));
-    if (parts.length == 1) return parts.first[0].toUpperCase();
-    return (parts[0][0] + parts[1][0]).toUpperCase();
+  Map<String, String> _jobMapFromRaw() {
+    final raw = item.raw ?? <String, dynamic>{};
+    return raw.map((k, v) => MapEntry(k.toString(), v?.toString() ?? ''));
   }
 
   @override
   Widget build(BuildContext context) {
-    final approved = item.approval == 1;
-    return Card(
-      elevation: 6,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          children: [
-            // header row
-            Row(
-              children: [
-                CircleAvatar(
-                  radius: 24,
-                  backgroundColor: AppColors.primary.withOpacity(0.12),
-                  child: Text(
-                    _companyInitials(),
-                    style: TextStyle(
-                      color: AppColors.primary,
-                      fontWeight: FontWeight.bold,
+    final title = item.title;
+    final location = item.location.isEmpty
+        ? 'Location not specified'
+        : item.location;
+    final jobType = item.jobType;
+    final salary = _salaryText();
+    final jobMap = _jobMapFromRaw();
+
+    final rawDesc =
+        (item.raw?['job_description'] ?? item.raw?['description'] ?? '')
+            .toString()
+            .trim();
+    final snippet = rawDesc.isEmpty
+        ? ''
+        : (rawDesc.length > 100 ? '${rawDesc.substring(0, 100)}...' : rawDesc);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Decide the "mobile" breakpoint either by available width or by overall screen width.
+        final bool isNarrow =
+            constraints.maxWidth < 360 ||
+            MediaQuery.of(context).size.width < 600;
+
+        Widget leftIcon = Container(
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            color: AppColors.primary.withOpacity(0.08),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          alignment: Alignment.center,
+          child: Icon(Icons.work_outline, color: AppColors.primary, size: 22),
+        );
+
+        Widget centerContent = Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Title
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+
+              const SizedBox(height: 8),
+
+              // meta row: location + jobType (wraps)
+              Row(
+                children: [
+                  Icon(
+                    Icons.location_on,
+                    size: 14,
+                    color: Colors.grey.shade600,
+                  ),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      location,
+                      style: TextStyle(color: Colors.grey.shade700),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        item.title,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.work_outline,
-                            size: 14,
-                            color: Colors.grey.shade600,
-                          ),
-                          const SizedBox(width: 6),
-                          Flexible(
-                            child: Text(
-                              item.category,
-                              style: TextStyle(color: Colors.grey.shade700),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                // badges
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    if (item.featured == 1)
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        margin: const EdgeInsets.only(bottom: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.blue.withOpacity(0.08),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: Colors.blue.withOpacity(0.14),
-                          ),
-                        ),
-                        child: const Text(
-                          'FEATURED',
-                          style: TextStyle(
-                            color: Colors.blue,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 11,
-                          ),
-                        ),
-                      ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: approved
-                            ? Colors.green.withOpacity(0.08)
-                            : Colors.orange.withOpacity(0.08),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: approved
-                              ? Colors.green.withOpacity(0.14)
-                              : Colors.orange.withOpacity(0.14),
-                        ),
-                      ),
+                  if (jobType.isNotEmpty) ...[
+                    const SizedBox(width: 12),
+                    Icon(
+                      Icons.work_outline,
+                      size: 14,
+                      color: Colors.grey.shade600,
+                    ),
+                    const SizedBox(width: 6),
+                    Flexible(
                       child: Text(
-                        approved ? 'APPROVED' : 'PENDING',
-                        style: TextStyle(
-                          color: approved ? Colors.green : Colors.orange,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 11,
-                        ),
+                        jobType,
+                        style: TextStyle(color: Colors.grey.shade700),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
-                ),
-              ],
-            ),
+                ],
+              ),
 
-            const SizedBox(height: 12),
+              const SizedBox(height: 5),
 
-            // details row
-            Row(
-              children: [
-                Icon(
-                  Icons.location_on_outlined,
-                  size: 16,
-                  color: Colors.grey.shade600,
-                ),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    item.location.isEmpty
-                        ? 'Location not specified'
-                        : item.location,
+              // salary row
+              Row(
+                children: [
+                  Icon(
+                    Icons.monetization_on_outlined,
+                    size: 14,
+                    color: Colors.grey.shade600,
                   ),
-                ),
-                const SizedBox(width: 12),
-                Icon(Icons.schedule, size: 16, color: Colors.grey.shade600),
-                const SizedBox(width: 6),
-                Text(item.jobType.isEmpty ? '—' : item.jobType),
-              ],
-            ),
-
-            const SizedBox(height: 10),
-
-            // salary + actions
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    _salaryText(),
-                    style: const TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    // TODO: navigate to job details or apply screen
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 10,
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      salary,
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 3),
+
+              // description snippet
+              if (snippet.isNotEmpty)
+                Text(
+                  snippet,
+                  style: const TextStyle(color: Colors.black87),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+            ],
+          ),
+        );
+
+        // Buttons (shared widget, styled)
+        Widget viewButton = SizedBox(
+          width: 88,
+          height: 30,
+          child: ElevatedButton(
+            onPressed:
+                onView ??
+                () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => JobDetailPage(job: jobMap),
+                    ),
+                  );
+                },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              padding: EdgeInsets.zero,
+              minimumSize: const Size(84, 36),
+            ),
+            child: const Text(
+              'View',
+              style: TextStyle(fontSize: 13, color: Colors.white),
+            ),
+          ),
+        );
+
+        Widget applyButton = SizedBox(
+          width: 88,
+          height: 30,
+          child:
+              context
+                      .findAncestorStateOfType<_FeaturedJobsState>()
+                      ?._isApplying(item.id.toString()) ==
+                  true
+              ? const Center(
+                  child: SizedBox(
+                    height: 18,
+                    width: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                )
+              : OutlinedButton(
+                  onPressed:
+                      onApply ??
+                      () {
+                        final parent = context
+                            .findAncestorStateOfType<_FeaturedJobsState>()!;
+                        parent._applyForJob(_jobMapFromRaw());
+                      },
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: AppColors.primary),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(20),
                     ),
                   ),
                   child: const Text(
-                    'Apply',
-                    style: TextStyle(color: Colors.white),
+                    "Apply",
+                    style: TextStyle(fontSize: 13, color: AppColors.primary),
                   ),
                 ),
-              ],
+        );
+
+        // Build layout
+        if (isNarrow) {
+          // Mobile: stack content vertically and place action buttons in a row under the content
+          return Card(
+            elevation: 3,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
             ),
-          ],
-        ),
-      ),
+            clipBehavior: Clip.hardEdge,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 14.0,
+                vertical: 8.0,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      leftIcon,
+                      const SizedBox(width: 14),
+                      centerContent,
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  // Buttons row aligned to end but flexible
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      // add spacing so buttons don't touch on very small widths
+                      viewButton,
+                      const SizedBox(width: 8),
+                      applyButton,
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        } else {
+          // Wider: original horizontal layout with action column
+          return Card(
+            elevation: 3,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            clipBehavior: Clip.hardEdge,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 14.0,
+                vertical: 14.0,
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  leftIcon,
+                  const SizedBox(width: 14),
+                  centerContent,
+                  const SizedBox(width: 12),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      viewButton,
+                      const SizedBox(height: 8),
+                      applyButton,
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+      },
     );
   }
 }

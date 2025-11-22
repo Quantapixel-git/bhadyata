@@ -122,10 +122,12 @@ class _FaqState extends State<Faq> {
           return Scaffold(
             backgroundColor: Colors.grey.shade100,
             appBar: AppBar(
-              automaticallyImplyLeading: false,
+                  iconTheme: IconThemeData(color: Colors.white),
+            
+              automaticallyImplyLeading: true,
               backgroundColor: AppColors.primary, // changed as requested
               elevation: 2,
-              iconTheme: const IconThemeData(color: Colors.white),
+              // iconTheme: const IconThemeData(color: Colors.white),
               title: const Text(
                 "FAQ",
                 style: TextStyle(

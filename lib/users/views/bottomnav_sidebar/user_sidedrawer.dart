@@ -1,7 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
-import 'package:jobshub/common/views/onboarding/onboarding_screen.dart';
+import 'package:jobshub/common/views/onboarding/mobile_onboarding_screen.dart';
+import 'package:jobshub/common/views/onboarding/web_onboarding_screen.dart';
 import 'package:jobshub/users/views/drawer_pages/kyc_upload.dart';
 import 'package:jobshub/users/views/bottomnav_sidebar/bottom_nav.dart';
 import 'package:jobshub/users/views/drawer_pages/job_application/my_salary_based_job.dart';
@@ -14,6 +15,125 @@ import 'package:jobshub/users/views/drawer_pages/leaves_attendence/user_leave_re
 import 'package:jobshub/users/views/drawer_pages/project_application/projects_screen.dart';
 import 'package:jobshub/users/views/drawer_pages/job_application/user_one_time_recruit.dart';
 import 'package:jobshub/common/utils/app_color.dart';
+
+/// ------------------------
+/// Top-level helpers
+/// ------------------------
+
+Future<String> _getStoredJobType() async {
+  final jt = await SessionManager.getValue('job_type') ?? '';
+  return jt.trim();
+}
+
+/// Build menu children widgets for a given jobType.
+/// isWeb controls compact vs full styles. isCollapsed controls icon visibility in web.
+List<Widget> _buildMenuChildrenForType(
+  BuildContext context,
+  String jobType, {
+  required bool isWeb,
+  required bool isCollapsed,
+}) {
+  final normalized = jobType.toLowerCase();
+
+  // Project
+  Widget projItem = ListTile(
+    leading: const Icon(
+      Icons.folder_copy_outlined,
+      color: Colors.black87,
+      size: 22,
+    ),
+    title: Text(
+      "View Projects",
+      style: TextStyle(
+        fontSize: isWeb ? 13.5 : 15,
+        color: Colors.black87,
+        fontWeight: isWeb ? FontWeight.w400 : FontWeight.w500,
+      ),
+      overflow: TextOverflow.ellipsis,
+    ),
+    dense: isWeb,
+    contentPadding: EdgeInsets.only(left: isWeb ? (isCollapsed ? 12 : 16) : 0),
+    onTap: () =>
+        Navigator.push(context, MaterialPageRoute(builder: (_) => Projects())),
+  );
+
+  // Salary
+  Widget salaryItem = ListTile(
+    leading: const Icon(Icons.work_outline, color: Colors.black87, size: 22),
+    title: Text(
+      "Salary Based Job",
+      style: TextStyle(
+        fontSize: isWeb ? 13.5 : 15,
+        color: Colors.black87,
+        fontWeight: isWeb ? FontWeight.w400 : FontWeight.w500,
+      ),
+      overflow: TextOverflow.ellipsis,
+    ),
+    dense: isWeb,
+    onTap: () => Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => SalaryJobsScreen()),
+    ),
+  );
+
+  // One-time
+  Widget oneTimeItem = ListTile(
+    leading: const Icon(Icons.work_outline, color: Colors.black87, size: 22),
+    title: Text(
+      "One-Time Recruitment",
+      style: TextStyle(
+        fontSize: isWeb ? 13.5 : 15,
+        color: Colors.black87,
+        fontWeight: isWeb ? FontWeight.w400 : FontWeight.w500,
+      ),
+      overflow: TextOverflow.ellipsis,
+    ),
+    dense: isWeb,
+    onTap: () => Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => OneTimeRecruitmentScreen()),
+    ),
+  );
+
+  // Commission
+  Widget commissionItem = ListTile(
+    leading: const Icon(Icons.work_outline, color: Colors.black87, size: 22),
+    title: Text(
+      "Commission Based Job",
+      style: TextStyle(
+        fontSize: isWeb ? 13.5 : 15,
+        color: Colors.black87,
+        fontWeight: isWeb ? FontWeight.w400 : FontWeight.w500,
+      ),
+      overflow: TextOverflow.ellipsis,
+    ),
+    dense: isWeb,
+    onTap: () => Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => CommissionJobsScreen()),
+    ),
+  );
+
+  // Show everything if empty or 'all'
+  if (normalized.isEmpty || normalized == 'all') {
+    return [projItem, salaryItem, oneTimeItem, commissionItem];
+  }
+
+  if (normalized.contains('project')) return [projItem];
+  if (normalized.contains('salary')) return [salaryItem];
+  if (normalized.contains('one') ||
+      normalized.contains('one-time') ||
+      normalized.contains('onetim'))
+    return [oneTimeItem];
+  if (normalized.contains('commission')) return [commissionItem];
+
+  // fallback
+  return [projItem, salaryItem, oneTimeItem, commissionItem];
+}
+
+/// ------------------------
+/// App Drawer Widgets
+/// ------------------------
 
 /// ✅ MAIN WRAPPER that decides which sidebar to show
 class AppDrawer extends StatelessWidget {
@@ -39,7 +159,7 @@ class AppDrawer extends StatelessWidget {
 }
 
 ////////////////////////////////////////////////////////////////
-/// 📱 FULL MOBILE VERSION (with all items from original drawer)
+/// 📱 FULL MOBILE VERSION
 ////////////////////////////////////////////////////////////////
 class AppDrawerMobile extends StatelessWidget {
   const AppDrawerMobile({super.key});
@@ -48,7 +168,10 @@ class AppDrawerMobile extends StatelessWidget {
   Widget build(BuildContext context) {
     return SafeArea(
       child: ClipRRect(
-        // borderRadius: const BorderRadius.only(topRight: Radius.circular(26)),
+        borderRadius: const BorderRadius.only(
+          bottomRight: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
         child: Container(
           width: 240,
           decoration: BoxDecoration(
@@ -67,205 +190,114 @@ class AppDrawerMobile extends StatelessWidget {
           ),
           child: Column(
             children: [
-              _buildHeader(),
-              const SizedBox(height: 10),
-              const Divider(height: 1, color: Colors.black12),
+              _buildHeaderMobile(),
+              // const SizedBox(height: 10),
+              // const Divider(height: 1, color: Colors.black12),
               Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 8,
-                    horizontal: 10,
-                  ),
-                  children: [
-                    _sectionTitle("👤 Dashboard"),
-                    _sidebarItem(context, Icons.home_outlined, "Home", () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const MainBottomNav(),
-                        ),
-                      );
-                    }),
-                    _sidebarItem(context, Icons.person_outline, "Profile", () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const ProfileScreen(),
-                        ),
-                      );
-                    }),
-                    _sidebarItem(context, Icons.approval, "KYC", () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const KycUploadPage(),
-                        ),
-                      );
-                    }),
-                    // ExpansionTile(
-                    //   leading: const Icon(
-                    //     Icons.folder_copy_outlined,
-                    //     color: Colors.black87,
-                    //     size: 22,
-                    //   ),
-                    //   title: const Text(
-                    //     "Project Applications",
-                    //     style: TextStyle(
-                    //       color: Colors.black87,
-                    //       fontSize: 14.5,
-                    //       fontWeight: FontWeight.w600,
-                    //     ),
-                    //   ),
-                    //   iconColor: AppColors.primary,
-                    //   collapsedIconColor: Colors.black54,
-                    //   childrenPadding: const EdgeInsets.only(
-                    //     left: 30,
-                    //     bottom: 4,
-                    //     right: 8,
-                    //   ),
-                    //   children: [
-                    //     _expTileChild(context, "View Projects", () {
-                    //       Navigator.push(
-                    //         context,
-                    //         MaterialPageRoute(builder: (_) => Projects()),
-                    //       );
-                    //     }),
-                    //   ],
-                    // ),
-                    ExpansionTile(
-                      leading: const Icon(
-                        Icons.work_outline,
-                        color: Colors.black87,
-                        size: 22,
-                      ),
-                      title: const Text(
-                        "Job Applications",
-                        style: TextStyle(
-                          color: Colors.black87,
-                          fontSize: 14.5,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      iconColor: AppColors.primary,
-                      collapsedIconColor: Colors.black54,
-                      childrenPadding: const EdgeInsets.only(
-                        left: 30,
-                        bottom: 4,
-                        right: 8,
-                      ),
-                      children: [
-                        _expTileChild(context, "Salary Based Job", () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => SalaryJobsScreen(),
-                            ),
-                          );
-                        }),
-                        _expTileChild(context, "One-Time Recruitment", () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => OneTimeRecruitmentScreen(),
-                            ),
-                          );
-                        }),
-                        _expTileChild(context, "Commission Based Job", () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => CommissionJobsScreen(),
-                            ),
-                          );
-                        }),
-                      ],
-                    ),
-                    ExpansionTile(
-                      leading: const Icon(
-                        Icons.calendar_today_outlined,
-                        color: Colors.black87,
-                        size: 22,
-                      ),
-                      title: const Text(
-                        "Leaves & Attendance",
-                        style: TextStyle(
-                          color: Colors.black87,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      iconColor: AppColors.primary,
-                      collapsedIconColor: Colors.black54,
-                      childrenPadding: const EdgeInsets.only(
-                        left: 20,
-                        bottom: 4,
-                        right: 8,
-                      ),
-                      children: [
-                        _expTileChild(context, "Manage Leaves", () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => EmployeeLeaveRequestScreen(),
-                            ),
-                          );
-                        }),
-                        _expTileChild(context, "Attendance", () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => EmployeeAttendanceScreen(
-                               
-                              ),
-                            ),
-                          );
-                        }),
-                      ],
-                    ),
-                    const Divider(height: 25),
-                    _sectionTitle("🧭 Support & Others"),
-                    _sidebarItem(
-                      context,
-                      Icons.contact_mail_outlined,
-                      "Query Portal",
-                      () {
+                child: FutureBuilder<String>(
+                  future: _getStoredJobType(),
+                  builder: (context, snap) {
+                    final jobType = snap.data ?? '';
+
+                    final preItems = <Widget>[
+                      _sectionTitle("👤 Dashboard"),
+                      _sidebarItem(context, Icons.home_outlined, "Home", () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => const UserQueryToAdminPage(),
+                            builder: (_) => const MainBottomNav(),
                           ),
                         );
-                      },
-                    ),
-                    _sidebarItem(context, Icons.help_outline, "FAQ", () {
-                      Navigator.push(
+                      }),
+                      _sidebarItem(
                         context,
-                        MaterialPageRoute(builder: (_) => const Faq()),
-                      );
-                    }),
-                    _sidebarItem(context, Icons.logout, "Logout", () async {
-                      // final prefs = await SharedPreferences.getInstance();
-                      await SessionManager.clearAll();
-                      // await prefs.clear();
-                      debugPrint("✅ SharedPreferences cleared successfully!");
+                        Icons.person_outline,
+                        "Profile",
+                        () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const ProfileScreen(),
+                            ),
+                          );
+                        },
+                      ),
+                      _sidebarItem(context, Icons.approval, "KYC", () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const KycUploadPage(),
+                          ),
+                        );
+                      }),
+                    ];
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          behavior: SnackBarBehavior.floating,
-                          content: Text("Logged out successfully."),
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
+                    final dynamicChildren = _buildMenuChildrenForType(
+                      context,
+                      jobType,
+                      isWeb: false,
+                      isCollapsed: false,
+                    );
 
-                      Navigator.pushAndRemoveUntil(
+                    final postItems = <Widget>[
+                      const Divider(height: 25),
+                      _sectionTitle("🧭 Support & Others"),
+                      _sidebarItem(
                         context,
-                        MaterialPageRoute(
-                          builder: (_) => const OnboardingPage(),
-                        ),
-                        (route) => false,
-                      );
-                    }),
-                  ],
+                        Icons.contact_mail_outlined,
+                        "Query Portal",
+                        () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const UserQueryToAdminPage(),
+                            ),
+                          );
+                        },
+                      ),
+                      _sidebarItem(context, Icons.help_outline, "FAQ", () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const Faq()),
+                        );
+                      }),
+                      _sidebarItem(context, Icons.logout, "Logout", () async {
+                        await SessionManager.clearAll();
+                        debugPrint("✅ SharedPreferences cleared successfully!");
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            behavior: SnackBarBehavior.floating,
+                            content: Text("Logged out successfully."),
+                            duration: Duration(seconds: 2),
+                          ),
+                        );
+                        final bool isWebPlatform =
+                            kIsWeb || MediaQuery.of(context).size.width > 800;
+
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => isWebPlatform
+                                ? const WebOnboardingPage() // your web onboarding
+                                : const MobileOnboardingPage(), // your mobile onboarding
+                          ),
+                          (route) => false,
+                        );
+                      }),
+                    ];
+
+                    if (snap.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    return ListView(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 8,
+                        horizontal: 10,
+                      ),
+                      children: [...preItems, ...dynamicChildren, ...postItems],
+                    );
+                  },
                 ),
               ),
             ],
@@ -275,8 +307,7 @@ class AppDrawerMobile extends StatelessWidget {
     );
   }
 
-  // Replace AppDrawerMobile._buildHeader()
-  Widget _buildHeader() {
+  Widget _buildHeaderMobile() {
     Future<Map<String, String>> _fetchProfile() async {
       final first = await SessionManager.getValue('first_name') ?? '';
       final last = await SessionManager.getValue('last_name') ?? '';
@@ -310,56 +341,80 @@ class AppDrawerMobile extends StatelessWidget {
           avatarImage = const AssetImage('assets/job_bgr.png');
         }
 
-        return Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                AppColors.primary.withOpacity(0.95),
-                AppColors.primary.withOpacity(0.75),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
+        // CURVED header: bottom-left curve similar to HR header
+        return ClipRRect(
+          borderRadius: const BorderRadius.only(
+            bottomLeft: Radius.circular(30),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CircleAvatar(
-                radius: 38,
-                backgroundColor: Colors.white,
-                child: ClipOval(
-                  child: SizedBox(
-                    height: 76,
-                    width: 76,
-                    child: Image(
-                      image: avatarImage,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) =>
-                          Image.asset('assets/job_bgr.png', fit: BoxFit.cover),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.primary.withOpacity(0.95),
+                  AppColors.primary.withOpacity(0.75),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              // If you want an elevated look add a subtle shadow:
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.06),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 38,
+                  backgroundColor: Colors.white,
+                  child: ClipOval(
+                    child: SizedBox(
+                      height: 76,
+                      width: 76,
+                      child: Image(
+                        image: avatarImage,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Image.asset(
+                          'assets/job_bgr.png',
+                          fit: BoxFit.cover,
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                name,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        name,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        email,
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.9),
+                          fontSize: 13,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                email,
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.9),
-                  fontSize: 13,
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
@@ -440,7 +495,7 @@ class AppDrawerWeb extends StatelessWidget {
       ),
       child: Column(
         children: [
-          _buildHeader(),
+          _buildHeaderWeb(),
           const Divider(height: 0),
           Expanded(
             child: SingleChildScrollView(
@@ -448,120 +503,183 @@ class AppDrawerWeb extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _sectionTitle("👤 Dashboard"),
-
-                  _menuItem(context, Icons.home_outlined, "Home", () {
-                    Navigator.push(
+                  _sectionTitleWeb("👤 Dashboard"),
+                  _menuItem(
+                    context,
+                    Icons.home_outlined,
+                    "Home",
+                    () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const MainBottomNav()),
-                    );
-                  }),
-                  _menuItem(context, Icons.person_outline, "Profile", () {
-                    Navigator.push(
+                    ),
+                  ),
+                  _menuItem(
+                    context,
+                    Icons.person_outline,
+                    "Profile",
+                    () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const ProfileScreen()),
-                    );
-                  }),
-                  _menuItem(context, Icons.approval, "KYC", () {
-                    Navigator.push(
+                    ),
+                  ),
+                  _menuItem(
+                    context,
+                    Icons.approval,
+                    "KYC",
+                    () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const KycUploadPage()),
-                    );
-                  }),
-                  // _expansionGroup(
-                  //   context,
-                  //   Icons.folder_copy_outlined,
-                  //   "Project Applications",
-                  //   [
-                  //     _expTileChild(context, "View Projects", () {
-                  //       Navigator.push(
-                  //         context,
-                  //         MaterialPageRoute(builder: (_) => Projects()),
-                  //       );
-                  //     }),
-                  //   ],
-                  // ),
-                  _expansionGroup(
-                    context,
-                    Icons.work_outline,
-                    "Job Applications",
-                    [
-                      _expTileChild(context, "Salary Based Job", () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => SalaryJobsScreen()),
-                        );
-                      }),
-                      _expTileChild(context, "One-Time Recruitment", () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => OneTimeRecruitmentScreen(),
-                          ),
-                        );
-                      }),
-                      _expTileChild(context, "Commission Based Job", () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => CommissionJobsScreen(),
-                          ),
-                        );
-                      }),
-                    ],
+                    ),
                   ),
+
+                  // DYNAMIC APPLICATIONS AREA (web)
+                  FutureBuilder<String>(
+                    future: _getStoredJobType(),
+                    builder: (context, snap) {
+                      final jobType = (snap.data ?? '').toLowerCase();
+
+                      if (snap.connectionState == ConnectionState.waiting) {
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 12),
+                          child: Center(
+                            child: SizedBox(
+                              height: 24,
+                              width: 24,
+                              child: CircularProgressIndicator(),
+                            ),
+                          ),
+                        );
+                      }
+
+                      final children = _buildMenuChildrenForType(
+                        context,
+                        jobType,
+                        isWeb: true,
+                        isCollapsed: isCollapsed,
+                      );
+
+                      // If only one relevant item, render with _menuItem (keeps icon + spacing identical to other menu entries)
+                      if (children.length == 1) {
+                        if (jobType.contains('project')) {
+                          return _menuItem(
+                            context,
+                            Icons.folder_copy_outlined,
+                            "View Projects",
+                            () => Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => Projects()),
+                            ),
+                          );
+                        }
+                        if (jobType.contains('salary')) {
+                          return _menuItem(
+                            context,
+                            Icons.work_outline,
+                            "Salary Based Job",
+                            () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => SalaryJobsScreen(),
+                              ),
+                            ),
+                          );
+                        }
+                        if (jobType.contains('one') ||
+                            jobType.contains('one-time') ||
+                            jobType.contains('onetim')) {
+                          return _menuItem(
+                            context,
+                            Icons.work_outline,
+                            "One-Time Recruitment",
+                            () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => OneTimeRecruitmentScreen(),
+                              ),
+                            ),
+                          );
+                        }
+                        if (jobType.contains('commission')) {
+                          return _menuItem(
+                            context,
+                            Icons.work_outline,
+                            "Commission Based Job",
+                            () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => CommissionJobsScreen(),
+                              ),
+                            ),
+                          );
+                        }
+
+                        // fallback: just return the child (shouldn't usually happen)
+                        return children.first;
+                      }
+
+                      // multiple children -> show grouped expansion
+                      return _expansionGroup(
+                        context,
+                        Icons.work_outline,
+                        "Job Applications",
+                        children,
+                      );
+                    },
+                  ),
+
+                  // Leaves & Attendance and rest unchanged
                   _expansionGroup(
                     context,
                     Icons.calendar_today_outlined,
                     "Leaves & Attendance",
                     [
-                      _expTileChild(context, "Manage Leaves", () {
-                        Navigator.push(
+                      _expTileChild(
+                        context,
+                        "Manage Leaves",
+                        () => Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (_) => EmployeeLeaveRequestScreen(),
                           ),
-                        );
-                      }),
-                      _expTileChild(context, "Attendance", () {
-                        Navigator.push(
+                        ),
+                      ),
+                      _expTileChild(
+                        context,
+                        "Attendance",
+                        () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => EmployeeAttendanceScreen(
-                           
-                            ),
+                            builder: (_) => EmployeeAttendanceScreen(),
                           ),
-                        );
-                      }),
+                        ),
+                      ),
                     ],
                   ),
-                  _divider(),
-                  _sectionTitle("🧭 Support & Others"),
+
+                  _dividerWeb(),
                   _menuItem(
                     context,
                     Icons.contact_mail_outlined,
                     "Query Portal",
-                    () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const UserQueryToAdminPage(),
-                        ),
-                      );
-                    },
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const UserQueryToAdminPage(),
+                      ),
+                    ),
                   ),
-                  _menuItem(context, Icons.help_outline, "FAQ", () {
-                    Navigator.push(
+                  _menuItem(
+                    context,
+                    Icons.help_outline,
+                    "FAQ",
+                    () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const Faq()),
-                    );
-                  }),
+                    ),
+                  ),
                   _menuItem(context, Icons.logout, "Logout", () async {
-                    // final prefs = await SharedPreferences.getInstance();
                     await SessionManager.clearAll();
-                    // await prefs.clear();
                     debugPrint("✅ SharedPreferences cleared successfully!");
-
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         behavior: SnackBarBehavior.floating,
@@ -569,10 +687,16 @@ class AppDrawerWeb extends StatelessWidget {
                         duration: Duration(seconds: 2),
                       ),
                     );
+                    final bool isWebPlatform =
+                        kIsWeb || MediaQuery.of(context).size.width > 800;
 
                     Navigator.pushAndRemoveUntil(
                       context,
-                      MaterialPageRoute(builder: (_) => const OnboardingPage()),
+                      MaterialPageRoute(
+                        builder: (_) => isWebPlatform
+                            ? const WebOnboardingPage() // your web onboarding
+                            : const MobileOnboardingPage(), // your mobile onboarding
+                      ),
                       (route) => false,
                     );
                   }),
@@ -596,14 +720,12 @@ class AppDrawerWeb extends StatelessWidget {
     );
   }
 
-  // Replace AppDrawerWeb._buildHeader()
-  Widget _buildHeader() {
+  Widget _buildHeaderWeb() {
     Future<Map<String, String>> _fetchProfile() async {
       final first = await SessionManager.getValue('first_name') ?? '';
       final last = await SessionManager.getValue('last_name') ?? '';
       final email = await SessionManager.getValue('email') ?? '';
       final image = await SessionManager.getValue('profile_image') ?? '';
-
       final fullName = (first + ' ' + last).trim();
       return {
         'name': fullName.isNotEmpty ? fullName : '',
@@ -771,7 +893,7 @@ class AppDrawerWeb extends StatelessWidget {
     );
   }
 
-  Widget _sectionTitle(String title) {
+  Widget _sectionTitleWeb(String title) {
     if (isCollapsed) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 10, 0, 4),
@@ -786,7 +908,7 @@ class AppDrawerWeb extends StatelessWidget {
     );
   }
 
-  Widget _divider() =>
+  Widget _dividerWeb() =>
       isCollapsed ? const SizedBox.shrink() : const Divider(height: 20);
 }
 
@@ -807,7 +929,6 @@ class _AppDrawerWrapperState extends State<AppDrawerWrapper> {
     final bool isWeb = kIsWeb && MediaQuery.of(context).size.width > 800;
 
     if (isWeb) {
-      // 💻 Web Layout with Sidebar + Main Content
       return Scaffold(
         backgroundColor: Colors.grey.shade100,
         body: Row(
@@ -822,7 +943,6 @@ class _AppDrawerWrapperState extends State<AppDrawerWrapper> {
         ),
       );
     } else {
-      // 📱 Mobile Layout with Drawer
       return Scaffold(
         drawer: const AppDrawer(),
         backgroundColor: Colors.grey.shade100,

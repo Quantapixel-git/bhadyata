@@ -1,3 +1,4 @@
+// hr - redesigned to match admin review UI
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -284,167 +285,277 @@ class EmployerSummary {
   }
 }
 
-/// ======= UI pieces =======
+/// ======= UI pieces (admin-style card for HR) =======
 
-class _EmployerCard extends StatelessWidget {
+class _EmployerCard extends StatefulWidget {
   final EmployerSummary data;
   final VoidCallback onViewDetails;
-
   const _EmployerCard({required this.data, required this.onViewDetails});
 
   @override
+  State<_EmployerCard> createState() => _EmployerCardState();
+}
+
+class _EmployerCardState extends State<_EmployerCard> {
+  bool _hover = false;
+
+  @override
   Widget build(BuildContext context) {
+    final data = widget.data;
     final fullName = '${data.firstName} ${data.lastName}'.trim();
 
-    return Card(
-      elevation: 2.5,
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          children: [
-            // Header
-            Row(
-              children: [
-                _AvatarInitials(name: fullName),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hover = true),
+      onExit: (_) => setState(() => _hover = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        transform: _hover
+            ? (Matrix4.identity()..translate(0, -4))
+            : Matrix4.identity(),
+        child: Material(
+          elevation: _hover ? 6 : 2,
+          borderRadius: BorderRadius.circular(12),
+          color: Colors.white,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: widget.onViewDetails,
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Row(
+                children: [
+                  // left: avatar + rating badge
+                  Stack(
+                    alignment: Alignment.bottomRight,
                     children: [
-                      Text(
-                        fullName.isEmpty ? '—' : fullName,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 16,
-                        ),
+                      _AvatarInitials(
+                        name: fullName,
+                        imageUrl: data.profileImage,
                       ),
-                      if ((data.email ?? '').isNotEmpty)
-                        Text(
-                          data.email!,
-                          style: const TextStyle(
-                            color: Colors.black54,
-                            fontSize: 12.5,
+                      Container(
+                        padding: const EdgeInsets.all(5),
+                        margin: const EdgeInsets.only(right: 2, bottom: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(color: Colors.black12, blurRadius: 4),
+                          ],
+                        ),
+                        child: CircleAvatar(
+                          radius: 14,
+                          backgroundColor: AppColors.primary,
+                          child: Text(
+                            data.average.toStringAsFixed(1),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
                           ),
                         ),
+                      ),
                     ],
                   ),
-                ),
-                OutlinedButton.icon(
-                  onPressed: onViewDetails,
-                  style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: Colors.grey.shade300),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                  const SizedBox(width: 14),
+
+                  // middle: main content
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // title row
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                fullName.isEmpty ? '—' : fullName,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            // compact count
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade50,
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: Colors.grey.shade200),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.person_2_outlined,
+                                    size: 14,
+                                    color: Colors.black54,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    '${data.count}',
+                                    style: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+
+                        if ((data.email ?? '').isNotEmpty) ...[
+                          const SizedBox(height: 6),
+                          Text(
+                            data.email!,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey.shade700,
+                            ),
+                          ),
+                        ],
+
+                        const SizedBox(height: 12),
+
+                        // distribution + last rated
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _DistributionBarSimple(
+                                distribution: data.distribution,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Row(
+                                  children: [
+                                    _StarBar(value: data.average),
+                                    const SizedBox(width: 6),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.grey.shade100,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        data.average.toStringAsFixed(1),
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  'Last rated: ${data.lastRatedAt ?? '-'}',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
-                  icon: const Icon(Icons.visibility, size: 18),
-                  label: const Text('View'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
 
-            // Rating Bar + Average
-            Row(
-              children: [
-                _StarBar(value: data.average),
-                const SizedBox(width: 8),
-                Text(
-                  data.average.toStringAsFixed(1),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
+                  // right: actions
+                  const SizedBox(width: 12),
+                  PopupMenuButton<int>(
+                    tooltip: 'Actions',
+                    onSelected: (v) {
+                      if (v == 1) widget.onViewDetails();
+                    },
+                    itemBuilder: (_) => [
+                      const PopupMenuItem(
+                        value: 1,
+                        child: ListTile(
+                          leading: Icon(Icons.people),
+                          title: Text('View raters'),
+                        ),
+                      ),
+                    ],
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        color: Colors.transparent,
+                      ),
+                      child: const Icon(Icons.more_vert, color: Colors.black54),
+                    ),
                   ),
-                ),
-                const Spacer(),
-                _ChipStat(label: 'Total', value: data.count.toString()),
-              ],
-            ),
-            const SizedBox(height: 8),
-
-            // Distribution line
-            _DistributionBar(distribution: data.distribution),
-            const SizedBox(height: 8),
-
-            // Footer
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                'Last rated: ${data.lastRatedAt ?? '-'}',
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _DistributionBar extends StatelessWidget {
-  final Map<int, int> distribution; // 1..5
-  const _DistributionBar({required this.distribution});
+/// compact distribution - horizontal stacked thin bars
+class _DistributionBarSimple extends StatelessWidget {
+  final Map<int, int> distribution;
+  const _DistributionBarSimple({required this.distribution});
 
   @override
   Widget build(BuildContext context) {
     final total = distribution.values.fold<int>(0, (a, b) => a + b);
-    Widget bar(int star) {
-      final val = distribution[star] ?? 0;
-      final pct = total == 0 ? 0.0 : val / total;
-      return Row(
-        children: [
-          SizedBox(
-            width: 22,
-            child: Text(
-              '$star★',
-              style: const TextStyle(fontSize: 11, color: Colors.black54),
-            ),
-          ),
-          const SizedBox(width: 6),
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: LinearProgressIndicator(
-                value: pct,
-                minHeight: 8,
-                backgroundColor: Colors.grey.shade200,
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          SizedBox(
-            width: 28,
-            child: Text(
-              '$val',
-              textAlign: TextAlign.right,
-              style: const TextStyle(fontSize: 11, color: Colors.black87),
-            ),
-          ),
-        ],
+    if (total == 0) {
+      return Container(
+        height: 14,
+        alignment: Alignment.centerLeft,
+        child: Text(
+          'No ratings',
+          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+        ),
       );
     }
 
-    return Column(
-      children: [
-        bar(5),
-        const SizedBox(height: 6),
-        bar(4),
-        const SizedBox(height: 6),
-        bar(3),
-        const SizedBox(height: 6),
-        bar(2),
-        const SizedBox(height: 6),
-        bar(1),
-      ],
-    );
+    final children = <Widget>[];
+    for (var s = 5; s >= 1; s--) {
+      final val = distribution[s] ?? 0;
+      final pct = total == 0 ? 0.0 : val / total;
+      children.add(
+        Expanded(
+          flex: (pct * 1000).round().clamp(1, 1000),
+          child: Tooltip(
+            message: '$s ★ — $val (${(pct * 100).toStringAsFixed(0)}%)',
+            child: Container(
+              height: 10,
+              margin: const EdgeInsets.symmetric(horizontal: 2),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.14 + (s * 0.04)),
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Row(children: children);
   }
 }
 
 class _AvatarInitials extends StatelessWidget {
   final String name;
-  const _AvatarInitials({required this.name});
+  final String? imageUrl;
+  const _AvatarInitials({required this.name, this.imageUrl});
 
   @override
   Widget build(BuildContext context) {
@@ -455,12 +566,37 @@ class _AvatarInitials extends StatelessWidget {
         .map((p) => p[0].toUpperCase())
         .take(2)
         .join();
-    return CircleAvatar(
-      radius: 22,
-      backgroundColor: AppColors.primary.withOpacity(0.12),
+
+    if (imageUrl != null && imageUrl!.isNotEmpty) {
+      return Container(
+        width: 64,
+        height: 64,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(10),
+          color: Colors.grey.shade100,
+          image: DecorationImage(
+            image: NetworkImage(imageUrl!),
+            fit: BoxFit.cover,
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      width: 64,
+      height: 64,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        color: AppColors.primary.withOpacity(0.12),
+      ),
+      alignment: Alignment.center,
       child: Text(
         initials.isEmpty ? '?' : initials,
-        style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700),
+        style: TextStyle(
+          color: AppColors.primary,
+          fontWeight: FontWeight.w800,
+          fontSize: 20,
+        ),
       ),
     );
   }
@@ -483,38 +619,9 @@ class _StarBar extends StatelessWidget {
       } else {
         icon = Icons.star_border;
       }
-      widgets.add(Icon(icon, color: Colors.amber, size: 18));
+      widgets.add(Icon(icon, color: Colors.amber, size: 14));
     }
     return Row(children: widgets);
-  }
-}
-
-class _ChipStat extends StatelessWidget {
-  final String label;
-  final String value;
-  const _ChipStat({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Chip(
-      backgroundColor: Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
-      shape: RoundedRectangleBorder(
-        side: BorderSide(color: Colors.grey.shade300),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      label: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            label,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(width: 6),
-          Text(value, style: const TextStyle(fontSize: 12)),
-        ],
-      ),
-    );
   }
 }
 
@@ -547,9 +654,10 @@ class _SkeletonList extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    CircleAvatar(
-                      radius: 22,
-                      backgroundColor: Colors.grey.shade200,
+                    Container(
+                      width: 64,
+                      height: 64,
+                      color: Colors.grey.shade200,
                     ),
                     const SizedBox(width: 12),
                     Expanded(

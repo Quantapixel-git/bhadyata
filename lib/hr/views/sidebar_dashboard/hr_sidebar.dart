@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
-import 'package:jobshub/common/views/onboarding/onboarding_screen.dart';
+import 'package:jobshub/common/views/onboarding/mobile_onboarding_screen.dart';
+import 'package:jobshub/common/views/onboarding/web_onboarding_screen.dart';
 import 'package:jobshub/hr/views/attendance/hr_employees_attendance_page.dart';
 import 'package:jobshub/hr/views/company/hr_companies.dart';
 import 'package:jobshub/hr/views/hr_details/hr_detail.dart';
@@ -172,7 +174,7 @@ class HrSidebarMobile extends StatelessWidget {
 
                   ExpansionTile(
                     leading: Icon(
-                      Icons.person_search,
+                      Icons.checklist_outlined,
                       color: AppColors.primary,
                     ),
                     title: const Text("Jobs Approval"),
@@ -204,15 +206,19 @@ class HrSidebarMobile extends StatelessWidget {
                           ),
                         );
                       }),
-                      _expTileChild(context, "Projects", () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => HrProjectApproval(),
-                          ),
-                        );
-                      }),
                     ],
+                  ),
+
+                  _sidebarItem(
+                    context,
+                    Icons.checklist_outlined,
+                    "Projects Approval",
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => HrProjectApproval()),
+                      );
+                    },
                   ),
 
                   ExpansionTile(
@@ -249,15 +255,41 @@ class HrSidebarMobile extends StatelessWidget {
                           ),
                         );
                       }),
-                      _expTileChild(context, "Projects", () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => HrProjectApplicants(),
-                          ),
-                        );
-                      }),
                     ],
+                  ),
+
+                  // ExpansionTile(
+                  //   leading: Icon(
+                  //     Icons.person_search,
+                  //     color: AppColors.primary,
+                  //   ),
+                  //   title: const Text("Project Applicants"),
+                  //   childrenPadding: const EdgeInsets.only(left: 20, bottom: 8),
+                  //   iconColor: AppColors.primary,
+                  //   collapsedIconColor: AppColors.primary,
+                  //   children: [
+                  //     _expTileChild(context, "Projects", () {
+                  //       Navigator.push(
+                  //         context,
+                  //         MaterialPageRoute(
+                  //           builder: (_) => HrProjectApplicants(),
+                  //         ),
+                  //       );
+                  //     }),
+                  //   ],
+                  // ),
+                  _sidebarItem(
+                    context,
+                    Icons.person_search,
+                    "Project Applicants",
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => HrProjectApplicants(),
+                        ),
+                      );
+                    },
                   ),
 
                   // ExpansionTile(
@@ -460,9 +492,16 @@ class HrSidebarMobile extends StatelessWidget {
                       ),
                     );
 
+                    final bool isWebPlatform =
+                        kIsWeb || MediaQuery.of(context).size.width > 800;
+
                     Navigator.pushAndRemoveUntil(
                       context,
-                      MaterialPageRoute(builder: (_) => const OnboardingPage()),
+                      MaterialPageRoute(
+                        builder: (_) => isWebPlatform
+                            ? const WebOnboardingPage() // your web onboarding
+                            : const MobileOnboardingPage(), // your mobile onboarding
+                      ),
                       (route) => false,
                     );
                   }),
@@ -646,7 +685,7 @@ class HrSidebarWeb extends StatelessWidget {
 
                   _expansionGroup(
                     context,
-                    Icons.person_search,
+                    Icons.checklist_outlined,
                     "Jobs Approval",
                     [
                       _expTileChild(context, "Salary-based Jobs", () {
@@ -673,15 +712,19 @@ class HrSidebarWeb extends StatelessWidget {
                           ),
                         );
                       }),
-                      _expTileChild(context, "Projects", () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => HrProjectApproval(),
-                          ),
-                        );
-                      }),
                     ],
+                  ),
+
+                  _menuItem(
+                    context,
+                    Icons.checklist_outlined,
+                    "Projects Approval",
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => HrProjectApproval()),
+                      );
+                    },
                   ),
                   _expansionGroup(
                     context,
@@ -712,15 +755,35 @@ class HrSidebarWeb extends StatelessWidget {
                           ),
                         );
                       }),
-                      _expTileChild(context, "Projects", () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => HrProjectApplicants(),
-                          ),
-                        );
-                      }),
                     ],
+                  ),
+                  // _expansionGroup(
+                  //   context,
+                  //   Icons.person_search,
+                  //   "Project Applicants",
+                  //   [
+                  //     _expTileChild(context, "Projects", () {
+                  //       Navigator.push(
+                  //         context,
+                  //         MaterialPageRoute(
+                  //           builder: (_) => HrProjectApplicants(),
+                  //         ),
+                  //       );
+                  //     }),
+                  //   ],
+                  // ),
+                  _menuItem(
+                    context,
+                    Icons.person_search,
+                    "Project Applicants",
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => HrProjectApplicants(),
+                        ),
+                      );
+                    },
                   ),
                   // _expansionGroup(context, Icons.money, "Revenue Generated", [
                   //   _expTileChild(context, "From Employer (profit amount)", () {
@@ -854,9 +917,16 @@ class HrSidebarWeb extends StatelessWidget {
                       ),
                     );
 
+                    final bool isWebPlatform =
+                        kIsWeb || MediaQuery.of(context).size.width > 800;
+
                     Navigator.pushAndRemoveUntil(
                       context,
-                      MaterialPageRoute(builder: (_) => const OnboardingPage()),
+                      MaterialPageRoute(
+                        builder: (_) => isWebPlatform
+                            ? const WebOnboardingPage() // your web onboarding
+                            : const MobileOnboardingPage(), // your mobile onboarding
+                      ),
                       (route) => false,
                     );
                   }),
@@ -893,6 +963,7 @@ class HrSidebarWeb extends StatelessWidget {
         ),
       ),
       child: ClipRect(
+        
         // ✅ prevents overflow during width animation
         child: Row(
           mainAxisAlignment: isCollapsed

@@ -150,7 +150,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           return Scaffold(
             backgroundColor: AppColors.white,
             appBar: AppBar(
-              automaticallyImplyLeading: false,
+              iconTheme: IconThemeData(color: Colors.white),
+              // automaticallyImplyLeading: false,
               backgroundColor: AppColors.primary,
               elevation: 1,
               title: const Text(

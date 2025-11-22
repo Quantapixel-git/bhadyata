@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:jobshub/users/views/bottomnav_sidebar/user_sidedrawer.dart';
 import 'package:jobshub/common/utils/app_color.dart';
 import 'package:jobshub/users/views/main_pages/search/jobs_by_category.dart';
-import 'package:jobshub/users/views/main_pages/search_placeholder.dart';
+import 'package:jobshub/users/views/main_pages/common_search/search_placeholder.dart';
 
 const String kApiBase = 'https://dialfirst.in/quantapixel/badhyata/api/';
 
@@ -475,24 +475,5 @@ class _HoverJobCardCategoryState extends State<_HoverJobCardCategory> {
     }
 
     return GestureDetector(onTap: widget.onTap, child: card);
-  }
-}
-
-class JobDetailPage extends StatelessWidget {
-  final Map<String, String> job;
-  const JobDetailPage({super.key, required this.job});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(job["title"] ?? ''),
-        backgroundColor: AppColors.primary,
-        centerTitle: true,
-        elevation: 0,
-      ),
-      backgroundColor: Colors.grey.shade100,
-      body: Center(child: Text(job["description"] ?? "No description")),
-    );
   }
 }

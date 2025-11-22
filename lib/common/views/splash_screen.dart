@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:jobshub/admin/views/sidebar_dashboard/admin_dashboard.dart';
-import 'package:jobshub/common/views/onboarding/onboarding_screen.dart';
+import 'package:jobshub/common/views/onboarding/mobile_onboarding_screen.dart';
+import 'package:jobshub/common/views/onboarding/web_onboarding_screen.dart';
 import 'package:jobshub/employer/views/sidebar_dashboard/employer_dashboard.dart';
 import 'package:jobshub/hr/views/sidebar_dashboard/hr_dashboard.dart';
 import 'package:jobshub/users/views/bottomnav_sidebar/bottom_nav.dart';
@@ -51,7 +53,14 @@ class _SplashScreenState extends State<SplashScreen>
     final employerId = await SessionManager.getValue('employer_id');
     final hrId = await SessionManager.getValue('hr_id');
 
-    Widget nextScreen = const OnboardingPage();
+    // detect web (kIsWeb OR large width)
+    final bool isWebPlatform =
+        kIsWeb || MediaQuery.of(context).size.width > 800;
+
+    // default onboarding depends on platform
+    Widget nextScreen = isWebPlatform
+        ? const WebOnboardingPage() // replace with your web onboarding widget
+        : const MobileOnboardingPage(); // replace with your mobile onboarding widget
 
     if (adminLogin == 'true') {
       nextScreen = AdminDashboard();
@@ -117,13 +126,12 @@ class _SplashScreenState extends State<SplashScreen>
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isWeb = MediaQuery.of(context).size.width > 800;
 
-    return Scaffold(backgroundColor: Colors.white,
+    return Scaffold(
+      backgroundColor: Colors.white,
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: BoxDecoration(
-         
-        ),
+        decoration: BoxDecoration(),
         child: Center(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: isWeb ? 80 : 24),

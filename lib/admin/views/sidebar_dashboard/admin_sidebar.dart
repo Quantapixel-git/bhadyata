@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:jobshub/admin/views/banner/admin_banner_page.dart';
-import 'package:jobshub/admin/views/commision_percent/admin_commission_page.dart';
+import 'package:jobshub/admin/views/constants/admin_commission_page.dart';
+import 'package:jobshub/admin/views/constants/wallet_constants.dart';
 import 'package:jobshub/admin/views/kyc_status/admin_employer_kyc.dart';
 import 'package:jobshub/admin/views/kyc_status/admin_hr_kyc.dart';
 import 'package:jobshub/admin/views/manage_users/admin_hr_users.dart';
@@ -22,8 +24,12 @@ import 'package:jobshub/admin/views/query/admin_query_from_user.dart';
 import 'package:jobshub/admin/views/revenue_commission/admin_revenue_profit.dart';
 import 'package:jobshub/admin/views/notification/admin_send_notification.dart';
 import 'package:jobshub/admin/views/chart/admin_chart.dart';
-import 'package:jobshub/common/views/onboarding/onboarding_screen.dart';
+import 'package:jobshub/common/views/onboarding/mobile_onboarding_screen.dart';
+import 'package:jobshub/common/views/onboarding/web_onboarding_screen.dart';
 import 'package:jobshub/common/utils/app_color.dart';
+import 'package:jobshub/hr/views/job_approval/hr_commission_based_job_approval.dart';
+import 'package:jobshub/hr/views/job_approval/hr_one_time_job_approval.dart';
+import 'package:jobshub/hr/views/job_approval/hr_salary_based_job_approval.dart';
 
 class AdminSidebar extends StatelessWidget {
   final bool isWeb;
@@ -109,6 +115,12 @@ class AdminSidebarMobile extends StatelessWidget {
                       );
                     },
                   ),
+                  _sidebarItem(context, Icons.numbers, "Wallet constants", () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => AdminWalletPage()),
+                    );
+                  }),
                   ExpansionTile(
                     leading: Icon(Icons.business, color: AppColors.primary),
                     title: const Text("Company"),
@@ -130,6 +142,64 @@ class AdminSidebarMobile extends StatelessWidget {
                       ),
                     ],
                   ),
+                  ExpansionTile(
+                    leading: Icon(
+                      Icons.checklist_outlined,
+                      color: AppColors.primary,
+                    ),
+                    title: const Text(
+                      "All Jobs",
+                      style: TextStyle(fontSize: 14),
+                    ),
+                    childrenPadding: const EdgeInsets.only(left: 20, bottom: 8),
+                    iconColor: AppColors.primary,
+                    collapsedIconColor: AppColors.primary,
+                    children: [
+                      ListTile(
+                        title: const Text(
+                          "Salary-based Jobs",
+                          style: TextStyle(fontSize: 13.5),
+                        ),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => HrSalaryBasedViewPostedJobsPage(),
+                            ),
+                          );
+                        },
+                      ),
+                      ListTile(
+                        title: const Text(
+                          "One-time Recruitment",
+                          style: TextStyle(fontSize: 13.5),
+                        ),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => HrOneTimeViewPostedJobsPage(),
+                            ),
+                          );
+                        },
+                      ),
+                      ListTile(
+                        title: const Text(
+                          "Commission-based Jobs",
+                          style: TextStyle(fontSize: 13.5),
+                        ),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => HrCommissionBasedJobsApproval(),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+
                   ExpansionTile(
                     leading: Icon(
                       Icons.person_4_outlined,
@@ -459,9 +529,16 @@ class AdminSidebarMobile extends StatelessWidget {
                     );
 
                     // 🔁 Navigate back to login screen
+                    final bool isWebPlatform =
+                        kIsWeb || MediaQuery.of(context).size.width > 800;
+
                     Navigator.pushAndRemoveUntil(
                       context,
-                      MaterialPageRoute(builder: (_) => const OnboardingPage()),
+                      MaterialPageRoute(
+                        builder: (_) => isWebPlatform
+                            ? const WebOnboardingPage() // your web onboarding
+                            : const MobileOnboardingPage(), // your mobile onboarding
+                      ),
                       (route) => false,
                     );
                   }),
@@ -616,6 +693,12 @@ class AdminSidebarWeb extends StatelessWidget {
                       );
                     },
                   ),
+                  _menuItem(context, Icons.numbers, "Wallet Constants", () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => AdminWalletPage()),
+                    );
+                  }),
                   _expansionGroup(context, Icons.business, "Company", [
                     // _expTileChild(context, "Approved Company (by HR)", () {
                     //   Navigator.push(
@@ -632,6 +715,37 @@ class AdminSidebarWeb extends StatelessWidget {
                       );
                     }),
                   ]),
+                  _expansionGroup(
+                    context,
+                    Icons.checklist_outlined,
+                    "Jobs Approval",
+                    [
+                      _expTileChild(context, "Salary-based Jobs", () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => HrSalaryBasedViewPostedJobsPage(),
+                          ),
+                        );
+                      }),
+                      _expTileChild(context, "One-time Recruitment", () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => HrOneTimeViewPostedJobsPage(),
+                          ),
+                        );
+                      }),
+                      _expTileChild(context, "Commission-based jobs", () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => HrCommissionBasedJobsApproval(),
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
                   _expansionGroup(
                     context,
                     Icons.person_4_outlined,
@@ -789,9 +903,16 @@ class AdminSidebarWeb extends StatelessWidget {
                       ),
                     );
 
+                    final bool isWebPlatform =
+                        kIsWeb || MediaQuery.of(context).size.width > 800;
+
                     Navigator.pushAndRemoveUntil(
                       context,
-                      MaterialPageRoute(builder: (_) => const OnboardingPage()),
+                      MaterialPageRoute(
+                        builder: (_) => isWebPlatform
+                            ? const WebOnboardingPage() // your web onboarding
+                            : const MobileOnboardingPage(), // your mobile onboarding
+                      ),
                       (route) => false,
                     );
                   }),

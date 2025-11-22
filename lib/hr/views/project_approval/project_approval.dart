@@ -211,6 +211,13 @@ class _JobsListState extends State<JobsList> {
     return months[m - 1];
   }
 
+  // Open detail page — pass the full job map (keeps behavior consistent with your existing ProjectDetailPage)
+  void _openJobDetailWithJob(BuildContext context, Map<String, dynamic> job) {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => ProjectDetailPage(project: job)));
+  }
+
   @override
   Widget build(BuildContext context) {
     // Full-width layout (no Center/ConstrainedBox)
@@ -292,6 +299,7 @@ class _JobsListState extends State<JobsList> {
                   ),
                 ],
               ),
+              // Eye button present in all tabs; for pending we still keep approve/reject UI
               trailing: widget.status == "Pending"
                   ? (_processing.contains(jobId)
                         ? const SizedBox(
@@ -322,6 +330,16 @@ class _JobsListState extends State<JobsList> {
                                     ? null
                                     : () => _updateApproval(jobId, 3),
                               ),
+                              IconButton(
+                                tooltip: "View",
+                                icon: const Icon(
+                                  Icons.visibility,
+                                  color: AppColors.primary,
+                                ),
+                                onPressed: jobId == -1
+                                    ? null
+                                    : () => _openJobDetailWithJob(context, job),
+                              ),
                             ],
                           ))
                   : IconButton(
@@ -329,13 +347,9 @@ class _JobsListState extends State<JobsList> {
                         Icons.visibility,
                         color: AppColors.primary,
                       ),
-                      onPressed: () {
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (_) => ProjectDetailPage(project: job),
-                          ),
-                        );
-                      },
+                      onPressed: jobId == -1
+                          ? null
+                          : () => _openJobDetailWithJob(context, job),
                     ),
             ),
           );

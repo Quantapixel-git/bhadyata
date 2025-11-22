@@ -1,3 +1,13 @@
+// lib/employer/views/jobs/employer_commission_jobs_with_applicants.dart
+//
+// NOTE: This file mirrors the UI & behavior of the salary-based employer list
+// but targets commission-based jobs. It sends the same request body shape
+// (employer_id + hr_approval) to the commission endpoint and navigates to
+// CommissionApplicantsPage when the "View applicants" button is tapped.
+//
+// Uploaded asset path (you provided this file earlier; we'll convert to a URL
+// where needed): sandbox:/mnt/data/2643eb78-a484-4ed7-891d-f2e6eb195ec0.png
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -5,6 +15,7 @@ import 'package:http/http.dart' as http;
 import 'package:jobshub/common/utils/app_color.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/common/constants/base_url.dart';
+import 'package:jobshub/employer/views/schedule_interview/commission_employee_sceduled.dart';
 import 'package:jobshub/employer/views/sidebar_dashboard/employer_sidebar.dart';
 
 class EmployerCommissionBasedJobsWithApplicantsPage extends StatefulWidget {
@@ -21,11 +32,11 @@ class _EmployerCommissionBasedJobsWithApplicantsPageState
   String? _error;
   List<Map<String, dynamic>> _jobs = [];
 
-  // API endpoint (matches your controller route)
+  // API endpoint (commission)
   final String apiUrl =
       '${ApiConstants.baseUrl}commissionBasedJobsWithApplicants';
 
-  // Always fetch with hr_approval = 1 for this screen
+  // Always fetch with hr_approval = 1 for this screen (same behavior as salary screen)
   static const int _hrApproval = 1;
 
   @override
@@ -41,9 +52,10 @@ class _EmployerCommissionBasedJobsWithApplicantsPageState
     });
 
     try {
-      // Read employer_id from session (avoid hardcoding 14)
+      // Read employer_id from session (avoid hardcoding)
       final employerIdStr = await SessionManager.getValue('employer_id');
-      if (employerIdStr == null || employerIdStr.isEmpty) {
+
+      if (employerIdStr == null || employerIdStr.toString().trim().isEmpty) {
         setState(() {
           _error = "Employer ID not found. Please log in again.";
           _loading = false;
@@ -51,8 +63,9 @@ class _EmployerCommissionBasedJobsWithApplicantsPageState
         return;
       }
 
+      // Build body same as the salary variant: include employer_id and hr_approval
       final body = {
-        "employer_id": int.tryParse(employerIdStr) ?? employerIdStr,
+        "employer_id": int.tryParse(employerIdStr.toString()) ?? employerIdStr,
         "hr_approval": _hrApproval,
       };
 
@@ -64,15 +77,20 @@ class _EmployerCommissionBasedJobsWithApplicantsPageState
 
       if (res.statusCode == 200) {
         final json = jsonDecode(res.body) as Map<String, dynamic>;
-        if (json['success'] == true) {
+
+        // If your API returns a success flag, keep the same check
+        if (json['success'] == true || json['status'] == true) {
           final List data = (json['data'] as List?) ?? [];
           setState(() {
-            _jobs = data.cast<Map<String, dynamic>>();
+            _jobs = data.map<Map<String, dynamic>>((e) {
+              if (e is Map) return Map<String, dynamic>.from(e as Map);
+              return <String, dynamic>{};
+            }).toList();
           });
         } else {
-          setState(
-            () => _error = (json['message'] ?? 'Failed to load').toString(),
-          );
+          setState(() {
+            _error = (json['message'] ?? 'Failed to load jobs').toString();
+          });
         }
       } else {
         setState(() => _error = "Error ${res.statusCode}");
@@ -131,6 +149,16 @@ class _EmployerCommissionBasedJobsWithApplicantsPageState
     ),
   );
 
+  /// Robust job id extractor: supports common keys like `id`, `job_id`, `jobId`.
+  int _extractJobId(Map<String, dynamic> job) {
+    final raw =
+        job['id'] ?? job['job_id'] ?? job['jobId'] ?? job['jobId']?.toString();
+    if (raw == null) return 0;
+    if (raw is int) return raw;
+    final parsed = int.tryParse(raw.toString());
+    return parsed ?? 0;
+  }
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -145,7 +173,7 @@ class _EmployerCommissionBasedJobsWithApplicantsPageState
               iconTheme: const IconThemeData(color: Colors.white),
               backgroundColor: AppColors.primary,
               title: const Text(
-                "Jobs With Applicants",
+                "Commission-based Jobs",
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w600,
@@ -160,10 +188,13 @@ class _EmployerCommissionBasedJobsWithApplicantsPageState
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          _error!,
-                          style: const TextStyle(color: Colors.red),
-                          textAlign: TextAlign.center,
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Text(
+                            _error!,
+                            style: const TextStyle(color: Colors.red),
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                         const SizedBox(height: 8),
                         OutlinedButton(
@@ -197,32 +228,29 @@ class _EmployerCommissionBasedJobsWithApplicantsPageState
                             itemBuilder: (context, i) {
                               final j = _jobs[i];
 
-                              // Common fields from your controller mapping
                               final title = _safe(j['title']);
                               final category = _safe(j['category']);
                               final location = _safe(j['location']);
-                              final createdAt = _formatDate(j['created_at']);
-                              final count = (j['applicants_count'] is int)
-                                  ? (j['applicants_count'] as int)
-                                  : int.tryParse(
-                                          _safe(j['applicants_count']),
-                                        ) ??
-                                        0;
+                              final payment = _safe(j['payment_amount']);
+                              final paymentType = _safe(j['payment_type']);
+                              final jobDate = _formatDate(j['job_date']);
+                              final startTime = _safe(j['start_time']);
+                              final endTime = _safe(j['end_time']);
 
-                              // Salary-based friendly bits (optional, if present)
-                              final jobType = _safe(
-                                j['job_type'],
-                              ); // may not exist
-                              final salaryMin = _safe(
-                                j['salary_min'],
-                              ); // may not exist
-                              final salaryMax = _safe(
-                                j['salary_max'],
-                              ); // may not exist
+                              // applicants_count may be int or string — normalize to int
+                              int applicantsCount = 0;
+                              final rawCount = j['applicants_count'];
+                              if (rawCount is int) {
+                                applicantsCount = rawCount;
+                              } else if (rawCount is String) {
+                                applicantsCount = int.tryParse(rawCount) ?? 0;
+                              } else if (rawCount != null) {
+                                applicantsCount =
+                                    int.tryParse(rawCount.toString()) ?? 0;
+                              }
 
-                              // If salary fields are missing, we won’t show salary line.
-                              final hasSalaryRange =
-                                  salaryMin != '—' || salaryMax != '—';
+                              // Extract job id safely
+                              final int jobId = _extractJobId(j);
 
                               return Container(
                                 margin: const EdgeInsets.only(bottom: 14),
@@ -243,7 +271,7 @@ class _EmployerCommissionBasedJobsWithApplicantsPageState
                                     backgroundColor: AppColors.primary
                                         .withOpacity(0.12),
                                     child: Icon(
-                                      Icons.work,
+                                      Icons.monetization_on,
                                       color: AppColors.primary,
                                     ),
                                   ),
@@ -260,20 +288,16 @@ class _EmployerCommissionBasedJobsWithApplicantsPageState
                                     children: [
                                       const SizedBox(height: 4),
                                       Text(
-                                        jobType != '—'
-                                            ? "$category • $jobType"
-                                            : "$category",
+                                        "$category • ₹$payment ($paymentType)",
                                       ),
-                                      if (hasSalaryRange) ...[
-                                        const SizedBox(height: 2),
-                                        Text("₹$salaryMin - ₹$salaryMax"),
-                                      ],
                                       const SizedBox(height: 2),
                                       Text("Location: $location"),
                                       const SizedBox(height: 2),
-                                      Text("Posted on: $createdAt"),
+                                      Text(
+                                        "Job Date: $jobDate • $startTime – $endTime",
+                                      ),
                                       const SizedBox(height: 8),
-                                      _countPill(count),
+                                      _countPill(applicantsCount),
                                     ],
                                   ),
                                   trailing: IconButton(
@@ -283,8 +307,29 @@ class _EmployerCommissionBasedJobsWithApplicantsPageState
                                       color: Colors.black87,
                                     ),
                                     onPressed: () {
-                                      // TODO: Navigate to applicant list for this job ID
-                                      // final jobId = j['id'];
+                                      if (jobId <= 0) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Invalid job id for this item',
+                                            ),
+                                          ),
+                                        );
+                                        return;
+                                      }
+
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              employerCommissionBasedApplicantsPage(
+                                                jobId: jobId,
+                                                jobTitle: title,
+                                              ),
+                                        ),
+                                      );
                                     },
                                   ),
                                 ),

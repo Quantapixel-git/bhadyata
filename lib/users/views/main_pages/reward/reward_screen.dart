@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:jobshub/users/views/bottomnav_sidebar/user_sidedrawer.dart';
 import 'package:jobshub/common/utils/app_color.dart';
+import 'package:jobshub/common/utils/session_manager.dart';
 
 class RewardScreen extends StatefulWidget {
   const RewardScreen({super.key});
@@ -11,16 +12,31 @@ class RewardScreen extends StatefulWidget {
 }
 
 class _RewardScreenState extends State<RewardScreen> {
-  String referralCode = "MAH82&";
-  double walletBalance = 250.0;
   final String? acceptedJobTitle = "Flutter Developer";
   final double monthlySalary = 40000;
+  String referralCode = "";
+  double walletBalance = 0.00;
 
   final List<Map<String, dynamic>> salaryTransactions = [
-    {"month": "August 2025", "daysWorked": 26, "amount": 34667},
-    {"month": "September 2025", "daysWorked": 24, "amount": 32000},
-    {"month": "October 2025", "daysWorked": 20, "amount": 26667},
+    // {"month": "August 2025", "daysWorked": 26, "amount": 34667},
+    // {"month": "September 2025", "daysWorked": 24, "amount": 32000},
+    // {"month": "October 2025", "daysWorked": 20, "amount": 26667},
   ];
+  @override
+  void initState() {
+    super.initState();
+    _loadWalletAndReferral();
+  }
+
+  Future<void> _loadWalletAndReferral() async {
+    final storedReferral = await SessionManager.getValue('referral_code');
+    final storedWallet = await SessionManager.getValue('wallet_balance');
+
+    setState(() {
+      referralCode = storedReferral ?? "";
+      walletBalance = double.tryParse(storedWallet ?? "0") ?? 0.0;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -159,7 +175,8 @@ class _RewardScreenState extends State<RewardScreen> {
                 style: TextStyle(fontSize: 16, color: Colors.black54),
               ),
               Text(
-                "₹${250.0.toStringAsFixed(2)}",
+                "₹${walletBalance.toStringAsFixed(2)}",
+
                 style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
@@ -167,35 +184,35 @@ class _RewardScreenState extends State<RewardScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              Row(
-                children: [
-                  ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    child: const Text('Withdraw', style: TextStyle(color: Colors.white),),
-                  ),
-                  const SizedBox(width: 8),
-                  OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Colors.black, width: 1.3),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                   
-                    onPressed: () {},
-                    child: const Text(
-                      'Add Money',
-                      style: TextStyle(color: Colors.black),
-                    ),
-                  ),
-                ],
-              ),
+              // Row(
+              //   children: [
+              //     ElevatedButton(
+              //       onPressed: () {},
+              //       style: ElevatedButton.styleFrom(
+              //         backgroundColor: AppColors.primary,
+              //         shape: RoundedRectangleBorder(
+              //           borderRadius: BorderRadius.circular(8),
+              //         ),
+              //       ),
+              //       child: const Text('Withdraw', style: TextStyle(color: Colors.white),),
+              //     ),
+              //     const SizedBox(width: 8),
+              //     OutlinedButton(
+              //       style: OutlinedButton.styleFrom(
+              //         side: const BorderSide(color: Colors.black, width: 1.3),
+              //         shape: RoundedRectangleBorder(
+              //           borderRadius: BorderRadius.circular(8),
+              //         ),
+              //       ),
+
+              //       onPressed: () {},
+              //       child: const Text(
+              //         'Add Money',
+              //         style: TextStyle(color: Colors.black),
+              //       ),
+              //     ),
+              //   ],
+              // ),
             ],
           ),
         ],
@@ -220,7 +237,7 @@ class _RewardScreenState extends State<RewardScreen> {
           ),
           const SizedBox(height: 8),
           const Text(
-            "Invite friends and earn 250 coins once they complete their first service. They get 100 coins too!",
+            "Invite friends and earn 150 coins. They get 100 coins too!",
             style: TextStyle(fontSize: 14, color: Colors.white70),
           ),
           const SizedBox(height: 12),
@@ -235,7 +252,8 @@ class _RewardScreenState extends State<RewardScreen> {
               children: [
                 Expanded(
                   child: Text(
-                    referralCode,
+                    referralCode.isEmpty ? "N/A" : referralCode,
+
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
@@ -272,14 +290,14 @@ class _RewardScreenState extends State<RewardScreen> {
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 8),
-          Text(
-            acceptedJobTitle!,
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-          ),
-          Text(
-            "Monthly Salary: ₹${40000.toStringAsFixed(0)}",
-            style: const TextStyle(fontSize: 14, color: Colors.black87),
-          ),
+          // Text(
+          //   acceptedJobTitle!,
+          //   style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+          // ),
+          // Text(
+          //   "Monthly Salary: ₹${40000.toStringAsFixed(0)}",
+          //   style: const TextStyle(fontSize: 14, color: Colors.black87),
+          // ),
           const Divider(height: 24),
           const Text(
             "Payment History",
@@ -353,10 +371,10 @@ class _RewardScreenState extends State<RewardScreen> {
           const SizedBox(height: 12),
           _buildStep(
             2,
-            "They get 100 coins towards their first service after clicking the invitation link",
+            "They get 100 coins on completing profile & you get 150 coins.",
           ),
-          const SizedBox(height: 12),
-          _buildStep(3, "You get 250 coins after they complete the service"),
+          // const SizedBox(height: 12),
+          // _buildStep(3, "You get 150 coins once they complete Profile."),
         ],
       ),
     );

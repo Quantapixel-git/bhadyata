@@ -20,7 +20,6 @@ class _OneTimeJobsWithApplicantsPageState
   List<Map<String, dynamic>> _jobs = [];
 
   // 👉 Update this to your actual endpoint for {{bhadyata}}oneTimeJobsWithApplicants
-  // Example based on your existing pattern:
   final String apiUrl =
       'https://dialfirst.in/quantapixel/badhyata/api/oneTimeJobsWithApplicants';
 
@@ -110,6 +109,24 @@ class _OneTimeJobsWithApplicantsPageState
     ),
   );
 
+  /// Safely extract job id from job map. Handles common keys and types.
+  int _extractJobId(Map<String, dynamic> j) {
+    dynamic raw;
+    if (j.containsKey('job_id')) {
+      raw = j['job_id'];
+    } else if (j.containsKey('id')) {
+      raw = j['id'];
+    } else if (j.containsKey('jobId')) {
+      raw = j['jobId'];
+    } else {
+      raw = null;
+    }
+
+    if (raw == null) return 0;
+    if (raw is int) return raw;
+    return int.tryParse(raw.toString()) ?? 0;
+  }
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -187,6 +204,9 @@ class _OneTimeJobsWithApplicantsPageState
                                   int.tryParse(_safe(j['applicants_count'])) ??
                                   0;
 
+                              // get the real job id from data
+                              final jobId = _extractJobId(j);
+
                               return Container(
                                 margin: const EdgeInsets.only(bottom: 14),
                                 decoration: BoxDecoration(
@@ -235,7 +255,7 @@ class _OneTimeJobsWithApplicantsPageState
                                       _countPill(count),
                                     ],
                                   ),
-                                  // 👉 trailing button with placeholder action
+                                  // Navigate to applicants page using the real job id and pass the title
                                   trailing: IconButton(
                                     tooltip: "View applicants",
                                     icon: const Icon(
@@ -243,12 +263,27 @@ class _OneTimeJobsWithApplicantsPageState
                                       color: Colors.black87,
                                     ),
                                     onPressed: () {
-                                      // Placeholder: replace with navigation to applicants list
+                                      if (jobId <= 0) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Invalid job id for this item',
+                                            ),
+                                          ),
+                                        );
+                                        return;
+                                      }
+
                                       Navigator.push(
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) =>
-                                              OneTimeApplicantsPage(jobId: 2),
+                                              OneTimeApplicantsPage(
+                                                jobId: jobId,
+                                                jobTitle: title,
+                                              ),
                                         ),
                                       );
                                     },
