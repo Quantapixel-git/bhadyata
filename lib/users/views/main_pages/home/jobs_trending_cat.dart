@@ -392,7 +392,7 @@ class _TrendingCategoryJobsPageState extends State<TrendingCategoryJobsPage> {
         jtLower.contains('one-time') ||
         jtLower.contains('onetime') ||
         jtLower.contains('one time')) {
-      endpoint = 'applyOneTimeBased';
+      endpoint = 'applyOneTimeJob';
     } else if (jtLower.contains('project') ||
         jtLower.contains('projects') ||
         jtLower.contains('freelance')) {
@@ -402,11 +402,18 @@ class _TrendingCategoryJobsPageState extends State<TrendingCategoryJobsPage> {
     }
 
     final uri = Uri.parse('${ApiConstants.baseUrl}$endpoint');
-    final body = {
-      "job_id": jobId,
-      "employee_id": employeeId,
-      "remarks": "Available for the job.",
-    };
+    final bool isProjectEndpoint = endpoint == 'applyProject';
+    final body = isProjectEndpoint
+        ? {
+            "project_id": jobId,
+            "employee_id": employeeId,
+            "remarks": "Available for the job.",
+          }
+        : {
+            "job_id": jobId,
+            "employee_id": employeeId,
+            "remarks": "Available for the job.",
+          };
 
     setState(() => _applyingJobIds.add(jobId));
     if (kDebugMode) {

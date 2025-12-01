@@ -128,7 +128,7 @@ class _SearchScreenState extends State<SearchScreen> {
         jt.contains('one-time') ||
         jt.contains('onetime') ||
         jt.contains('one time')) {
-      return 'applyOneTimeBased';
+      return 'applyOneTimeJob';
     }
     if (jt.contains('project') ||
         jt.contains('projects') ||
@@ -293,12 +293,18 @@ class _SearchScreenState extends State<SearchScreen> {
     // Use normalized stored job type to pick correct apply endpoint
     final endpoint = _chooseApplyEndpoint(_storedJobType);
     final uri = Uri.parse('${ApiConstants.baseUrl}$endpoint');
-
-    final body = {
-      "job_id": jobId,
-      "employee_id": employeeId,
-      "remarks": "Available for the job.",
-    };
+    final bool isProjectEndpoint = endpoint == 'applyProject';
+    final body = isProjectEndpoint
+        ? {
+            "project_id": jobId,
+            "employee_id": employeeId,
+            "remarks": "Available for the job.",
+          }
+        : {
+            "job_id": jobId,
+            "employee_id": employeeId,
+            "remarks": "Available for the job.",
+          };
 
     setState(() => _applyingJobIds.add(jobId));
     if (kDebugMode) {

@@ -14,20 +14,20 @@ class _HireFromCategoriesSectionState extends State<HireFromCategoriesSection> {
 
   // 👇 update image paths to your real assets
   final List<_CategoryItem> _categories = const [
-    _CategoryItem('Delivery', 'assets/categories/delivery.png'),
-    _CategoryItem('Field Sales', 'assets/categories/field_sales.png'),
-    _CategoryItem('Telecalling', 'assets/categories/telecalling.png'),
-    _CategoryItem('Cook', 'assets/categories/cook.png'),
-    _CategoryItem('Accounts', 'assets/categories/accounts.png'),
-    _CategoryItem('Retail', 'assets/categories/retail.png'),
-    _CategoryItem('Labourer', 'assets/categories/labourer.png'),
-    _CategoryItem('Restaurant Staff', 'assets/categories/restaurant.png'),
-    _CategoryItem('Business Development', 'assets/categories/bd.png'),
-    _CategoryItem('Driver', 'assets/categories/driver.png'),
-    _CategoryItem('Back Office', 'assets/categories/backoffice.png'),
-    _CategoryItem('Security Guard', 'assets/categories/security.png'),
-    _CategoryItem('Beautician', 'assets/categories/beautician.png'),
-    _CategoryItem('Receptionist', 'assets/categories/receptionist.png'),
+    _CategoryItem('Delivery', 'assets/three.png'),
+    _CategoryItem('Field Sales', 'assets/three.png'),
+    _CategoryItem('Telecalling', 'assets/three.png'),
+    _CategoryItem('Cook', 'assets/three.png'),
+    _CategoryItem('Accounts', 'assets/three.png'),
+    _CategoryItem('Retail', 'assets/three.png'),
+    _CategoryItem('Labourer', 'assets/three.png'),
+    _CategoryItem('Restaurant Staff', 'assets/three.png'),
+    _CategoryItem('Business Development', 'assets/three.png'),
+    _CategoryItem('Driver', 'assets/three.png'),
+    _CategoryItem('Back Office', 'assets/three.png'),
+    _CategoryItem('Security Guard', 'assets/three.png'),
+    _CategoryItem('Beautician', 'assets/three.png'),
+    _CategoryItem('Receptionist', 'assets/three.png'),
   ];
 
   @override

@@ -10,8 +10,8 @@ import 'package:http/http.dart' as http;
 import 'package:jobshub/common/constants/base_url.dart';
 import 'package:jobshub/common/utils/app_color.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
-// import 'package:jobshub/users/views/main_pages/search/job_detail_page.dart';
 import 'package:jobshub/users/views/bottomnav_sidebar/user_sidedrawer.dart';
+import 'package:jobshub/users/views/main_pages/assigned_job/leads.dart';
 
 class AssignedJobsPage extends StatefulWidget {
   const AssignedJobsPage({super.key});
@@ -297,19 +297,92 @@ class _AssignedJobsPageState extends State<AssignedJobsPage> {
                     style: const TextStyle(fontWeight: FontWeight.w700),
                   ),
                 const SizedBox(height: 8),
+
+                // 🔹 Only enable "View" for commission-based jobs
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context)=> 
-                          CommissionLeadsPage(jobId: 1, jobTitle: 'Test', employeeId: 67, employeeName: 'Punita',)
-                          ),
+                    Builder(
+                      builder: (ctx) {
+                        final jobTypeStr = (it['job_type'] ?? '')
+                            .toString()
+                            .toLowerCase();
+                        final isCommissionJob =
+                            _profileJobType.toLowerCase().contains(
+                              'commission',
+                            ) ||
+                            jobTypeStr.contains('commission');
+
+                        if (!isCommissionJob) {
+                          // Placeholder for non-commission jobs
+                          return const Text(
+                            'View (N/A)',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          );
+                        }
+
+                        return TextButton(
+                          onPressed: () async {
+                            // Get employee info from session
+                            final rawUserId =
+                                await SessionManager.getValue('user_id') ?? '';
+                            final rawUserName =
+                                await SessionManager.getValue('user_name') ??
+                                '';
+
+                            final employeeId =
+                                int.tryParse(rawUserId.toString()) ?? 0;
+                            final employeeName =
+                                rawUserName.toString().isNotEmpty
+                                ? rawUserName.toString()
+                                : 'You';
+
+                            // Try to resolve job id from normalized or raw map
+                            final raw =
+                                (it['raw'] ?? {}) as Map<String, dynamic>?;
+
+                            final jobIdStr =
+                                (it['id']?.toString().isNotEmpty == true
+                                        ? it['id'].toString()
+                                        : (raw?['job_id'] ??
+                                              raw?['assigned_job_id'] ??
+                                              raw?['project_id'] ??
+                                              raw?['assigned_project_id'] ??
+                                              ''))
+                                    .toString();
+
+                            final jobId = int.tryParse(jobIdStr) ?? 0;
+
+                            if (jobId == 0 || employeeId == 0) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Missing job or employee info to open leads',
+                                  ),
+                                ),
+                              );
+                              return;
+                            }
+
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => CommissionLeadsPage(
+                                  jobId: jobId,
+                                  jobTitle: title,
+                                  employeeId: employeeId,
+                                  employeeName: employeeName, employerId: 66,
+                                ),
+                              ),
+                            );
+                          },
+                          child: const Text('View'),
                         );
                       },
-                      child: const Text('View'),
                     ),
                   ],
                 ),
@@ -392,483 +465,6 @@ class _AssignedJobsPageState extends State<AssignedJobsPage> {
             : _items.isEmpty
             ? _buildEmpty()
             : _buildList(),
-      ),
-    );
-  }
-}
-
-
-
-
-
-// import 'package:flutter/material.dart';
-// import 'package:intl/intl.dart'; // add intl: ^0.17.0 to pubspec.yaml
-
-
-
-/// Simple Lead model matching the important fields from your DB screenshot.
-class Lead {
-  final int id; // local id
-  final int jobId;
-  final int employeeId;
-  final String name;
-  final String mobile;
-  final String email;
-  final String source;
-  final String notes;
-  int leadStatus; // 0 = Not Converted, 1 = Converted
-  int hrStatus; // 0 Rejected,1 Approved,2 Pending
-  int employerStatus; // 0 Rejected,1 Approved,2 Pending
-  final DateTime createdAt;
-  DateTime updatedAt;
-
-  Lead({
-    required this.id,
-    required this.jobId,
-    required this.employeeId,
-    required this.name,
-    required this.mobile,
-    required this.email,
-    required this.source,
-    required this.notes,
-    this.leadStatus = 0,
-    this.hrStatus = 2,
-    this.employerStatus = 2,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-  })  : createdAt = createdAt ?? DateTime.now(),
-        updatedAt = updatedAt ?? (createdAt ?? DateTime.now());
-}
-
-class CommissionLeadsPage extends StatefulWidget {
-  final int jobId;
-  final String jobTitle;
-  final int employeeId;
-  final String employeeName;
-
-  const CommissionLeadsPage({
-    super.key,
-    required this.jobId,
-    required this.jobTitle,
-    required this.employeeId,
-    required this.employeeName,
-  });
-
-  @override
-  State<CommissionLeadsPage> createState() => _CommissionLeadsPageState();
-}
-
-class _CommissionLeadsPageState extends State<CommissionLeadsPage> {
-  final List<Lead> _leads = [];
-  int _nextId = 1;
-  String _search = '';
-
-  @override
-  void initState() {
-    super.initState();
-    // Optionally pre-fill with sample leads for demo
-    _leads.addAll([
-      Lead(
-        id: _nextId++,
-        jobId: widget.jobId,
-        employeeId: widget.employeeId,
-        name: 'Rohit Sharma',
-        mobile: '9876543210',
-        email: 'rohit@example.com',
-        source: 'Referral',
-        notes: 'Very interested, available next week',
-        leadStatus: 0,
-        hrStatus: 2,
-      ),
-      Lead(
-        id: _nextId++,
-        jobId: widget.jobId,
-        employeeId: widget.employeeId,
-        name: 'Neha Patel',
-        mobile: '9123456780',
-        email: 'neha@example.com',
-        source: 'Job Portal',
-        notes: 'Has 3 years of experience',
-        leadStatus: 1,
-        hrStatus: 1,
-      ),
-    ]);
-  }
-
-  void _openAddLeadSheet() {
-    final _formKey = GlobalKey<FormState>();
-    final nameCtrl = TextEditingController();
-    final mobileCtrl = TextEditingController();
-    final emailCtrl = TextEditingController();
-    final sourceCtrl = TextEditingController();
-    final notesCtrl = TextEditingController();
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (ctx) {
-        return Padding(
-          padding:
-              EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Wrap(
-              children: [
-                Row(
-                  children: [
-                    const Expanded(
-                        child: Text('Add Lead',
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold))),
-                    IconButton(
-                        onPressed: () => Navigator.of(ctx).pop(),
-                        icon: const Icon(Icons.close))
-                  ],
-                ),
-                Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      TextFormField(
-                        controller: nameCtrl,
-                        decoration: const InputDecoration(
-                            labelText: 'Name', hintText: 'Lead name'),
-                        validator: (v) =>
-                            (v == null || v.trim().isEmpty) ? 'Required' : null,
-                      ),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        controller: mobileCtrl,
-                        keyboardType: TextInputType.phone,
-                        decoration: const InputDecoration(
-                            labelText: 'Mobile', hintText: '10 digit mobile'),
-                        validator: (v) {
-                          if (v == null || v.trim().isEmpty) return 'Required';
-                          if (v.trim().length < 7) return 'Enter valid mobile';
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        controller: emailCtrl,
-                        keyboardType: TextInputType.emailAddress,
-                        decoration: const InputDecoration(
-                            labelText: 'Email', hintText: 'example@mail.com'),
-                        validator: (v) {
-                          if (v == null || v.trim().isEmpty) return null;
-                          final pattern =
-                              RegExp(r'^[^@]+@[^@]+\.[^@]+'); // simple check
-                          if (!pattern.hasMatch(v.trim())) {
-                            return 'Invalid email';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        controller: sourceCtrl,
-                        decoration: const InputDecoration(
-                          labelText: 'Source',
-                          hintText: 'Referral / Portal / Walk-in / Other',
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      TextFormField(
-                        controller: notesCtrl,
-                        maxLines: 3,
-                        decoration:
-                            const InputDecoration(labelText: 'Notes (optional)'),
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton(
-                              child: const Padding(
-                                padding: EdgeInsets.symmetric(vertical: 12.0),
-                                child: Text('Save Lead'),
-                              ),
-                              onPressed: () {
-                                if (_formKey.currentState!.validate()) {
-                                  final newLead = Lead(
-                                    id: _nextId++,
-                                    jobId: widget.jobId,
-                                    employeeId: widget.employeeId,
-                                    name: nameCtrl.text.trim(),
-                                    mobile: mobileCtrl.text.trim(),
-                                    email: emailCtrl.text.trim(),
-                                    source: sourceCtrl.text.trim(),
-                                    notes: notesCtrl.text.trim(),
-                                    leadStatus: 0,
-                                    hrStatus: 2,
-                                    employerStatus: 2,
-                                  );
-                                  setState(() => _leads.insert(0, newLead));
-                                  Navigator.of(ctx).pop();
-                                  // small feedback
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Lead added')),
-                                  );
-                                }
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  void _showLeadDetails(Lead lead) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(lead.name),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Mobile: ${lead.mobile}'),
-            if (lead.email.isNotEmpty) Text('Email: ${lead.email}'),
-            if (lead.source.isNotEmpty) Text('Source: ${lead.source}'),
-            const SizedBox(height: 8),
-            Text('Notes: ${lead.notes.isEmpty ? '—' : lead.notes}'),
-            const SizedBox(height: 8),
-            Text('Lead status: ${lead.leadStatus == 1 ? 'Converted' : 'Not Converted'}'),
-            Text('HR status: ${_hrStatusLabel(lead.hrStatus)}'),
-            Text('Employer status: ${_hrStatusLabel(lead.employerStatus)}'),
-            const SizedBox(height: 8),
-            Text('Created: ${DateFormat.yMMMd().add_jm().format(lead.createdAt)}'),
-            Text('Updated: ${DateFormat.yMMMd().add_jm().format(lead.updatedAt)}'),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Close')),
-        ],
-      ),
-    );
-  }
-
-  String _hrStatusLabel(int v) {
-    switch (v) {
-      case 0:
-        return 'Rejected';
-      case 1:
-        return 'Approved';
-      case 2:
-      default:
-        return 'Pending';
-    }
-  }
-
-  void _deleteLead(int id) {
-    setState(() => _leads.removeWhere((l) => l.id == id));
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Lead deleted')));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final filtered = _search.trim().isEmpty
-        ? _leads
-        : _leads.where((l) {
-            final q = _search.toLowerCase();
-            return l.name.toLowerCase().contains(q) ||
-                l.mobile.toLowerCase().contains(q) ||
-                l.email.toLowerCase().contains(q) ||
-                l.source.toLowerCase().contains(q);
-          }).toList();
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Commission Leads'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.filter_alt_outlined),
-            onPressed: () {
-              // simple sample: toggle between all leads and only not converted
-              showModalBottomSheet(
-                  context: context,
-                  builder: (ctx) {
-                    return Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(mainAxisSize: MainAxisSize.min, children: [
-                        ListTile(
-                          title: const Text('All leads'),
-                          onTap: () {
-                            setState(() {
-                              // clear any search filter
-                              _search = '';
-                            });
-                            Navigator.of(ctx).pop();
-                          },
-                        ),
-                        ListTile(
-                          title: const Text('Only Not Converted'),
-                          onTap: () {
-                            Navigator.of(ctx).pop();
-                            setState(() {
-                              _search = ''; // keep search empty and filter by conversion
-                              // Use a temporary filter by replacing list with filtered? For demo we'll show a SnackBar
-                              final notConverted = _leads.where((l) => l.leadStatus == 0).toList();
-                              showDialog(
-                                  context: context,
-                                  builder: (dctx) => AlertDialog(
-                                        title: const Text('Not Converted leads'),
-                                        content: SizedBox(
-                                          width: double.maxFinite,
-                                          child: ListView.builder(
-                                              shrinkWrap: true,
-                                              itemCount: notConverted.length,
-                                              itemBuilder: (_, i) {
-                                                final lead = notConverted[i];
-                                                return ListTile(
-                                                  title: Text(lead.name),
-                                                  subtitle: Text(lead.mobile),
-                                                  onTap: () {
-                                                    Navigator.of(dctx).pop();
-                                                    _showLeadDetails(lead);
-                                                  },
-                                                );
-                                              }),
-                                        ),
-                                        actions: [
-                                          TextButton(onPressed: () => Navigator.of(dctx).pop(), child: const Text('Close'))
-                                        ],
-                                      ));
-                            });
-                          },
-                        ),
-                      ]),
-                    );
-                  });
-            },
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Job + Employee header
-          Card(
-            margin: const EdgeInsets.all(12),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 12),
-              child: Row(
-                children: [
-                  const CircleAvatar(child: Icon(Icons.work)),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(widget.jobTitle, style: const TextStyle(fontWeight: FontWeight.bold)),
-                        const SizedBox(height: 4),
-                        Text('Job ID: ${widget.jobId} • Employee: ${widget.employeeName} (ID: ${widget.employeeId})',
-                            ),
-                      ],
-                    ),
-                  ),
-                  ElevatedButton.icon(
-                    onPressed: _openAddLeadSheet,
-                    icon: const Icon(Icons.add),
-                    label: const Text('Add Lead'),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Search bar
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0),
-            child: TextField(
-              decoration: const InputDecoration(
-                hintText: 'Search leads by name, mobile, email, source',
-                prefixIcon: Icon(Icons.search),
-                isDense: true,
-              ),
-              onChanged: (v) => setState(() => _search = v),
-            ),
-          ),
-
-          const SizedBox(height: 8),
-
-          // Leads list
-          Expanded(
-            child: filtered.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: const [
-                        Icon(Icons.group_add_outlined, size: 64, color: Colors.grey),
-                        SizedBox(height: 8),
-                        Text('No leads yet. Tap "Add Lead" to create one.'),
-                      ],
-                    ),
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                    itemCount: filtered.length,
-                    itemBuilder: (ctx, i) {
-                      final lead = filtered[i];
-                      return Dismissible(
-                        key: ValueKey(lead.id),
-                        direction: DismissDirection.endToStart,
-                        background: Container(
-                          alignment: Alignment.centerRight,
-                          padding: const EdgeInsets.only(right: 20),
-                          color: Colors.red,
-                          child: const Icon(Icons.delete, color: Colors.white),
-                        ),
-                        onDismissed: (_) => _deleteLead(lead.id),
-                        child: Card(
-                          child: ListTile(
-                            onTap: () => _showLeadDetails(lead),
-                            leading: CircleAvatar(child: Text(lead.name.isEmpty ? '?' : lead.name[0].toUpperCase())),
-                            title: Text(lead.name),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('${lead.mobile} ${lead.email.isNotEmpty ? '• ${lead.email}' : ''}'),
-                                const SizedBox(height: 4),
-                                Column(
-                                  children: [
-                                    Chip(label: Text(lead.source.isEmpty ? 'Source: —' : 'Source: ${lead.source}')),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      lead.leadStatus == 1 ? 'Converted' : 'Not Converted',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          color: lead.leadStatus == 1 ? Colors.green : Colors.orange),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            trailing: Text(
-                              DateFormat('dd/MM HH:mm').format(lead.createdAt),
-                              style: const TextStyle(fontSize: 12, color: Colors.grey),
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _openAddLeadSheet,
-        icon: const Icon(Icons.add),
-        label: const Text('Add Lead'),
       ),
     );
   }

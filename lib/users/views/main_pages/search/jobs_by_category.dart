@@ -106,7 +106,7 @@ class _CategoryJobsPageState extends State<CategoryJobsPage> {
         effective.contains('one-time') ||
         effective.contains('onetime') ||
         effective.contains('one time')) {
-      return 'applyOneTimeBased';
+      return 'applyOneTimeJob';
     } else if (effective.contains('project') ||
         effective.contains('projects') ||
         effective.contains('freelance') ||
@@ -427,11 +427,18 @@ class _CategoryJobsPageState extends State<CategoryJobsPage> {
     final endpoint = _decideApplyEndpoint(job);
     final uri = Uri.parse('${ApiConstants.baseUrl}$endpoint');
 
-    final body = {
-      "job_id": jobId,
-      "employee_id": employeeId,
-      "remarks": "Available for the job.",
-    };
+    final bool isProjectEndpoint = endpoint == 'applyProject';
+    final body = isProjectEndpoint
+        ? {
+            "project_id": jobId,
+            "employee_id": employeeId,
+            "remarks": "Available for the job.",
+          }
+        : {
+            "job_id": jobId,
+            "employee_id": employeeId,
+            "remarks": "Available for the job.",
+          };
 
     setState(() => _applyingJobIds.add(jobId));
     if (kDebugMode) {
