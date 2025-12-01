@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:jobshub/users/views/bottomnav_sidebar/user_sidedrawer.dart';
 import 'package:jobshub/common/utils/app_color.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
+import 'package:intl/intl.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class RewardScreen extends StatefulWidget {
   const RewardScreen({super.key});
@@ -16,6 +19,21 @@ class _RewardScreenState extends State<RewardScreen> {
   final double monthlySalary = 40000;
   String referralCode = "";
   double walletBalance = 0.00;
+  // ---------- salary records (API) ----------
+  List<Map<String, dynamic>> salaryRecords = [];
+  bool loadingRecords = false;
+  // change this to your real base when ready
+  final String apiBase = 'https://dialfirst.in/quantapixel/badhyata/api';
+  // hard-coded request body (per your instruction)
+  final Map<String, dynamic> salaryListRequestBody = {
+    "employee_id": 54,
+    "per_page": 50,
+    "sort_by": "start_date",
+    "sort_dir": "desc",
+  };
+  // local avatar path you uploaded (we'll use this as image URL)
+  final String avatarLocalPath =
+      'file:///mnt/data/f6e932ba-1b40-4ddf-9fb8-8dbf8371678b.png';
 
   final List<Map<String, dynamic>> salaryTransactions = [
     // {"month": "August 2025", "daysWorked": 26, "amount": 34667},
@@ -26,6 +44,64 @@ class _RewardScreenState extends State<RewardScreen> {
   void initState() {
     super.initState();
     _loadWalletAndReferral();
+    _fetchSalaryRecords(); // <-- add this line
+  }
+
+  Future<void> _fetchSalaryRecords() async {
+    setState(() => loadingRecords = true);
+    try {
+      // NOTE: update endpoint when ready. Currently uses apiBase + placeholder path
+      final uri = Uri.parse('$apiBase/salaryRecordsList');
+      final res = await http.post(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode(salaryListRequestBody),
+      );
+
+      if (res.statusCode == 200) {
+        final map = jsonDecode(res.body) as Map<String, dynamic>;
+        if (map['success'] == true && map['data'] is List) {
+          setState(
+            () => salaryRecords = (map['data'] as List)
+                .map((e) => Map<String, dynamic>.from(e))
+                .toList(),
+          );
+        } else {
+          setState(() => salaryRecords = []);
+          // show message once
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(map['message'] ?? 'Unexpected API response'),
+              ),
+            );
+          }
+        }
+      } else {
+        setState(() => salaryRecords = []);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Failed to load salary records (HTTP ${res.statusCode})',
+              ),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      setState(() => salaryRecords = []);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading salary records: $e')),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => loadingRecords = false);
+    }
   }
 
   Future<void> _loadWalletAndReferral() async {
@@ -290,67 +366,235 @@ class _RewardScreenState extends State<RewardScreen> {
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 8),
-          // Text(
-          //   acceptedJobTitle!,
-          //   style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-          // ),
-          // Text(
-          //   "Monthly Salary: ₹${40000.toStringAsFixed(0)}",
-          //   style: const TextStyle(fontSize: 14, color: Colors.black87),
-          // ),
+         
           const Divider(height: 24),
           const Text(
             "Payment History",
             style: TextStyle(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 8),
-          ...salaryTransactions.map(
-            (tx) => Container(
-              margin: const EdgeInsets.symmetric(vertical: 6),
-              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade50,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+          const Divider(height: 24),
+          // loadingRecords
+          //     ? const SizedBox(
+          //         height: 200,
+          //         child: Center(child: CircularProgressIndicator()),
+          //       )
+          //     : salaryRecords.isEmpty
+          //     ? const Padding(
+          //         padding: EdgeInsets.symmetric(vertical: 28),
+          //         child: Center(child: Text('No salary records available.')),
+          //       )
+          //     : Column(
+          //         children: salaryRecords
+          //             .map((r) => _salaryRecordCard(r))
+          //             .toList(),
+          //       ),
+        ],
+      ),
+    );
+  }
+
+  Widget _salaryRecordCard(Map<String, dynamic> r) {
+    final DateFormat df = DateFormat.yMMMd();
+    DateTime? created;
+    try {
+      created = DateTime.parse(r['created_at']);
+    } catch (_) {
+      created = null;
+    }
+
+    final String period = '${r['start_date'] ?? '—'} → ${r['end_date'] ?? '—'}';
+    final String amount =
+        (r['calculated_amount'] ?? r['input_monthly_amount'] ?? '0').toString();
+    final int payableDays = (r['payable_days'] ?? 0) as int;
+    final int unmarked = (r['unmarked_days'] ?? 0) as int;
+    final bool isPaid = (r['paid_status'] ?? 2) == 1;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        children: [
+          // CircleAvatar(
+          //   radius: 28,
+          //   backgroundImage: NetworkImage(avatarLocalPath),
+          //   backgroundColor: Colors.grey.shade100,
+          // ),
+          // const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  period,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       children: [
                         Text(
-                          tx['month'],
-                          style: const TextStyle(fontWeight: FontWeight.w600),
+                          'Payable: ',
+                          style: TextStyle(color: Colors.black54),
                         ),
-                        const SizedBox(height: 4),
                         Text(
-                          'Days worked: ${tx['daysWorked']}',
+                          '₹$amount',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: Colors.green,
+                          ),
+                        ),
+                        const Spacer(),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isPaid
+                            ? Colors.green.shade50
+                            : Colors.orange.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        isPaid ? 'Paid' : 'Unpaid',
+                        style: TextStyle(
+                          color: isPaid
+                              ? Colors.green.shade700
+                              : Colors.orange.shade700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Column(
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.person_outline,
+                          size: 14,
+                          color: Colors.black45,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Payable days: $payableDays',
+                          style: const TextStyle(fontSize: 13),
+                        ),
+                        const SizedBox(width: 12),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Icon(Icons.event_busy, size: 14, color: Colors.black45),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Absent: $unmarked',
                           style: const TextStyle(fontSize: 13),
                         ),
                       ],
                     ),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        '₹${tx['amount']}',
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w700,
-                          color: Colors.green,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      OutlinedButton(
-                        onPressed: () {},
-                        child: const Text('View Slip'),
-                      ),
-                    ],
+                  ],
+                ),
+                if (created != null) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    'Recorded: ${df.format(created)}',
+                    style: const TextStyle(fontSize: 12, color: Colors.black54),
                   ),
                 ],
-              ),
+              ],
             ),
           ),
+          Column(
+            children: [
+              IconButton(
+                onPressed: () => _showRecordDetails(r),
+                icon: const Icon(Icons.visibility_outlined),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatDateTime(dynamic raw) {
+    if (raw == null) return '—';
+
+    try {
+      final dt = DateTime.parse(
+        raw.toString(),
+      ); // parse "2025-11-24T11:19:58.000000Z"
+      return DateFormat('dd MMM yyyy, hh:mm a').format(dt);
+      // → "24 Nov 2025, 11:19 AM"
+    } catch (_) {
+      return raw.toString(); // fallback
+    }
+  }
+
+  void _showRecordDetails(Map<String, dynamic> r) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Salary Record'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _detailRow('Period', '${r['start_date']} → ${r['end_date']}'),
+              _detailRow('Salary', '₹${r['input_monthly_amount']}'),
+              _detailRow('Calculated', '₹${r['calculated_amount']}'),
+              _detailRow('Total days', '${r['total_days']}'),
+              _detailRow('Payable days', '${r['payable_days']}'),
+              _detailRow('Absent', '${r['unmarked_days']}'),
+              _detailRow(
+                'Paid status',
+                (r['paid_status'] == 1) ? 'Paid' : 'Unpaid',
+              ),
+              _detailRow('Recorded at', _formatDateTime(r['created_at'])),
+            ],
+          ),
+        ),
+
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _detailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Text(value, style: const TextStyle(color: Colors.black87)),
         ],
       ),
     );

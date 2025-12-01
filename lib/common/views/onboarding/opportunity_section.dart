@@ -1,4 +1,3 @@
-
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/foundation.dart';
@@ -10,22 +9,22 @@ class OpportunityCategoriesSection extends StatelessWidget {
   static final List<_CategoryInfo> _categories = [
     _CategoryInfo(
       title: 'Salary Jobs',
-      asset: 'assets/test_one.jpg',
-      color: Color(0xFF6FB6FF),
+      asset: 'assets/crslthree.jpg',
+      color: Color(0xFFF6D8C6),
     ),
     _CategoryInfo(
       title: 'Commission Jobs',
       asset: 'assets/test_two.jpg',
-      color: Color(0xFF6EE6A6),
+      color: Color(0xFFF6D8C6),
     ),
     _CategoryInfo(
       title: 'One-Time Gigs',
-      asset: 'assets/test_two.jpg',
-      color: Color(0xFF7B62E6),
+      asset: 'assets/crslone.jpg',
+      color: Color(0xFFF6D8C6),
     ),
     _CategoryInfo(
       title: 'Projects & Freelance',
-      asset: 'assets/test_two.jpg',
+      asset: 'assets/crsltwo.jpg',
       color: Color(0xFFF6D8C6),
     ),
   ];
@@ -110,8 +109,8 @@ class OpportunityCategoriesSection extends StatelessWidget {
                       Row(
                         children: const [
                           Expanded(child: _DownloadPromo()),
-                          SizedBox(width: 18),
-                          Expanded(child: _ReferPromo()),
+                          // SizedBox(width: 18),
+                          // Expanded(child: _ReferPromo()),
                         ],
                       ),
                     ],
@@ -124,7 +123,6 @@ class OpportunityCategoriesSection extends StatelessWidget {
       ),
     );
   }
-
 
   int _columnsForWidth(double w) {
     if (w >= 1100) return 4;
@@ -168,15 +166,15 @@ class _Header extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: const [
-                Text(
-                  'Explore all',
-                  style: TextStyle(
-                    color: Color(0xFF1E63B8),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                SizedBox(width: 6),
-                Icon(Icons.open_in_new, size: 18, color: Color(0xFF1E63B8)),
+                // Text(
+                //   'Explore all',
+                //   style: TextStyle(
+                //     color: Color(0xFF1E63B8),
+                //     fontWeight: FontWeight.w600,
+                //   ),
+                // ),
+                // SizedBox(width: 6),
+                // Icon(Icons.open_in_new, size: 18, color: Color(0xFF1E63B8)),
               ],
             ),
           ),
@@ -185,7 +183,6 @@ class _Header extends StatelessWidget {
     );
   }
 }
-
 
 class _CategoryInfo {
   final String title;
@@ -334,7 +331,7 @@ class _CategoryTileState extends State<_CategoryTile> {
     // On mobile small tiles, the background image could be low priority; we keep asset fallback
     return Image.asset(
       path,
-      fit: BoxFit.cover,
+      fit: BoxFit.contain,
       errorBuilder: (_, __, ___) =>
           Container(color: widget.info.color.withOpacity(0.6)),
     );
@@ -346,158 +343,283 @@ class _DownloadPromo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final radius = BorderRadius.circular(14.0);
+    final radius = BorderRadius.circular(18.0);
+    final width = MediaQuery.of(context).size.width;
+    final isNarrow = width < 980;
+
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
-        color: const Color(0xFFEAF7FF),
         borderRadius: radius,
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFFFFF4FB), // soft pink
+            Color(0xFFEAF5FF), // soft blue
+          ],
+        ),
       ),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 6,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      child: isNarrow
+          ? Column(
               children: [
-                const Text(
-                  'Download',
-                  style: TextStyle(
-                    color: Color(0xFF1E63B8),
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                const Text(
-                  'Badhyata App',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Connecting Talent, Colleges, Recruiters',
-                  style: TextStyle(color: Colors.black54),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    _storeBadge(icon: Icons.android, label: 'Google Play'),
-                    const SizedBox(width: 12),
-                    _storeBadge(icon: Icons.apple, label: 'App Store'),
-                  ],
-                ),
+                _DownloadTextBlock(),
+                const SizedBox(height: 22),
+                _PhonePreviewStack(),
+              ],
+            )
+          : Row(
+              children: const [
+                // LEFT: text
+                Expanded(flex: 5, child: _DownloadTextBlock()),
+                SizedBox(width: 24),
+                // RIGHT: phones
+                Expanded(flex: 5, child: _PhonePreviewStack()),
               ],
             ),
-          ),
-          Expanded(
-            flex: 4,
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: AspectRatio(
-                aspectRatio: 9 / 7,
-                child: Padding(
-                  padding: const EdgeInsets.all(6.0),
-                  child: Image.asset(
-                    'assets/scan.png',
-                    fit: BoxFit.contain,
-                    errorBuilder: (_, __, ___) =>
-                        Container(color: Colors.white30),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
+  // -------- store badge used below --------
   static Widget _storeBadge({required IconData icon, required String label}) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 18,
+        vertical: 12,
+      ), // bigger
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(14), // more rounded
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 18),
-          const SizedBox(width: 8),
-          Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+          Icon(icon, size: 24, color: Colors.black87), // bigger icon
+          const SizedBox(width: 10),
+          Text(
+            label,
+            style: const TextStyle(
+              fontWeight: FontWeight.w900, // bolder
+              fontSize: 16, // bigger text
+            ),
+          ),
         ],
       ),
     );
   }
 }
 
-class _ReferPromo extends StatelessWidget {
-  const _ReferPromo();
+/// LEFT SIDE: Heading + points + badges
+class _DownloadTextBlock extends StatelessWidget {
+  const _DownloadTextBlock();
 
   @override
   Widget build(BuildContext context) {
-    final radius = BorderRadius.circular(14.0);
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFFFF8E6),
-        borderRadius: radius,
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 6,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Refer & Win',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
-                ),
-                const SizedBox(height: 6),
-                const Text(
-                  'MacBook, iPhone, Apple Watch, AirPods, Cash Rewards and more!',
-                  style: TextStyle(color: Colors.black54),
-                ),
-                const SizedBox(height: 12),
-                ElevatedButton(
-                  onPressed: () {},
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.black87,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 12,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: const Text(
-                    'Get Started',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ],
-            ),
+    final isSmall = MediaQuery.of(context).size.width < 800;
+
+    return Column(
+      crossAxisAlignment: isSmall
+          ? CrossAxisAlignment.center
+          : CrossAxisAlignment.start,
+      children: [
+        if (!isSmall) const SizedBox(height: 4),
+        Text(
+          'Download the Badhyata App',
+          textAlign: isSmall ? TextAlign.center : TextAlign.left,
+          style: TextStyle(
+            fontSize: isSmall ? 22 : 26,
+            fontWeight: FontWeight.w800,
+            color: Colors.black87,
           ),
-          Expanded(
-            flex: 4,
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: AspectRatio(
-                aspectRatio: 9 / 7,
-                child: Padding(
-                  padding: const EdgeInsets.all(6.0),
-                  child: Image.asset(
-                    'assets/scan.png',
-                    fit: BoxFit.contain,
-                    errorBuilder: (_, __, ___) =>
-                        Container(color: Colors.white30),
-                  ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'Apply to jobs 3x faster, track applications,\n'
+          'and get instant alerts right on your phone.',
+          textAlign: isSmall ? TextAlign.center : TextAlign.left,
+          style: const TextStyle(
+            fontSize: 14,
+            height: 1.4,
+            color: Colors.black54,
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // bullet points
+        Column(
+          crossAxisAlignment: isSmall
+              ? CrossAxisAlignment.center
+              : CrossAxisAlignment.start,
+          children: const [],
+        ),
+
+        const SizedBox(height: 18),
+
+        // store badges
+        Wrap(
+          spacing: 12,
+          runSpacing: 8,
+          alignment: isSmall ? WrapAlignment.center : WrapAlignment.start,
+          children: [
+            _DownloadPromo._storeBadge(
+              icon: Icons.android,
+              label: 'Get it on Google Play',
+            ),
+            _DownloadPromo._storeBadge(
+              icon: Icons.apple,
+              label: 'Download on App Store',
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _FeatureRow extends StatelessWidget {
+  final IconData icon;
+  final String text;
+  const _FeatureRow({required this.icon, required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          height: 24,
+          width: 24,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.06),
+                blurRadius: 6,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Icon(icon, size: 15, color: const Color(0xFFE91E63)),
+        ),
+        const SizedBox(width: 8),
+        Text(text, style: const TextStyle(fontSize: 13, color: Colors.black87)),
+      ],
+    );
+  }
+}
+
+/// RIGHT SIDE: stacked phone mockups using your screenshots
+class _PhonePreviewStack extends StatelessWidget {
+  const _PhonePreviewStack();
+
+  @override
+  Widget build(BuildContext context) {
+    const String screenHome = 'assets/mobileone.png';
+    const String screenJobs = 'assets/mobiletwo.png';
+    const String screenSplash = 'assets/mobilethree.png';
+
+    final w = MediaQuery.of(context).size.width;
+
+    // Increased scale
+    final scale = w < 1100 ? 1.1 : 1.25;
+
+    // Increased phone sizes
+    final sideWidth = 120.0 * scale;
+    final centerWidth = 160.0 * scale;
+
+    return SizedBox(
+      height: 320 * scale, // increased
+      child: Center(
+        child: SizedBox(
+          width: 360 * scale, // increased
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Positioned(
+                left: 0,
+                bottom: 0,
+                child: _phoneMockup(
+                  imagePath: screenJobs,
+                  angle: -0.12,
+                  verticalPadding: 20 * scale,
+                  width: sideWidth,
+                  blur: 8,
                 ),
               ),
+              Positioned(
+                left: 90 * scale,
+                bottom: -20 * scale,
+                child: _phoneMockup(
+                  imagePath: screenHome,
+                  angle: 0,
+                  verticalPadding: 0,
+                  width: centerWidth,
+                  blur: 12,
+                  highlight: true,
+                ),
+              ),
+              Positioned(
+                right: 0,
+                bottom: 0,
+                child: _phoneMockup(
+                  imagePath: screenSplash,
+                  angle: 0.12,
+                  verticalPadding: 20 * scale,
+                  width: sideWidth,
+                  blur: 8,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _phoneMockup({
+    required String imagePath,
+    required double angle,
+    required double verticalPadding,
+    required double width,
+    double blur = 8,
+    bool highlight = false,
+  }) {
+    final borderRadius = BorderRadius.circular(26);
+
+    return Transform.rotate(
+      angle: angle,
+      child: Container(
+        width: width,
+        padding: EdgeInsets.symmetric(vertical: verticalPadding),
+        decoration: BoxDecoration(
+          borderRadius: borderRadius,
+          boxShadow: [
+            // BoxShadow(
+            //   color: Colors.black.withOpacity(highlight ? 0.25 : 0.18),
+            //   blurRadius: blur,
+            //   offset: const Offset(0, 10),
+            // ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: borderRadius,
+          child: Image.asset(
+            imagePath,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => Container(
+              color: Colors.white,
+              child: const Icon(Icons.phone_iphone),
             ),
           ),
-        ],
+        ),
       ),
     );
   }

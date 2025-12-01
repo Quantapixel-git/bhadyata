@@ -1,4 +1,5 @@
-import 'package:flutter/foundation.dart';
+// users/views/bottomnav_sidebar/user_sidedrawer.dart
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/common/views/onboarding/mobile_onboarding_screen.dart';
@@ -22,7 +23,32 @@ import 'package:jobshub/common/utils/app_color.dart';
 
 Future<String> _getStoredJobType() async {
   final jt = await SessionManager.getValue('job_type') ?? '';
-  return jt.trim();
+  return _normalizeJobType(jt.toString());
+}
+
+/// Normalize job_type variants to canonical labels used locally
+String _normalizeJobType(String raw) {
+  String s = raw.toString().trim();
+  final low = s.toLowerCase();
+  if (low.contains('commission') ||
+      low.contains('commision') ||
+      low.contains('commission-based')) {
+    return 'commission';
+  } else if (low.contains('salary')) {
+    return 'salary';
+  } else if (low.contains('one') ||
+      low.contains('one-time') ||
+      low.contains('onetime') ||
+      low.contains('one time')) {
+    return 'one-time';
+  } else if (low.contains('project') ||
+      low.contains('projects') ||
+      low.contains('freelance') ||
+      low.contains('it')) {
+    return 'project';
+  }
+  // fallback: return trimmed original (could be '', or some other string)
+  return s;
 }
 
 /// Build menu children widgets for a given jobType.
@@ -33,6 +59,7 @@ List<Widget> _buildMenuChildrenForType(
   required bool isWeb,
   required bool isCollapsed,
 }) {
+  // jobType expected to be normalized (see _getStoredJobType)
   final normalized = jobType.toLowerCase();
 
   // Project
@@ -43,7 +70,7 @@ List<Widget> _buildMenuChildrenForType(
       size: 22,
     ),
     title: Text(
-      "View Projects",
+      "Projects",
       style: TextStyle(
         fontSize: isWeb ? 13.5 : 15,
         color: Colors.black87,
@@ -61,7 +88,7 @@ List<Widget> _buildMenuChildrenForType(
   Widget salaryItem = ListTile(
     leading: const Icon(Icons.work_outline, color: Colors.black87, size: 22),
     title: Text(
-      "Salary Based Job",
+      "Salary Jobs",
       style: TextStyle(
         fontSize: isWeb ? 13.5 : 15,
         color: Colors.black87,
@@ -80,7 +107,7 @@ List<Widget> _buildMenuChildrenForType(
   Widget oneTimeItem = ListTile(
     leading: const Icon(Icons.work_outline, color: Colors.black87, size: 22),
     title: Text(
-      "One-Time Recruitment",
+      "One-Time Jobs",
       style: TextStyle(
         fontSize: isWeb ? 13.5 : 15,
         color: Colors.black87,
@@ -99,7 +126,7 @@ List<Widget> _buildMenuChildrenForType(
   Widget commissionItem = ListTile(
     leading: const Icon(Icons.work_outline, color: Colors.black87, size: 22),
     title: Text(
-      "Commission Based Job",
+      "Commission Jobs",
       style: TextStyle(
         fontSize: isWeb ? 13.5 : 15,
         color: Colors.black87,
@@ -119,11 +146,12 @@ List<Widget> _buildMenuChildrenForType(
     return [projItem, salaryItem, oneTimeItem, commissionItem];
   }
 
+  // normalized values: 'project', 'salary', 'one-time', 'commission'
   if (normalized.contains('project')) return [projItem];
   if (normalized.contains('salary')) return [salaryItem];
   if (normalized.contains('one') ||
       normalized.contains('one-time') ||
-      normalized.contains('onetim'))
+      normalized.contains('onetime'))
     return [oneTimeItem];
   if (normalized.contains('commission')) return [commissionItem];
 
@@ -191,8 +219,7 @@ class AppDrawerMobile extends StatelessWidget {
           child: Column(
             children: [
               _buildHeaderMobile(),
-              // const SizedBox(height: 10),
-              // const Divider(height: 1, color: Colors.black12),
+
               Expanded(
                 child: FutureBuilder<String>(
                   future: _getStoredJobType(),
@@ -564,7 +591,7 @@ class AppDrawerWeb extends StatelessWidget {
                           return _menuItem(
                             context,
                             Icons.folder_copy_outlined,
-                            "View Projects",
+                            "Projects",
                             () => Navigator.push(
                               context,
                               MaterialPageRoute(builder: (_) => Projects()),
@@ -575,7 +602,7 @@ class AppDrawerWeb extends StatelessWidget {
                           return _menuItem(
                             context,
                             Icons.work_outline,
-                            "Salary Based Job",
+                            "Salary Jobs",
                             () => Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -586,11 +613,11 @@ class AppDrawerWeb extends StatelessWidget {
                         }
                         if (jobType.contains('one') ||
                             jobType.contains('one-time') ||
-                            jobType.contains('onetim')) {
+                            jobType.contains('onetime')) {
                           return _menuItem(
                             context,
                             Icons.work_outline,
-                            "One-Time Recruitment",
+                            "One-Time Jobs",
                             () => Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -603,7 +630,7 @@ class AppDrawerWeb extends StatelessWidget {
                           return _menuItem(
                             context,
                             Icons.work_outline,
-                            "Commission Based Job",
+                            "Commission Jobs",
                             () => Navigator.push(
                               context,
                               MaterialPageRoute(

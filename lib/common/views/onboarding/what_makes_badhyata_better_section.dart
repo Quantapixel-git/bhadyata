@@ -1,242 +1,227 @@
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:jobshub/common/utils/app_color.dart';
 
 class WhatMakesWorkIndiaBetterSection extends StatelessWidget {
   const WhatMakesWorkIndiaBetterSection({super.key});
 
-  static final List<FeatureItemNew> _items = [
-    FeatureItemNew(
-      image: 'assets/hire.jpg',
-      title: 'Multiple Job Types',
-      desc:
-          'Explore salary-based, commission-based, one-time jobs and real project opportunities—all in one place.',
-    ),
-    FeatureItemNew(
-      image: 'assets/verify.jpg',
-      title: 'Instant Apply & Quick Hiring',
-      desc:
-          'Apply instantly for jobs or hire talent within minutes using our fast “Hire Now” system.',
-    ),
-    FeatureItemNew(
-      image: 'assets/calls.png',
-      title: 'Smart Matching',
-      desc:
-          'Our system connects job seekers and employers based on skills, experience, and job type automatically.',
-    ),
+  // Locations you want to show
+  static final List<String> _locations = [
+    'Ariyalur',
+    'Chengalpattu',
+    'Chennai',
+    'Coimbatore',
+    'Cuddalore',
+    'Dharmapuri',
   ];
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    final isDesktop = width >= 800;
-
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 24),
-      color: Colors.white,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          const Text(
-            "What makes badhyata better?",
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: AppColors.secondary,
-              fontSize: 26,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Container(width: 60, height: 4, color: Colors.amberAccent),
-          const SizedBox(height: 36),
+      // light subtle background
+      decoration: const BoxDecoration(
+        color: Colors.white
+        // gradient: LinearGradient(
+        //   begin: Alignment.topCenter,
+        //   end: Alignment.bottomCenter,
+        //   colors: [Color(0xFFFCFCFF), Color(0xFFFDF7F0)],
+        // ),
+      ),
+      padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 16),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1100),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // ----- TITLE -----
+              const Text(
+                'Find Jobs By Location',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                width: 90,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.secondary,
+                  borderRadius: BorderRadius.circular(50),
+                ),
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Discover opportunities in top cities across India.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14, color: Colors.black54),
+              ),
 
-          /// Desktop Layout
-          if (isDesktop)
-            Wrap(
-              alignment: WrapAlignment.center,
-              runSpacing: 24,
-              spacing: 40,
-              children: _items
-                  .map(
-                    (item) => _featureCardDesktop(
-                      image: item.image,
-                      title: item.title,
-                      desc: item.desc,
-                      width: 300,
-                    ),
-                  )
-                  .toList(),
-            )
-          else
-            /// Mobile Layout → Horizontal PageView with peeking cards
-            SizedBox(
-              height: 320,
-              child: PageView.builder(
-                controller: PageController(viewportFraction: 0.82),
-                itemCount: _items.length,
-                physics: const BouncingScrollPhysics(),
-                itemBuilder: (context, index) {
-                  final item = _items[index];
-                  final cardWidth = (width * 0.78)
-                      .clamp(250.0, 340.0)
-                      .toDouble();
+              const SizedBox(height: 32),
 
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Center(
-                      child: _featureCardMobile(
-                        image: item.image,
-                        title: item.title,
-                        desc: item.desc,
-                        width: cardWidth,
-                      ),
+              // ----- GRID -----
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final maxW = constraints.maxWidth;
+                  late int crossAxisCount;
+
+                  if (maxW >= 1000) {
+                    crossAxisCount = 3;
+                  } else if (maxW >= 650) {
+                    crossAxisCount = 2;
+                  } else {
+                    crossAxisCount = 1;
+                  }
+
+                  final aspectRatio = crossAxisCount == 1
+                      ? 3.0
+                      : crossAxisCount == 2
+                      ? 3.2
+                      : 3.6;
+
+                  return GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: _locations.length,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossAxisCount,
+                      crossAxisSpacing: 20,
+                      mainAxisSpacing: 18,
+                      childAspectRatio: aspectRatio,
                     ),
+                    itemBuilder: (context, index) {
+                      return _LocationCard(city: _locations[index]);
+                    },
                   );
                 },
               ),
-            ),
-
-          const SizedBox(height: 36),
-
-          SizedBox(
-            width: 220,
-            child: OutlinedButton(
-              onPressed: () {},
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Colors.black, width: 1.5),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 14,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              child: const Text(
-                "Post your Job",
-                style: TextStyle(color: Colors.black, fontSize: 16),
-              ),
-            ),
+            ],
           ),
-        ],
-      ),
-    );
-  }
-
-  /// Desktop Card
-  Widget _featureCardDesktop({
-    required String image,
-    required String title,
-    required String desc,
-    required double width,
-  }) {
-    return SizedBox(
-      width: width,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 18),
-        child: Column(
-          children: [
-            _assetImage(image, 120, 120),
-            const SizedBox(height: 14),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-                color: Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              desc,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.black54,
-                height: 1.4,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Mobile Card
-  Widget _featureCardMobile({
-    required String image,
-    required String title,
-    required String desc,
-    required double width,
-  }) {
-    return SizedBox(
-      width: width,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 14),
-        child: Column(
-          children: [
-            _assetImage(image, 110, 110),
-            const SizedBox(height: 10),
-            Text(
-              title,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w700,
-                color: Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              desc,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.black54,
-                height: 1.4,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  /// Image Loader with fallback
-  Widget _assetImage(String path, double w, double h) {
-    return Image.asset(
-      path,
-      width: w,
-      height: h,
-      fit: BoxFit.contain,
-      errorBuilder: (_, __, ___) => Container(
-        width: w,
-        height: h,
-        decoration: BoxDecoration(
-          color: Colors.grey.shade200,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Icon(
-          Icons.image_not_supported,
-          size: w * 0.5,
-          color: Colors.grey.shade500,
         ),
       ),
     );
   }
 }
 
-/// Your custom model class (as requested)
-class FeatureItemNew {
-  final String image;
-  final String title;
-  final String desc;
+/// ---------------- CARD WIDGET ----------------
+class _LocationCard extends StatefulWidget {
+  final String city;
+  const _LocationCard({required this.city});
 
-  const FeatureItemNew({
-    required this.image,
-    required this.title,
-    required this.desc,
-  });
+  @override
+  State<_LocationCard> createState() => _LocationCardState();
+}
+
+class _LocationCardState extends State<_LocationCard> {
+  bool _hover = false;
+
+  bool get _enableHover =>
+      kIsWeb ||
+      defaultTargetPlatform == TargetPlatform.macOS ||
+      defaultTargetPlatform == TargetPlatform.windows ||
+      defaultTargetPlatform == TargetPlatform.linux;
+
+  @override
+  Widget build(BuildContext context) {
+    final baseColor = const Color(0xFFFFF7EF); // soft cream
+    final hoverColor = const Color(0xFFFFF1E3);
+
+    final card = AnimatedContainer(
+      duration: const Duration(milliseconds: 160),
+      curve: Curves.easeOut,
+      decoration: BoxDecoration(
+        color: _hover ? hoverColor : baseColor,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Colors.black.withOpacity(0.03)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(_hover ? 0.16 : 0.04),
+            blurRadius: _hover ? 16 : 8,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(18),
+          onTap: () {
+            // TODO: handle tap: open jobs for this city
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 16),
+            child: Row(
+              children: [
+                // Icon circle
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.06),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  alignment: Alignment.center,
+                  child: Icon(
+                    Icons.location_on,
+                    size: 22,
+                    color: AppColors.secondary,
+                  ),
+                ),
+                const SizedBox(width: 18),
+
+                // Text
+                Expanded(
+                  child: Text.rich(
+                    TextSpan(
+                      text: 'Jobs in ',
+                      style: const TextStyle(
+                        fontSize: 15,
+                        color: Colors.black87,
+                      ),
+                      children: [
+                        TextSpan(
+                          text: widget.city,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(width: 8),
+
+                Icon(
+                  Icons.arrow_forward_ios,
+                  size: 14,
+                  color: Colors.black.withOpacity(0.4),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    return _enableHover
+        ? MouseRegion(
+            onEnter: (_) => setState(() => _hover = true),
+            onExit: (_) => setState(() => _hover = false),
+            child: card,
+          )
+        : card;
+  }
 }

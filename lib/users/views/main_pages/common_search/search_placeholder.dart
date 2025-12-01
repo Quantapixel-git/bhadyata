@@ -53,10 +53,39 @@ class _SearchScreenState extends State<SearchScreen> {
     });
   }
 
+  /// Read stored job_type and normalize to canonical labels so endpoint
+  /// selection is deterministic.
   Future<void> _initJobType() async {
     final stored = (await SessionManager.getValue('job_type')) ?? '';
-    setState(() => _storedJobType = stored?.toString() ?? '');
-    if (kDebugMode) print('🔁 SearchScreen stored job_type: "$_storedJobType"');
+    String normalized = stored.toString().trim();
+
+    final low = normalized.toLowerCase();
+    if (low.contains('commission') || low.contains('commision')) {
+      normalized = 'Commission-based';
+    } else if (low.contains('salary')) {
+      normalized = 'Salary-based';
+    } else if (low.contains('one') ||
+        low.contains('one-time') ||
+        low.contains('onetime') ||
+        low.contains('one time')) {
+      normalized = 'One-time';
+    } else if (low.contains('project') ||
+        low.contains('projects') ||
+        low.contains('freelance') ||
+        low.contains('it')) {
+      // treating 'it' as a project-like preference (matches your other pages)
+      normalized = 'Project';
+    } else {
+      // keep whatever user had or empty
+      normalized = normalized.isEmpty ? 'Salary-based' : normalized;
+    }
+
+    setState(() => _storedJobType = normalized);
+
+    if (kDebugMode) {
+      print('🔁 SearchScreen stored raw job_type: "$stored"');
+      print('🔁 SearchScreen normalized _storedJobType: "$_storedJobType"');
+    }
   }
 
   void _onQueryChanged() {
@@ -67,35 +96,47 @@ class _SearchScreenState extends State<SearchScreen> {
     });
   }
 
+  /// Tolerant endpoint chooser for search — handles common variants/spellings.
   String _chooseSearchEndpoint(String jobType) {
     final jt = jobType.toLowerCase();
-    if (jt.contains('commission')) return 'searchCommissionJobs';
+    if (jt.contains('commission') || jt.contains('commision')) {
+      return 'searchCommissionJobs';
+    }
     if (jt.contains('one') ||
         jt.contains('one-time') ||
         jt.contains('onetime') ||
-        jt.contains('one time'))
+        jt.contains('one time')) {
       return 'searchOneTimeJobs';
+    }
     if (jt.contains('project') ||
         jt.contains('projects') ||
         jt.contains('freelance') ||
-        jt.contains('it'))
+        jt.contains('it')) {
       return 'searchProjects';
+    }
+    // default (salary-based)
     return 'searchSalaryJobs';
   }
 
+  /// Tolerant endpoint chooser for applying to a job.
   String _chooseApplyEndpoint(String jobType) {
     final jt = jobType.toLowerCase();
-    if (jt.contains('commission')) return 'applyCommissionBased';
+    if (jt.contains('commission') || jt.contains('commision')) {
+      return 'applyCommissionBased';
+    }
     if (jt.contains('one') ||
         jt.contains('one-time') ||
         jt.contains('onetime') ||
-        jt.contains('one time'))
+        jt.contains('one time')) {
       return 'applyOneTimeBased';
+    }
     if (jt.contains('project') ||
         jt.contains('projects') ||
         jt.contains('freelance') ||
-        jt.contains('it'))
+        jt.contains('it')) {
       return 'applyProject';
+    }
+    // default
     return 'applySalayBased';
   }
 
@@ -182,6 +223,12 @@ class _SearchScreenState extends State<SearchScreen> {
           ? raw['current_page'] as int
           : int.tryParse((raw['current_page'] ?? '').toString()) ?? page;
 
+      if (kDebugMode) {
+        print(
+          '🔁 Parsed results: ${parsed.length}, total: $total, page: $current',
+        );
+      }
+
       setState(() {
         if (page == 1) {
           _results = parsed;
@@ -243,6 +290,7 @@ class _SearchScreenState extends State<SearchScreen> {
       return;
     }
 
+    // Use normalized stored job type to pick correct apply endpoint
     final endpoint = _chooseApplyEndpoint(_storedJobType);
     final uri = Uri.parse('${ApiConstants.baseUrl}$endpoint');
 

@@ -123,7 +123,7 @@ class _CompanyCarouselState extends State<CompanyCarousel> {
       children: [
         SizedBox(height: 25),
         const Text(
-          "38L+ top companies trust badhyata for their hiring needs",
+          "28L+ top companies trust badhyata for their hiring needs",
           textAlign: TextAlign.center,
           style: TextStyle(fontSize: 25, fontWeight: FontWeight.w500),
         ),

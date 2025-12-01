@@ -20,7 +20,7 @@ import 'package:jobshub/employer/views/employer_details/employer_detail.dart';
 import 'package:jobshub/employer/views/schedule_interview/one-time_applicates.dart';
 import 'package:jobshub/employer/views/schedule_interview/project_employees.dart';
 import 'package:jobshub/employer/views/sidebar_dashboard/employer_dashboard.dart';
-import 'package:jobshub/employer/views/sidebar_dashboard/leads_page.dart';
+import 'package:jobshub/employer/views/leads/leads_page.dart';
 import 'package:jobshub/employer/views/wallet_deposit/employer_deposit.dart';
 import 'package:jobshub/employer/views/my_employees/one_time_job.dart';
 import 'package:jobshub/employer/views/notes/employer_one_time_job_note.dart';
@@ -441,14 +441,14 @@ class EmployerSidebarMobile extends StatelessWidget {
                   ),
 
                   const Divider(height: 25),
-                  _sectionTitle("👥 Employees"),
+                  _sectionTitle("👥 Employees & Salary"),
 
                   ExpansionTile(
                     leading: Icon(
                       Icons.people_alt_outlined,
                       color: AppColors.primary,
                     ),
-                    title: const Text("My Employees"),
+                    title: const Text("Job Employees"),
                     iconColor: AppColors.primary,
                     collapsedIconColor: AppColors.primary,
                     childrenPadding: const EdgeInsets.only(left: 20, bottom: 8),
@@ -477,15 +477,20 @@ class EmployerSidebarMobile extends StatelessWidget {
                           ),
                         );
                       }),
-                      _expTileChild(context, "Project Employees", () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ProjectEmployeesPage(),
-                          ),
-                        );
-                      }),
                     ],
+                  ),
+                  _sidebarItem(
+                    context,
+                    Icons.people_alt_outlined,
+                    "Project Employees",
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ProjectEmployeesPage(),
+                        ),
+                      );
+                    },
                   ),
 
                   ExpansionTile(
@@ -498,32 +503,18 @@ class EmployerSidebarMobile extends StatelessWidget {
                     collapsedIconColor: AppColors.primary,
                     childrenPadding: const EdgeInsets.only(left: 20, bottom: 8),
                     children: [
-                      _expTileChild(context, "Salary-based Employees", () {
+                      _expTileChild(context, "Salary-based", () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder: (_) => SalaryDuePage()),
                         );
                       }),
-                      // _expTileChild(
-                      //   context,
-                      //   "Commission-based Lead Generator",
-                      //   () {
-                      //     // Navigator.push(
-                      //     //   context,
-                      //     //   MaterialPageRoute(
-                      //     //     builder: (_) => EmployerDashboardPage(),
-                      //     //   ),
-                      //     // );
-                      //   },
-                      // ),
-                      // _expTileChild(context, "Project Employees", () {
-                      //   // Navigator.push(
-                      //   //   context,
-                      //   //   MaterialPageRoute(
-                      //   //     builder: (_) => EmployerDashboardPage(),
-                      //   //   ),
-                      //   // );
-                      // }),
+                         _expTileChild(context, "Commission-based", () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => SalaryDuePage()),
+                        );
+                      }),
                     ],
                   ),
 
@@ -558,7 +549,7 @@ class EmployerSidebarMobile extends StatelessWidget {
                   ),
 
                   const Divider(height: 25),
-                  _sectionTitle("👥 Commission & Leads"),
+                  _sectionTitle("👥 Leads"),
                   _sidebarItem(
                     context,
                     Icons.attach_money_outlined,
@@ -1020,11 +1011,11 @@ class EmployerSidebarWeb extends StatelessWidget {
                     },
                   ),
                   _divider(),
-                  _sectionTitle("👥 Employees"),
+                  _sectionTitle("👥 Employees & Salary"),
                   _expansionGroup(
                     context,
                     Icons.people_alt_outlined,
-                    "My Employees",
+                    "Job Employees",
                     [
                       _expTileChild(context, "Commission-Based Employees", () {
                         Navigator.push(
@@ -1050,47 +1041,39 @@ class EmployerSidebarWeb extends StatelessWidget {
                           ),
                         );
                       }),
-                      _expTileChild(context, "Project Employees", () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => ProjectEmployeesPage(),
-                          ),
-                        );
-                      }),
                     ],
+                  ),
+
+                  _menuItem(
+                    context,
+                    Icons.people_alt_outlined,
+                    "Project Employees",
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => ProjectEmployeesPage(),
+                        ),
+                      );
+                    },
                   ),
                   _expansionGroup(
                     context,
                     Icons.payments_outlined,
                     "Salary Structure",
                     [
-                      _expTileChild(context, "Salary-based Employees", () {
+                      _expTileChild(context, "Salary-based", () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder: (_) => SalaryDuePage()),
                         );
                       }),
-                      // _expTileChild(
-                      //   context,
-                      //   "Commission-based Lead Generator",
-                      //   () {
-                      //     // Navigator.push(
-                      //     //   context,
-                      //     //   MaterialPageRoute(
-                      //     //     builder: (_) => EmployerDashboardPage(),
-                      //     //   ),
-                      //     // );
-                      //   },
-                      // ),
-                      // _expTileChild(context, "Project Employees", () {
-                      //   // Navigator.push(
-                      //   //   context,
-                      //   //   MaterialPageRoute(
-                      //   //     builder: (_) => EmployerDashboardPage(),
-                      //   //   ),
-                      //   // );
-                      // }),
+                       _expTileChild(context, "Commission-based", () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => SalaryDuePage()),
+                        );
+                      }),
                     ],
                   ),
                   _expansionGroup(
@@ -1116,6 +1099,14 @@ class EmployerSidebarWeb extends StatelessWidget {
                       }),
                     ],
                   ),
+                  _divider(),
+                  _sectionTitle("👥 Leads"),
+                  _menuItem(context, Icons.attach_money_outlined, "Leads", () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => LeadsPage()),
+                    );
+                  }),
                   _divider(),
                   _sectionTitle("🧭 Support & Others"),
                   _expansionGroup(context, Icons.help_outline, "Query Portal", [

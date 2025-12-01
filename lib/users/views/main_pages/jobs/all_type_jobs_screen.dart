@@ -461,21 +461,34 @@ class _AllJobsPageState extends State<AllJobsPage> {
 
   bool _isApplying(String jobId) => _applyingJobIds.contains(jobId);
 
-  String _chooseApplyEndpoint(String jobType) {
-    final jt = jobType.toLowerCase();
-    if (jt.contains('commission')) return 'applyCommissionBased';
-    if (jt.contains('one') ||
-        jt.contains('one-time') ||
-        jt.contains('onetime') ||
-        jt.contains('one time')) {
+  // Decide apply endpoint; prefer normalizedSessionJobType if provided via _profileJobType,
+  // otherwise fall back to provided jobType (e.g. from a job object).
+  String _chooseApplyEndpoint(String jobTypeFallback) {
+    // Use normalized profile job type if set, otherwise fall back to jobTypeFallback
+    final sessionJT = _profileJobType.trim();
+    final effective = (sessionJT.isNotEmpty ? sessionJT : jobTypeFallback)
+        .toLowerCase();
+
+    if (effective.contains('salary')) {
+      // keep the same spelling used by the backend in other files
+      return 'applySalayBased';
+    }
+    if (effective.contains('commission') || effective.contains('commision')) {
+      return 'applyCommissionBased';
+    }
+    if (effective.contains('one') ||
+        effective.contains('one-time') ||
+        effective.contains('onetime') ||
+        effective.contains('one time')) {
       return 'applyOneTimeBased';
     }
-    if (jt.contains('project') ||
-        jt.contains('projects') ||
-        jt.contains('freelance') ||
-        jt.contains('it')) {
+    if (effective.contains('project') ||
+        effective.contains('projects') ||
+        effective.contains('freelance') ||
+        effective.contains('it')) {
       return 'applyProject';
     }
+    // fallback to salary apply
     return 'applySalayBased';
   }
 
@@ -499,7 +512,11 @@ class _AllJobsPageState extends State<AllJobsPage> {
       return;
     }
 
-    final endpoint = _chooseApplyEndpoint(_profileJobType);
+    // Determine job_type fallback from the job's own data (if present).
+    final jobTypeFromJob = (rawJob['job_type'] ?? rawJob['type'] ?? '')
+        .toString();
+    final endpoint = _chooseApplyEndpoint(jobTypeFromJob);
+
     final uri = Uri.parse('${ApiConstants.baseUrl}$endpoint');
     final body = {
       "job_id": jobId,
@@ -512,6 +529,7 @@ class _AllJobsPageState extends State<AllJobsPage> {
       print(
         '➡️ Applying to $jobId via $endpoint with body: ${jsonEncode(body)}',
       );
+      print('➡️ Apply URL: $uri');
     }
 
     try {
@@ -613,6 +631,30 @@ class _AllJobsPageState extends State<AllJobsPage> {
     }
   }
 
+  // Normalize job_type variants to canonical labels used locally
+  String _normalizeJobType(String raw) {
+    String s = raw.toString().trim();
+    final low = s.toLowerCase();
+    if (low.contains('commission') ||
+        low.contains('commision') ||
+        low.contains('commission-based')) {
+      return 'Commission-based';
+    } else if (low.contains('salary')) {
+      return 'Salary-based';
+    } else if (low.contains('one') ||
+        low.contains('one-time') ||
+        low.contains('onetime') ||
+        low.contains('one time')) {
+      return 'One-time';
+    } else if (low.contains('project') ||
+        low.contains('projects') ||
+        low.contains('freelance') ||
+        low.contains('it')) {
+      return 'Project';
+    }
+    return s.isEmpty ? '' : s;
+  }
+
   Future<void> _loadJobsFromProfile() async {
     setState(() {
       _loading = true;
@@ -621,12 +663,14 @@ class _AllJobsPageState extends State<AllJobsPage> {
 
     try {
       final category = (await SessionManager.getValue('category')) ?? '';
-      final jobType = (await SessionManager.getValue('job_type')) ?? '';
+      final rawJobType = (await SessionManager.getValue('job_type')) ?? '';
+
+      final normalizedJobType = _normalizeJobType(rawJobType.toString());
 
       // store locally for UI (carousel overlay)
       setState(() {
         _profileCategory = category.toString();
-        _profileJobType = jobType.toString();
+        _profileJobType = normalizedJobType;
       });
 
       if (category.toString().isEmpty) {

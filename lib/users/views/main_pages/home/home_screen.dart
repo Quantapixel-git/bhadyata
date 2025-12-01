@@ -1,3 +1,5 @@
+// ignore_for_file: unused_element_parameter
+
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -561,11 +563,6 @@ class _FeaturedJobsState extends State<FeaturedJobs> {
   String? _error;
   List<_JobModel> _jobs = [];
 
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   _fetchFeatured();
-  // }
   final Set<String> _applyingJobIds = {};
   String _profileJobType = '';
 
@@ -602,7 +599,9 @@ class _FeaturedJobsState extends State<FeaturedJobs> {
     String endpoint;
     if (jtLower.contains('salary')) {
       endpoint = 'applySalayBased';
-    } else if (jtLower.contains('commission')) {
+    } else if (jtLower.contains('commission') ||
+        jtLower.contains('commission-based') ||
+        jtLower.contains('commision')) {
       endpoint = 'applyCommissionBased';
     } else if (jtLower.contains('one') ||
         jtLower.contains('one-time') ||
@@ -658,19 +657,33 @@ class _FeaturedJobsState extends State<FeaturedJobs> {
   }
 
   // Returns the endpoint path (not full URL) based on stored job_type
+  // Returns the endpoint path (not full URL) based on stored job_type
   String _chooseEndpointFromJobType(String jobType) {
     final jt = jobType.toLowerCase();
-    if (jt.contains('commission')) return 'getFeaturedCommissionJobs';
+
+    // check commission first (be tolerant to spelling / variants)
+    if (jt.contains('commission') ||
+        jt.contains('commission-based') ||
+        jt.contains('commision')) {
+      return 'CommissionBasedgetFeaturedJobs';
+    }
+
+    // one-time / onetime
     if (jt.contains('one') ||
         jt.contains('one-time') ||
         jt.contains('onetime') ||
-        jt.contains('one time'))
+        jt.contains('one time')) {
       return 'getFeaturedOneTimeJobs';
+    }
+
+    // project / freelance / it -> projects endpoint if you want that mapping
     if (jt.contains('project') ||
         jt.contains('projects') ||
         jt.contains('freelance') ||
-        jt.contains('it'))
+        jt.contains('it')) {
       return 'getFeaturedProjects';
+    }
+
     // default to salary featured
     return 'SalaryBasedgetFeaturedJobs';
   }
@@ -684,7 +697,7 @@ class _FeaturedJobsState extends State<FeaturedJobs> {
     try {
       // read stored job_type from session
       final stored = (await SessionManager.getValue('job_type')) ?? '';
-      final jobType = stored?.toString() ?? '';
+      final jobType = stored.toString();
 
       // choose endpoint path (you can adjust the strings below to match server routes)
       final endpoint = _chooseEndpointFromJobType(jobType);
@@ -892,8 +905,9 @@ class _FeaturedJobCard extends StatelessWidget {
     final a = item.salaryMin;
     final b = item.salaryMax;
     if ((a.isEmpty || a == '0' || a == '0.00') &&
-        (b.isEmpty || b == '0' || b == '0.00'))
+        (b.isEmpty || b == '0' || b == '0.00')) {
       return 'Not specified';
+    }
     if (a.isEmpty && b.isNotEmpty) return '₹$b';
     if (b.isEmpty && a.isNotEmpty) return '₹$a';
     if (a == b) return '₹$a';

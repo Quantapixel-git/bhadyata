@@ -11,8 +11,9 @@ import 'package:http/http.dart' as http;
 import 'package:jobshub/common/utils/app_color.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/users/views/main_pages/search/job_detail_page.dart';
+import 'package:jobshub/common/constants/base_url.dart';
 
-const String kApiBase = 'https://dialfirst.in/quantapixel/badhyata/api/';
+// const String kApiBase = 'https://dialfirst.in/quantapixel/badhyata/api/';
 
 class CategoryJobsPage extends StatefulWidget {
   final String category;
@@ -88,9 +89,63 @@ class _CategoryJobsPageState extends State<CategoryJobsPage> {
     });
   }
 
+  // Decide apply endpoint (prefer session profile, fallback to job['job_type'])
+  String _decideApplyEndpoint(Map<String, String> job) {
+    final sessionJT = _profileJobType.trim();
+    final effective = sessionJT.isNotEmpty
+        ? sessionJT.toLowerCase()
+        : (job['job_type'] ?? '').toString().toLowerCase();
+
+    if (effective.contains('salary')) {
+      // note: your backend uses the misspelling "applySalayBased" in other files — keep it consistent
+      return 'applySalayBased';
+    } else if (effective.contains('commission') ||
+        effective.contains('commision')) {
+      return 'applyCommissionBased';
+    } else if (effective.contains('one') ||
+        effective.contains('one-time') ||
+        effective.contains('onetime') ||
+        effective.contains('one time')) {
+      return 'applyOneTimeBased';
+    } else if (effective.contains('project') ||
+        effective.contains('projects') ||
+        effective.contains('freelance') ||
+        effective.contains('it')) {
+      return 'applyProject';
+    } else {
+      // fallback to salary-based apply
+      return 'applySalayBased';
+    }
+  }
+
+  // Normalize job_type variants to canonical labels used locally
+  String _normalizeJobType(String raw) {
+    String s = raw.toString().trim();
+    final low = s.toLowerCase();
+    if (low.contains('commission') ||
+        low.contains('commision') ||
+        low.contains('commission-based')) {
+      return 'Commission-based';
+    } else if (low.contains('salary')) {
+      return 'Salary-based';
+    } else if (low.contains('one') ||
+        low.contains('one-time') ||
+        low.contains('onetime') ||
+        low.contains('one time')) {
+      return 'One-time';
+    } else if (low.contains('project') ||
+        low.contains('projects') ||
+        low.contains('freelance') ||
+        low.contains('it')) {
+      return 'Project';
+    }
+    return s.isEmpty ? '' : s;
+  }
+
   Future<void> _loadAndFetch() async {
     final stored = (await SessionManager.getValue('job_type')) ?? '';
-    setState(() => _profileJobType = stored.toString());
+    final normalized = _normalizeJobType(stored.toString());
+    setState(() => _profileJobType = normalized);
     await _fetchJobsByCategory();
   }
 
@@ -117,7 +172,9 @@ class _CategoryJobsPageState extends State<CategoryJobsPage> {
     final jtLower = _profileJobType.toLowerCase();
 
     String endpoint;
-    if (jtLower.contains('commission')) {
+    if (jtLower.contains('commission') ||
+        jtLower.contains('commision') ||
+        jtLower.contains('commission-based')) {
       endpoint = 'commissionJobsByCategory';
     } else if (jtLower.contains('one') ||
         jtLower.contains('one-time') ||
@@ -133,7 +190,9 @@ class _CategoryJobsPageState extends State<CategoryJobsPage> {
       endpoint = 'salaryJobsByCategory';
     }
 
-    final uri = Uri.parse('$kApiBase$endpoint');
+    final uri = Uri.parse('${ApiConstants.baseUrl}$endpoint');
+
+    // final uri = Uri.parse('$kApiBase$endpoint');
 
     if (kDebugMode) {
       print('🔁 CategoryJobs -> endpoint: $endpoint');
@@ -345,7 +404,6 @@ class _CategoryJobsPageState extends State<CategoryJobsPage> {
   /// APPLY LOGIC (uses profile job type from SessionManager)
   /// -----------------------
   Future<void> _applyForJob(Map<String, String> job) async {
-    // determine job id
     final jobId = job['id'] ?? job['job_id'] ?? '';
     if (jobId.isEmpty) {
       ScaffoldMessenger.of(
@@ -354,10 +412,8 @@ class _CategoryJobsPageState extends State<CategoryJobsPage> {
       return;
     }
 
-    // prevent double click
     if (_applyingJobIds.contains(jobId)) return;
 
-    // read employee_id from session
     final emp = await SessionManager.getValue('user_id') ?? '';
     final employeeId = emp.toString();
     if (employeeId.isEmpty) {
@@ -367,31 +423,10 @@ class _CategoryJobsPageState extends State<CategoryJobsPage> {
       return;
     }
 
-    // choose endpoint based on stored profile job type
-    final jtLower = _profileJobType.toLowerCase();
+    // Choose the correct apply endpoint (session -> job fallback)
+    final endpoint = _decideApplyEndpoint(job);
+    final uri = Uri.parse('${ApiConstants.baseUrl}$endpoint');
 
-    String endpoint;
-    if (jtLower.contains('salary')) {
-      endpoint = 'applySalayBased';
-    } else if (jtLower.contains('commission')) {
-      endpoint = 'applyCommissionBased';
-    } else if (jtLower.contains('one') ||
-        jtLower.contains('one-time') ||
-        jtLower.contains('onetime') ||
-        jtLower.contains('one time')) {
-      // adapt if your backend endpoint name differs (e.g. applyOneTime)
-      endpoint = 'applyOneTimeBased';
-    } else if (jtLower.contains('project') ||
-        jtLower.contains('projects') ||
-        jtLower.contains('freelance')) {
-      endpoint = 'applyProject';
-    } else {
-      // Fallback: try to use job's own job_type field to decide
-
-      endpoint = 'applySalayBased';
-    }
-
-    final uri = Uri.parse('$kApiBase$endpoint');
     final body = {
       "job_id": jobId,
       "employee_id": employeeId,
@@ -403,6 +438,7 @@ class _CategoryJobsPageState extends State<CategoryJobsPage> {
       print(
         '➡️ Applying to $jobId via $endpoint with body: ${jsonEncode(body)}',
       );
+      print('➡️ Apply URL: $uri');
     }
 
     try {
@@ -800,7 +836,10 @@ class _JobCardState extends State<JobCard> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                   ),
-                  child: const Text('View', style: TextStyle(fontSize: 13, color: Colors.white)),
+                  child: const Text(
+                    'View',
+                    style: TextStyle(fontSize: 13, color: Colors.white),
+                  ),
                 ),
               ),
               const SizedBox(height: 8),
@@ -824,7 +863,10 @@ class _JobCardState extends State<JobCard> {
                         ),
                         child: const Text(
                           'Apply',
-                          style: TextStyle(fontSize: 13, color: AppColors.primary),
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: AppColors.primary,
+                          ),
                         ),
                       ),
               ),

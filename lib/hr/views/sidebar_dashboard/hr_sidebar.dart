@@ -26,6 +26,7 @@ import 'package:jobshub/hr/views/notification/hr_send_notification_page.dart';
 import 'package:jobshub/hr/views/notification/hr_view_notifications_page.dart';
 import 'package:jobshub/hr/views/kyc/upload_kyc_hr.dart';
 import 'package:jobshub/common/utils/app_color.dart';
+import 'package:jobshub/hr/views/sidebar_dashboard/hr_leads.dart';
 
 class HrSidebar extends StatelessWidget {
   final bool isWeb;
@@ -124,249 +125,6 @@ class HrSidebarMobile extends StatelessWidget {
                       ),
                     );
                   }),
-                  _sidebarItem(context, Icons.business, "Companies", () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => HrCompanies()),
-                    );
-                  }),
-
-                  ExpansionTile(
-                    leading: Icon(
-                      Icons.person_4_outlined,
-                      color: AppColors.primary,
-                    ),
-                    title: const Text("Manage Users"),
-                    childrenPadding: const EdgeInsets.only(left: 20, bottom: 8),
-                    iconColor: AppColors.primary,
-                    collapsedIconColor: AppColors.primary,
-                    children: [
-                      ListTile(
-                        title: const Text(
-                          "Employees",
-                          style: TextStyle(fontSize: 13.5),
-                        ),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => HrEmployeeUsersPage(),
-                            ),
-                          );
-                        },
-                      ),
-                      ListTile(
-                        title: const Text(
-                          "Employers",
-                          style: TextStyle(fontSize: 13.5),
-                        ),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => HrEmployerUsersPage(),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-
-                  ExpansionTile(
-                    leading: Icon(
-                      Icons.checklist_outlined,
-                      color: AppColors.primary,
-                    ),
-                    title: const Text("Jobs Approval"),
-                    childrenPadding: const EdgeInsets.only(left: 20, bottom: 8),
-                    iconColor: AppColors.primary,
-                    collapsedIconColor: AppColors.primary,
-                    children: [
-                      _expTileChild(context, "Salary-based Jobs", () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => HrSalaryBasedViewPostedJobsPage(),
-                          ),
-                        );
-                      }),
-                      _expTileChild(context, "One-time Recruitment", () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => HrOneTimeViewPostedJobsPage(),
-                          ),
-                        );
-                      }),
-                      _expTileChild(context, "Commission-based jobs", () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => HrCommissionBasedJobsApproval(),
-                          ),
-                        );
-                      }),
-                    ],
-                  ),
-
-                  _sidebarItem(
-                    context,
-                    Icons.checklist_outlined,
-                    "Projects Approval",
-                    () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => HrProjectApproval()),
-                      );
-                    },
-                  ),
-
-                  ExpansionTile(
-                    leading: Icon(
-                      Icons.person_search,
-                      color: AppColors.primary,
-                    ),
-                    title: const Text("Jobs Applicants"),
-                    childrenPadding: const EdgeInsets.only(left: 20, bottom: 8),
-                    iconColor: AppColors.primary,
-                    collapsedIconColor: AppColors.primary,
-                    children: [
-                      _expTileChild(context, "Salary-based Jobs", () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => HrSalaryBasedJobApplicantsPage(),
-                          ),
-                        );
-                      }),
-                      _expTileChild(context, "One-time Recruitment", () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => OneTimeJobsWithApplicantsPage(),
-                          ),
-                        );
-                      }),
-                      _expTileChild(context, "Commission-based jobs", () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => HrCommissionBasedJobApplicants(),
-                          ),
-                        );
-                      }),
-                    ],
-                  ),
-
-                  // ExpansionTile(
-                  //   leading: Icon(
-                  //     Icons.person_search,
-                  //     color: AppColors.primary,
-                  //   ),
-                  //   title: const Text("Project Applicants"),
-                  //   childrenPadding: const EdgeInsets.only(left: 20, bottom: 8),
-                  //   iconColor: AppColors.primary,
-                  //   collapsedIconColor: AppColors.primary,
-                  //   children: [
-                  //     _expTileChild(context, "Projects", () {
-                  //       Navigator.push(
-                  //         context,
-                  //         MaterialPageRoute(
-                  //           builder: (_) => HrProjectApplicants(),
-                  //         ),
-                  //       );
-                  //     }),
-                  //   ],
-                  // ),
-                  _sidebarItem(
-                    context,
-                    Icons.person_search,
-                    "Project Applicants",
-                    () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => HrProjectApplicants(),
-                        ),
-                      );
-                    },
-                  ),
-
-                  // ExpansionTile(
-                  //   leading: Icon(Icons.money, color: AppColors.primary),
-                  //   title: const Text("Revenue Generated"),
-                  //   childrenPadding: const EdgeInsets.only(left: 20, bottom: 8),
-                  //   iconColor: AppColors.primary,
-                  //   collapsedIconColor: AppColors.primary,
-                  //   children: [
-                  //     ListTile(
-                  //       title: const Text(
-                  //         "From Employer (profit amount)",
-                  //         style: TextStyle(fontSize: 13.5),
-                  //       ),
-                  //       onTap: () {
-                  //         Navigator.push(
-                  //           context,
-                  //           MaterialPageRoute(
-                  //             builder: (_) => HrRevenueEmployerProfit(),
-                  //           ),
-                  //         );
-                  //       },
-                  //     ),
-                  //     ListTile(
-                  //       title: const Text(
-                  //         "From Employer (sum of employee salary & profit)",
-                  //         style: TextStyle(fontSize: 13.5),
-                  //       ),
-                  //       onTap: () {
-                  //         Navigator.push(
-                  //           context,
-                  //           MaterialPageRoute(
-                  //             builder: (_) => HrRevenueEmployerTotal(),
-                  //           ),
-                  //         );
-                  //       },
-                  //     ),
-                  //   ],
-                  // ),
-
-                  // ExpansionTile(
-                  //   leading: Icon(Icons.payment, color: AppColors.primary),
-                  //   title: const Text("Salary Management"),
-                  //   childrenPadding: const EdgeInsets.only(left: 20, bottom: 8),
-                  //   iconColor: AppColors.primary,
-                  //   collapsedIconColor: AppColors.primary,
-                  //   children: [
-                  //     ListTile(
-                  //       title: const Text(
-                  //         "Your Salary",
-                  //         style: TextStyle(fontSize: 13.5),
-                  //       ),
-                  //       onTap: () {
-                  //         Navigator.push(
-                  //           context,
-                  //           MaterialPageRoute(
-                  //             builder: (_) => HrSalaryManagement(),
-                  //           ),
-                  //         );
-                  //       },
-                  //     ),
-                  // ListTile(
-                  //   title: const Text(
-                  //     "Employee Salary",
-                  //     style: TextStyle(fontSize: 13.5),
-                  //   ),
-                  //   onTap: () {
-                  //     Navigator.push(
-                  //       context,
-                  //       MaterialPageRoute(
-                  //         builder: (_) => EmployeeSalaryManagement(),
-                  //       ),
-                  //     );
-                  //   },
-                  // ),
-                  //   ],
-                  // ),
                   ExpansionTile(
                     leading: Icon(
                       Icons.calendar_month_outlined,
@@ -448,6 +206,165 @@ class HrSidebarMobile extends StatelessWidget {
                       }),
                     ],
                   ),
+                  const Divider(height: 25),
+                  _sectionTitle("🧭 Companies & Users"),
+                  _sidebarItem(context, Icons.business, "Companies", () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => HrCompanies()),
+                    );
+                  }),
+
+                  ExpansionTile(
+                    leading: Icon(
+                      Icons.person_4_outlined,
+                      color: AppColors.primary,
+                    ),
+                    title: const Text("Manage Users"),
+                    childrenPadding: const EdgeInsets.only(left: 20, bottom: 8),
+                    iconColor: AppColors.primary,
+                    collapsedIconColor: AppColors.primary,
+                    children: [
+                      ListTile(
+                        title: const Text(
+                          "Employees",
+                          style: TextStyle(fontSize: 13.5),
+                        ),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => HrEmployeeUsersPage(),
+                            ),
+                          );
+                        },
+                      ),
+                      ListTile(
+                        title: const Text(
+                          "Employers",
+                          style: TextStyle(fontSize: 13.5),
+                        ),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => HrEmployerUsersPage(),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                  const Divider(height: 25),
+                  _sectionTitle("🧭 Jobs & Projects"),
+                  ExpansionTile(
+                    leading: Icon(
+                      Icons.checklist_outlined,
+                      color: AppColors.primary,
+                    ),
+                    title: const Text("Jobs Approval"),
+                    childrenPadding: const EdgeInsets.only(left: 20, bottom: 8),
+                    iconColor: AppColors.primary,
+                    collapsedIconColor: AppColors.primary,
+                    children: [
+                      _expTileChild(context, "Salary-based Jobs", () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => HrSalaryBasedViewPostedJobsPage(),
+                          ),
+                        );
+                      }),
+                      _expTileChild(context, "One-time Recruitment", () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => HrOneTimeViewPostedJobsPage(),
+                          ),
+                        );
+                      }),
+                      _expTileChild(context, "Commission-based jobs", () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => HrCommissionBasedJobsApproval(),
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
+
+                  _sidebarItem(
+                    context,
+                    Icons.checklist_outlined,
+                    "Projects Approval",
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => HrProjectApproval()),
+                      );
+                    },
+                  ),
+                  const Divider(height: 25),
+                  _sectionTitle("🧭 Applicants"),
+                  ExpansionTile(
+                    leading: Icon(
+                      Icons.person_search,
+                      color: AppColors.primary,
+                    ),
+                    title: const Text("Jobs Applicants"),
+                    childrenPadding: const EdgeInsets.only(left: 20, bottom: 8),
+                    iconColor: AppColors.primary,
+                    collapsedIconColor: AppColors.primary,
+                    children: [
+                      _expTileChild(context, "Salary-based Jobs", () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => HrSalaryBasedJobApplicantsPage(),
+                          ),
+                        );
+                      }),
+                      _expTileChild(context, "One-time Recruitment", () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => OneTimeJobsWithApplicantsPage(),
+                          ),
+                        );
+                      }),
+                      _expTileChild(context, "Commission-based jobs", () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => HrCommissionBasedJobApplicants(),
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
+
+                  _sidebarItem(
+                    context,
+                    Icons.person_search,
+                    "Project Applicants",
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => HrProjectApplicants(),
+                        ),
+                      );
+                    },
+                  ),
+                  const Divider(height: 25),
+                  _sectionTitle("🧭 Leads"),
+                  _sidebarItem(context, Icons.business, "Leads", () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => HrLeadsPage()),
+                    );
+                  }),
 
                   const Divider(height: 25),
                   _sectionTitle("🧭 Support & Others"),
@@ -653,180 +570,6 @@ class HrSidebarWeb extends StatelessWidget {
                       ),
                     );
                   }),
-                  _menuItem(context, Icons.business, "Companies", () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => HrCompanies()),
-                    );
-                  }),
-                  _expansionGroup(
-                    context,
-                    Icons.person_4_outlined,
-                    "Manage Users",
-                    [
-                      _expTileChild(context, "Employees", () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => HrEmployeeUsersPage(),
-                          ),
-                        );
-                      }),
-                      _expTileChild(context, "Employers", () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => HrEmployerUsersPage(),
-                          ),
-                        );
-                      }),
-                    ],
-                  ),
-
-                  _expansionGroup(
-                    context,
-                    Icons.checklist_outlined,
-                    "Jobs Approval",
-                    [
-                      _expTileChild(context, "Salary-based Jobs", () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => HrSalaryBasedViewPostedJobsPage(),
-                          ),
-                        );
-                      }),
-                      _expTileChild(context, "One-time Recruitment", () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => HrOneTimeViewPostedJobsPage(),
-                          ),
-                        );
-                      }),
-                      _expTileChild(context, "Commission-based jobs", () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => HrCommissionBasedJobsApproval(),
-                          ),
-                        );
-                      }),
-                    ],
-                  ),
-
-                  _menuItem(
-                    context,
-                    Icons.checklist_outlined,
-                    "Projects Approval",
-                    () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => HrProjectApproval()),
-                      );
-                    },
-                  ),
-                  _expansionGroup(
-                    context,
-                    Icons.person_search,
-                    "Jobs Applicants",
-                    [
-                      _expTileChild(context, "Salary-based Jobs", () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => HrSalaryBasedJobApplicantsPage(),
-                          ),
-                        );
-                      }),
-                      _expTileChild(context, "One-time Recruitment", () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => OneTimeJobsWithApplicantsPage(),
-                          ),
-                        );
-                      }),
-                      _expTileChild(context, "Commission-based jobs", () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => HrCommissionBasedJobApplicants(),
-                          ),
-                        );
-                      }),
-                    ],
-                  ),
-                  // _expansionGroup(
-                  //   context,
-                  //   Icons.person_search,
-                  //   "Project Applicants",
-                  //   [
-                  //     _expTileChild(context, "Projects", () {
-                  //       Navigator.push(
-                  //         context,
-                  //         MaterialPageRoute(
-                  //           builder: (_) => HrProjectApplicants(),
-                  //         ),
-                  //       );
-                  //     }),
-                  //   ],
-                  // ),
-                  _menuItem(
-                    context,
-                    Icons.person_search,
-                    "Project Applicants",
-                    () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => HrProjectApplicants(),
-                        ),
-                      );
-                    },
-                  ),
-                  // _expansionGroup(context, Icons.money, "Revenue Generated", [
-                  //   _expTileChild(context, "From Employer (profit amount)", () {
-                  //     Navigator.push(
-                  //       context,
-                  //       MaterialPageRoute(
-                  //         builder: (_) => HrRevenueEmployerProfit(),
-                  //       ),
-                  //     );
-                  //   }),
-                  //   _expTileChild(
-                  //     context,
-                  //     "From Employer (sum of employee salary & profit)",
-                  //     () {
-                  //       Navigator.push(
-                  //         context,
-                  //         MaterialPageRoute(
-                  //           builder: (_) => HrRevenueEmployerTotal(),
-                  //         ),
-                  //       );
-                  //     },
-                  //   ),
-                  // ]),
-                  // _expansionGroup(context, Icons.payment, "Salary Management", [
-                  //   _expTileChild(context, "Your Salary", () {
-                  //     Navigator.push(
-                  //       context,
-                  //       MaterialPageRoute(builder: (_) => HrSalaryManagement()),
-                  //     );
-                  //   }),
-                  // _expTileChild(
-                  //   context,
-                  //   "Employee Salary (to be paid to employees for their work)",
-                  //   () {
-                  //     Navigator.push(
-                  //       context,
-                  //       MaterialPageRoute(
-                  //         builder: (_) => EmployeeSalaryManagement(),
-                  //       ),
-                  //     );
-                  //   },
-                  // ),
-                  // ]),
                   _expansionGroup(
                     context,
                     Icons.calendar_month_outlined,
@@ -883,6 +626,138 @@ class HrSidebarWeb extends StatelessWidget {
                       }),
                     ],
                   ),
+                  const Divider(height: 25),
+                  _sectionTitle("🧭 Companies & Users"),
+                  _menuItem(context, Icons.business, "Companies", () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => HrCompanies()),
+                    );
+                  }),
+                  _expansionGroup(
+                    context,
+                    Icons.person_4_outlined,
+                    "Manage Users",
+                    [
+                      _expTileChild(context, "Employees", () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => HrEmployeeUsersPage(),
+                          ),
+                        );
+                      }),
+                      _expTileChild(context, "Employers", () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => HrEmployerUsersPage(),
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
+                  const Divider(height: 25),
+                  _sectionTitle("🧭 Jobs & Projects"),
+                  _expansionGroup(
+                    context,
+                    Icons.checklist_outlined,
+                    "Jobs Approval",
+                    [
+                      _expTileChild(context, "Salary-based Jobs", () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => HrSalaryBasedViewPostedJobsPage(),
+                          ),
+                        );
+                      }),
+                      _expTileChild(context, "One-time Recruitment", () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => HrOneTimeViewPostedJobsPage(),
+                          ),
+                        );
+                      }),
+                      _expTileChild(context, "Commission-based jobs", () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => HrCommissionBasedJobsApproval(),
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
+
+                  _menuItem(
+                    context,
+                    Icons.checklist_outlined,
+                    "Projects Approval",
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => HrProjectApproval()),
+                      );
+                    },
+                  ),
+                  const Divider(height: 25),
+                  _sectionTitle("🧭 Applicants"),
+                  _expansionGroup(
+                    context,
+                    Icons.person_search,
+                    "Jobs Applicants",
+                    [
+                      _expTileChild(context, "Salary-based Jobs", () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => HrSalaryBasedJobApplicantsPage(),
+                          ),
+                        );
+                      }),
+                      _expTileChild(context, "One-time Recruitment", () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => OneTimeJobsWithApplicantsPage(),
+                          ),
+                        );
+                      }),
+                      _expTileChild(context, "Commission-based jobs", () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => HrCommissionBasedJobApplicants(),
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
+
+                  _menuItem(
+                    context,
+                    Icons.person_search,
+                    "Project Applicants",
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => HrProjectApplicants(),
+                        ),
+                      );
+                    },
+                  ),
+                  const Divider(height: 25),
+                  _sectionTitle("🧭 Leads"),
+                  _menuItem(context, Icons.business, "Leads", () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => HrLeadsPage()),
+                    );
+                  }),
+
                   _divider(),
                   _sectionTitle("🧭 Support & Others"),
                   _expansionGroup(context, Icons.help_outline, "Query Portal", [
@@ -963,7 +838,6 @@ class HrSidebarWeb extends StatelessWidget {
         ),
       ),
       child: ClipRect(
-        
         // ✅ prevents overflow during width animation
         child: Row(
           mainAxisAlignment: isCollapsed

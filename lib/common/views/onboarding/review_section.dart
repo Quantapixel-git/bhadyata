@@ -1,4 +1,4 @@
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:jobshub/common/utils/app_color.dart';
 
@@ -15,44 +15,40 @@ class _EmployerReviewsSectionState extends State<EmployerReviewsSection> {
 
   final _reviews = <_Review>[
     _Review(
-      companyLogo:
-          'https://upload.wikimedia.org/wikipedia/commons/0/0f/Cars24_logo.png',
+      companyLogo: 'assets/hero.png',
       companyName: 'Cars24',
       reviewer: 'Shivendra',
       rating: 5,
       title: 'Right candidate at an affordable price',
       text:
-          'badhyata took away all our work of going through resumes, calling, and hiring temp staff at an affordable price. They source the right candidate for the job. Very happy with their diligence and hard work.',
+          'badhyata handled resume screening, calling, and hiring temp staff at an affordable price. Proper diligence and effort.',
     ),
     _Review(
-      companyLogo:
-          'https://upload.wikimedia.org/wikipedia/commons/2/26/Justdial_logo.png',
+      companyLogo: 'assets/hero.png',
       companyName: 'Justdial',
       reviewer: 'Madhulika',
       rating: 5,
       title: 'Amazing hiring experience',
       text:
-          'badhyata has been a major contributor to our hiring requirements & have been very professional in their approach. Looking forward to continued support.',
+          'Professional team & smooth hiring. They consistently support our bulk requirements.',
     ),
     _Review(
-      companyLogo:
-          'https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg',
+      companyLogo: 'assets/hero.png',
       companyName: 'Amazon',
       reviewer: 'Rahul Mehta',
       rating: 5,
       title: 'Fast turnaround time',
       text:
-          'We started getting relevant calls within an hour. The dashboard made it easy to track progress and close positions quickly.',
+          'We got relevant candidates within an hour. Dashboard tracking made closing positions quick.',
     ),
     _Review(
-      companyLogo:
-          'https://upload.wikimedia.org/wikipedia/commons/1/19/Swiggy_logo.png',
+      companyLogo: 'assets/hero.png',
       companyName: 'Swiggy',
       reviewer: 'Pooja Nair',
       rating: 4,
       title: 'Great pool of candidates',
       text:
-          'The candidate database is vast and filters are useful. Support team is responsive and helpful.',
+          'Huge database, easy filters, and helpful support team. Good experience overall.',
     ),
   ];
 
@@ -67,6 +63,9 @@ class _EmployerReviewsSectionState extends State<EmployerReviewsSection> {
     _controller.dispose();
     super.dispose();
   }
+
+  int get _maxPage => _pageCount - 1;
+  int _pageCount = 1;
 
   void _prev() {
     if (_page > 0) {
@@ -86,48 +85,40 @@ class _EmployerReviewsSectionState extends State<EmployerReviewsSection> {
     }
   }
 
-  int get _maxPage => _pageCount - 1;
-  int _pageCount = 1;
-
   @override
   Widget build(BuildContext context) {
     final isDesktop = MediaQuery.of(context).size.width > 900;
-
-    // Show 2 cards on desktop, 1 on mobile
     final cardsPerPage = isDesktop ? 2 : 1;
     _pageCount = (_reviews.length / cardsPerPage).ceil();
 
     return Container(
       width: double.infinity,
-      color: const Color(0xFFF4F6FF),
-      padding: const EdgeInsets.symmetric(vertical: 20),
+      color: const Color(0xFFF5F7FF),
+      padding: const EdgeInsets.symmetric(vertical: 60),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Heading
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Employer Reviews',
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black87,
-                  ),
+          // ------------------- CENTER HEADING -------------------
+          Column(
+            children: [
+              const Text(
+                "Employer Reviews",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontSize: 30,
+                  fontWeight: FontWeight.w800,
                 ),
-                const SizedBox(height: 6),
-                Container(width: 80, height: 3, color: AppColors.secondary),
-              ],
-            ),
+              ),
+              const SizedBox(height: 8),
+              Container(width: 80, height: 4, color: AppColors.secondary),
+            ],
           ),
-          const SizedBox(height: 24),
 
-          // Slider
+          const SizedBox(height: 38),
+
+          // ------------------- SLIDER -------------------
           SizedBox(
-            height: isDesktop ? 280 : 300,
+            height: isDesktop ? 280 : 320,
             child: Stack(
               alignment: Alignment.center,
               children: [
@@ -149,21 +140,21 @@ class _EmployerReviewsSectionState extends State<EmployerReviewsSection> {
                           .map(
                             (r) => Expanded(
                               child: Padding(
-                                padding: EdgeInsets.symmetric(
-                                  horizontal: isDesktop ? 12 : 6,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
                                 ),
                                 child: _ReviewCard(review: r),
                               ),
                             ),
                           )
-                          .toList(growable: false),
+                          .toList(),
                     );
                   },
                 ),
 
-                // Left arrow
+                // left arrow
                 Positioned(
-                  left: 8,
+                  left: 20,
                   child: _NavButton(
                     icon: Icons.chevron_left,
                     enabled: _page > 0,
@@ -171,9 +162,9 @@ class _EmployerReviewsSectionState extends State<EmployerReviewsSection> {
                   ),
                 ),
 
-                // Right arrow
+                // right arrow
                 Positioned(
-                  right: 8,
+                  right: 20,
                   child: _NavButton(
                     icon: Icons.chevron_right,
                     enabled: _page < _maxPage,
@@ -184,23 +175,23 @@ class _EmployerReviewsSectionState extends State<EmployerReviewsSection> {
             ),
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 22),
 
-          // Dots
+          // ------------------- DOTS -------------------
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(
               _pageCount,
               (i) => AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                margin: const EdgeInsets.symmetric(horizontal: 4),
+                margin: const EdgeInsets.symmetric(horizontal: 5),
                 height: 8,
-                width: _page == i ? 20 : 8,
+                width: _page == i ? 22 : 10,
                 decoration: BoxDecoration(
                   color: _page == i
                       ? AppColors.secondary
-                      : AppColors.secondary.withOpacity(0.25),
-                  borderRadius: BorderRadius.circular(10),
+                      : Colors.grey.shade400,
+                  borderRadius: BorderRadius.circular(20),
                 ),
               ),
             ),
@@ -211,82 +202,75 @@ class _EmployerReviewsSectionState extends State<EmployerReviewsSection> {
   }
 }
 
+// ------------------- CARD -------------------
 class _ReviewCard extends StatelessWidget {
-  const _ReviewCard({required this.review});
-
   final _Review review;
+  const _ReviewCard({required this.review});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 240,
+      height: 260,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Colors.black12,
-            blurRadius: 14,
-            offset: Offset(0, 6),
+            color: Colors.black12.withOpacity(0.08),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(22),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Logo column
+          // ------------------- LOGO + NAME -------------------
           Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: Image.network(
+                child: Image.asset(
                   review.companyLogo,
-                  height: 34,
+                  height: 36,
                   width: 80,
                   fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => const Icon(
-                    Icons.apartment,
-                    size: 34,
-                    color: Colors.black38,
-                  ),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 14),
               Text(
                 review.reviewer,
                 style: const TextStyle(
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w700,
                   color: Colors.black87,
                 ),
               ),
-              const SizedBox(height: 2),
               Text(
                 review.companyName,
-                style: const TextStyle(fontSize: 12, color: Colors.black54),
+                style: const TextStyle(fontSize: 13, color: Colors.black54),
               ),
             ],
           ),
 
-          const SizedBox(width: 18),
+          const SizedBox(width: 20),
 
           // Divider
-          Container(width: 1, height: double.infinity, color: Colors.black12),
+          Container(width: 1, height: double.maxFinite, color: Colors.black12),
+          const SizedBox(width: 20),
 
-          const SizedBox(width: 18),
-
-          // Content
+          // ------------------- REVIEW CONTENT -------------------
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _RatingStars(rating: review.rating),
-                const SizedBox(height: 10),
+                const SizedBox(height: 12),
                 Text(
-                  '“${review.title}“',
+                  "“${review.title}“",
                   style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
                     color: Colors.black87,
                   ),
                 ),
@@ -297,7 +281,7 @@ class _ReviewCard extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 14,
                       color: Colors.black54,
-                      height: 1.4,
+                      height: 1.45,
                     ),
                   ),
                 ),
@@ -310,10 +294,10 @@ class _ReviewCard extends StatelessWidget {
   }
 }
 
+// ------------------- STARS -------------------
 class _RatingStars extends StatelessWidget {
+  final int rating;
   const _RatingStars({required this.rating});
-
-  final int rating; // 0..5
 
   @override
   Widget build(BuildContext context) {
@@ -330,36 +314,35 @@ class _RatingStars extends StatelessWidget {
   }
 }
 
+// ------------------- ARROW BUTTON -------------------
 class _NavButton extends StatelessWidget {
-  const _NavButton({required this.icon, this.enabled = true, this.onTap});
-
   final IconData icon;
   final bool enabled;
   final VoidCallback? onTap;
 
+  const _NavButton({required this.icon, required this.enabled, this.onTap});
+
   @override
   Widget build(BuildContext context) {
     return Material(
+      shape: const CircleBorder(),
       color: enabled
           ? AppColors.secondary
           : AppColors.secondary.withOpacity(0.3),
-      shape: const CircleBorder(),
       child: InkWell(
         customBorder: const CircleBorder(),
         onTap: enabled ? onTap : null,
-        child: const SizedBox(
-          height: 44,
-          width: 44,
-          child: Icon(
-            Icons.chevron_right,
-            color: Colors.white,
-          ), // icon overridden below
+        child: SizedBox(
+          height: 46,
+          width: 46,
+          child: Icon(icon, color: Colors.white, size: 26),
         ),
       ),
     );
   }
 }
 
+// ------------------- MODEL -------------------
 class _Review {
   final String companyLogo;
   final String companyName;

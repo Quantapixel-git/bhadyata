@@ -82,8 +82,28 @@ class _TrendingCategoryJobsPageState extends State<TrendingCategoryJobsPage> {
   }
 
   Future<void> _initAndFetch() async {
-    final stored = (await SessionManager.getValue('job_type')) ?? '';
-    setState(() => _profileJobType = stored.toString());
+    // read and normalize stored job_type so pages behave consistently
+    final storedRaw = (await SessionManager.getValue('job_type')) ?? '';
+    String normalized = storedRaw.toString().trim();
+
+    // Normalize common variants into canonical labels (keeps only for local decision)
+    final low = normalized.toLowerCase();
+    if (low.contains('commission') || low.contains('commision')) {
+      normalized = 'Commission-based';
+    } else if (low.contains('salary')) {
+      normalized = 'Salary-based';
+    } else if (low.contains('one') ||
+        low.contains('one-time') ||
+        low.contains('onetime') ||
+        low.contains('one time')) {
+      normalized = 'One-time';
+    } else if (low.contains('project') ||
+        low.contains('projects') ||
+        low.contains('freelance')) {
+      normalized = 'Project';
+    }
+    setState(() => _profileJobType = normalized);
+
     await _fetchJobsForCategory();
   }
 
@@ -106,8 +126,13 @@ class _TrendingCategoryJobsPageState extends State<TrendingCategoryJobsPage> {
     });
 
     final jtLower = _profileJobType.toLowerCase();
+    // final jtLower = _profileJobType.toLowerCase();
     String endpoint;
-    if (jtLower.contains('commission')) {
+
+    // tolerant matching — handle common misspellings and variants
+    if (jtLower.contains('commission') ||
+        jtLower.contains('commision') ||
+        jtLower.contains('commission-based')) {
       endpoint = 'commissionJobsByCategory';
     } else if (jtLower.contains('one') ||
         jtLower.contains('one-time') ||
@@ -126,10 +151,14 @@ class _TrendingCategoryJobsPageState extends State<TrendingCategoryJobsPage> {
     final uri = Uri.parse('${ApiConstants.baseUrl}$endpoint');
 
     if (kDebugMode) {
-      print('🔁 TrendingCategoryJobs -> endpoint: $endpoint');
-      print('🔁 URL: $uri');
+      print(
+        '🔁 TrendingCategoryJobs -> storedRaw (Session): ${await SessionManager.getValue('job_type')}',
+      );
+      print('🔁 Normalized _profileJobType: $_profileJobType');
+      print('🔁 jtLower: $jtLower');
+      print('🔁 Selected endpoint: $endpoint');
+      print('🔁 Full URL: $uri');
       print('🔁 POST body: ${jsonEncode({'category': widget.category})}');
-      print('🔁 Stored job_type: "$_profileJobType"');
     }
 
     try {
@@ -355,7 +384,9 @@ class _TrendingCategoryJobsPageState extends State<TrendingCategoryJobsPage> {
     String endpoint;
     if (jtLower.contains('salary')) {
       endpoint = 'applySalayBased';
-    } else if (jtLower.contains('commission')) {
+    } else if (jtLower.contains('commission') ||
+        jtLower.contains('commision') ||
+        jtLower.contains('commission-based')) {
       endpoint = 'applyCommissionBased';
     } else if (jtLower.contains('one') ||
         jtLower.contains('one-time') ||
@@ -538,7 +569,7 @@ class _TrendingCategoryJobsPageState extends State<TrendingCategoryJobsPage> {
                       style: const TextStyle(fontSize: 13),
                     ),
                     const Spacer(),
-                    
+
                     IconButton(
                       tooltip: 'Previous',
                       onPressed: (_page > 1 && !_loading)
@@ -574,7 +605,6 @@ class _TrendingCategoryJobsPageState extends State<TrendingCategoryJobsPage> {
                           : null,
                       icon: const Icon(Icons.chevron_right),
                     ),
-                   
                   ],
                 ),
               ),

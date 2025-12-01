@@ -1,6 +1,4 @@
-
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 
 class AutoBannerSlider extends StatefulWidget {
@@ -9,16 +7,16 @@ class AutoBannerSlider extends StatefulWidget {
   final double mobileHeight;
   final Duration autoPlayInterval;
   final double borderRadius;
-  final double maxContentWidth; // 👈 NEW
+  final double maxContentWidth;
 
   const AutoBannerSlider({
     Key? key,
     required this.images,
-    this.desktopHeight = 290,
-    this.mobileHeight = 200,
+    this.desktopHeight = 360,          // ⬅️ bigger by default
+    this.mobileHeight = 220,           // ⬅️ a bit bigger on mobile too
     this.autoPlayInterval = const Duration(seconds: 4),
-    this.borderRadius = 14.0,
-    this.maxContentWidth = 1000, // 👈 controls max width of carousel
+    this.borderRadius = 16.0,
+    this.maxContentWidth = 1180,       // ⬅️ wider content area
   }) : super(key: key);
 
   @override
@@ -40,9 +38,10 @@ class _AutoBannerSliderState extends State<AutoBannerSlider> {
 
   void _startAutoPlay() {
     _timer?.cancel();
+    if (widget.images.isEmpty) return;
+
     _timer = Timer.periodic(widget.autoPlayInterval, (_) {
-      if (!mounted) return;
-      if (_userInteracting) return;
+      if (!mounted || _userInteracting) return;
       final next = (_currentIndex + 1) % widget.images.length;
       _controller.animateToPage(
         next,
@@ -64,12 +63,12 @@ class _AutoBannerSliderState extends State<AutoBannerSlider> {
     super.dispose();
   }
 
-  void _onUserPointerDown(_) {
+  void _onUserPointerDown(dynamic _) {
     _userInteracting = true;
     _stopAutoPlay();
   }
 
-  void _onUserPointerUp(_) {
+  void _onUserPointerUp(dynamic _) {
     Future.delayed(const Duration(milliseconds: 700), () {
       _userInteracting = false;
       if (mounted) _startAutoPlay();
@@ -77,6 +76,7 @@ class _AutoBannerSliderState extends State<AutoBannerSlider> {
   }
 
   void _prev() {
+    if (widget.images.isEmpty) return;
     final prev =
         (_currentIndex - 1 + widget.images.length) % widget.images.length;
     _controller.animateToPage(
@@ -87,6 +87,7 @@ class _AutoBannerSliderState extends State<AutoBannerSlider> {
   }
 
   void _next() {
+    if (widget.images.isEmpty) return;
     final next = (_currentIndex + 1) % widget.images.length;
     _controller.animateToPage(
       next,
@@ -97,16 +98,18 @@ class _AutoBannerSliderState extends State<AutoBannerSlider> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.images.isEmpty) return const SizedBox.shrink();
+
     final width = MediaQuery.of(context).size.width;
     final isDesktop = width > 900;
     final height = isDesktop ? widget.desktopHeight : widget.mobileHeight;
+    final maxWidth = width < widget.maxContentWidth
+        ? width - 32 // small side padding on very small screens
+        : widget.maxContentWidth;
 
     return Center(
-      // 👈 centers entire slider in screen
       child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxWidth: widget.maxContentWidth, // 👈 limits carousel width
-        ),
+        constraints: BoxConstraints(maxWidth: maxWidth),
         child: Column(
           children: [
             SizedBox(
@@ -125,12 +128,11 @@ class _AutoBannerSliderState extends State<AutoBannerSlider> {
                       itemBuilder: (context, index) {
                         final img = widget.images[index];
                         return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 12.0),
                           child: _bannerCard(
                             img,
                             height,
                             widget.borderRadius,
-                            width,
                           ),
                         );
                       },
@@ -138,7 +140,7 @@ class _AutoBannerSliderState extends State<AutoBannerSlider> {
 
                     // left arrow
                     Positioned(
-                      left: 0,
+                      left: 8,
                       child: _arrowButton(
                         icon: Icons.chevron_left,
                         onTap: _prev,
@@ -147,7 +149,7 @@ class _AutoBannerSliderState extends State<AutoBannerSlider> {
 
                     // right arrow
                     Positioned(
-                      right: 0,
+                      right: 8,
                       child: _arrowButton(
                         icon: Icons.chevron_right,
                         onTap: _next,
@@ -158,7 +160,7 @@ class _AutoBannerSliderState extends State<AutoBannerSlider> {
               ),
             ),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
 
             // indicator dots centered
             SizedBox(
@@ -192,21 +194,18 @@ class _AutoBannerSliderState extends State<AutoBannerSlider> {
     String imagePath,
     double height,
     double radius,
-    double width,
   ) {
-    return Center(
-      child: Material(
-        elevation: 5,
-        shadowColor: Colors.black26,
+    return Material(
+      elevation: 6,
+      shadowColor: Colors.black26,
+      borderRadius: BorderRadius.circular(radius),
+      child: ClipRRect(
         borderRadius: BorderRadius.circular(radius),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(radius),
-          child: Container(
-            height: height,
-            width: double.infinity,
-            color: Colors.grey.shade100,
-            child: _buildImage(imagePath),
-          ),
+        child: Container(
+          height: height,
+          width: double.infinity,
+          color: Colors.grey.shade100,
+          child: _buildImage(imagePath),
         ),
       ),
     );
@@ -215,7 +214,7 @@ class _AutoBannerSliderState extends State<AutoBannerSlider> {
   Widget _buildImage(String path) {
     return Image.asset(
       path,
-      fit: BoxFit.cover,
+      fit: BoxFit.contain,
       errorBuilder: (_, __, ___) => const Center(
         child: Icon(Icons.broken_image, size: 36, color: Colors.black26),
       ),
@@ -225,7 +224,7 @@ class _AutoBannerSliderState extends State<AutoBannerSlider> {
   Widget _arrowButton({required IconData icon, required VoidCallback onTap}) {
     return Material(
       shape: const CircleBorder(),
-      color: Colors.white,
+      color: Colors.white.withOpacity(0.9),
       elevation: 4,
       child: InkWell(
         customBorder: const CircleBorder(),
@@ -234,10 +233,10 @@ class _AutoBannerSliderState extends State<AutoBannerSlider> {
           _onUserPointerDown(null);
           _onUserPointerUp(null);
         },
-        child: const SizedBox(
-          height: 40,
-          width: 40,
-          child: Icon(Icons.chevron_left, color: Colors.black87),
+        child: SizedBox(
+          height: 42,
+          width: 42,
+          child: Icon(icon, color: Colors.black87), // 👈 uses passed icon now
         ),
       ),
     );
