@@ -7,6 +7,9 @@ import 'package:jobshub/common/utils/app_color.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/employer/views/sidebar_dashboard/employer_sidebar.dart';
 
+// ⬇️ Adjust this import path to where your EmployerKyccheckerPage actually lives
+import 'package:jobshub/employer/views/auth/kyc_checker.dart';
+
 class EmployerDashboardPage extends StatefulWidget {
   const EmployerDashboardPage({super.key});
 
@@ -25,10 +28,97 @@ class _EmployerDashboardPageState extends State<EmployerDashboardPage> {
 
   int projects = 0;
 
+  // 🔹 NEW: KYC gate flags
+  bool _checkingKyc = true;
+  int?
+  _kycApproval; // 1 = approved, 2 = pending, 3 = rejected, null = not submitted
+
   @override
   void initState() {
     super.initState();
-    _fetchEmployerStats();
+    _init();
+  }
+
+  /// Run KYC check first; only load stats if KYC is approved
+  Future<void> _init() async {
+    await _checkKycStatus();
+
+    if (_kycApproval == 1) {
+      // only fetch dashboard stats when KYC is approved
+      await _fetchEmployerStats();
+    } else {
+      // we are going to show the KYC checker instead of the stats
+      if (mounted) {
+        setState(() {
+          loading = false;
+        });
+      }
+    }
+  }
+
+  /// 🔹 Check Employer KYC status (same style as EmployerKyccheckerPage)
+  Future<void> _checkKycStatus() async {
+    setState(() {
+      _checkingKyc = true;
+      _kycApproval = null;
+    });
+
+    try {
+      final employerIdStr = await SessionManager.getValue('employer_id');
+      final employerId = employerIdStr?.toString() ?? '0';
+
+      final uri = Uri.parse(
+        "${ApiConstants.baseUrl}getEmployerProfileByUserId",
+      );
+
+      final res = await http.post(
+        uri,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({"user_id": employerId}),
+      );
+
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+
+        if (data['success'] == true && data['data'] != null) {
+          final map = Map<String, dynamic>.from(data['data'] as Map);
+          final raw = map['kyc_approval'];
+
+          int? approval;
+          if (raw is int) {
+            approval = raw;
+          } else if (raw != null) {
+            approval = int.tryParse(raw.toString());
+          }
+
+          if (!mounted) return;
+          setState(() {
+            _kycApproval = approval; // 1 = approved, others = not approved
+          });
+        } else {
+          if (!mounted) return;
+          setState(() {
+            _kycApproval = null;
+          });
+        }
+      } else {
+        if (!mounted) return;
+        setState(() {
+          _kycApproval = null;
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      debugPrint("❌ Error checking Employer KYC: $e");
+      setState(() {
+        _kycApproval = null;
+      });
+    } finally {
+      if (!mounted) return;
+      setState(() {
+        _checkingKyc = false;
+      });
+    }
   }
 
   Future<void> _fetchEmployerStats() async {
@@ -98,6 +188,17 @@ class _EmployerDashboardPageState extends State<EmployerDashboardPage> {
 
   @override
   Widget build(BuildContext context) {
+    // 1️⃣ While KYC status is loading → show loader
+    if (_checkingKyc) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    // 2️⃣ If KYC is NOT approved → show Employer KYC checker page instead of dashboard
+    if (_kycApproval != 1) {
+      return const EmployerKyccheckerPage();
+    }
+
+    // 3️⃣ Only when KYC is approved, show real Employer Dashboard UI
     return LayoutBuilder(
       builder: (context, constraints) {
         final bool isWeb = constraints.maxWidth >= 900;

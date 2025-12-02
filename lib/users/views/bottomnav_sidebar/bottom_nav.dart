@@ -1,12 +1,18 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:jobshub/common/constants/base_url.dart';
 import 'package:jobshub/common/utils/fetch_user_profile.dart';
+import 'package:jobshub/common/utils/session_manager.dart';
+import 'package:jobshub/users/views/auth/kyc_checker.dart';
 import 'package:jobshub/users/views/main_pages/assigned_job/assigned_jobs_page.dart';
 import 'package:jobshub/users/views/main_pages/jobs/all_type_jobs_screen.dart';
 import 'package:jobshub/users/views/main_pages/home/home_screen.dart';
 import 'package:jobshub/users/views/main_pages/search/search_bottom_nav_page.dart';
 import 'package:jobshub/users/views/main_pages/reward/reward_screen.dart';
 import 'package:jobshub/common/utils/app_color.dart';
-import 'package:jobshub/users/views/bottomnav_sidebar/user_sidedrawer.dart'; // contains AppDrawerWrapper
+import 'package:jobshub/users/views/bottomnav_sidebar/user_sidedrawer.dart';
 
 class MainBottomNav extends StatefulWidget {
   const MainBottomNav({super.key});
@@ -16,9 +22,12 @@ class MainBottomNav extends StatefulWidget {
 }
 
 class _MainBottomNavState extends State<MainBottomNav> {
-  bool _profileLoading = true; // <-- wait flag
+  bool _profileLoading = true;
   int _currentIndex = 0;
 
+  // NEW:
+  bool _checkingKyc = true;
+  int? _kycApproval; // 1=approved, 2=pending, 3=rejected, null=not submitted
   final List<Widget> _pages = [
     HomePage(),
     SearchPage(),
@@ -45,7 +54,58 @@ class _MainBottomNavState extends State<MainBottomNav> {
   @override
   void initState() {
     super.initState();
-    _loadProfileBeforeShow();
+    _init();
+  }
+
+  Future<void> _init() async {
+    await _loadProfileBeforeShow();
+    await _checkKycStatus();
+  }
+
+  Future<void> _checkKycStatus() async {
+    setState(() => _checkingKyc = true);
+    try {
+      final userIdStr = await SessionManager.getValue('user_id');
+      final userId = userIdStr?.toString() ?? '0';
+
+      final url = Uri.parse("${ApiConstants.baseUrl}employeeProfileByUserId");
+      final resp = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({"user_id": userId}),
+      );
+
+      if (resp.statusCode == 200) {
+        final decoded = jsonDecode(resp.body);
+        if (decoded is Map && decoded['success'] == true) {
+          final data = decoded['data'] as Map?;
+          final profile = (data?['profile'] ?? {}) as Map;
+
+          final raw = profile['kyc_approval'];
+          int? approval;
+          if (raw is int) {
+            approval = raw;
+          } else if (raw != null) {
+            approval = int.tryParse(raw.toString());
+          }
+
+          if (!mounted) return;
+          setState(() {
+            _kycApproval = approval; // 1=approved, else null/pending/rejected
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint("❌ Error checking KYC in MainBottomNav: $e");
+      // on error, treat as not approved so user goes to KYC page
+      if (!mounted) return;
+      setState(() {
+        _kycApproval = null;
+      });
+    } finally {
+      if (!mounted) return;
+      setState(() => _checkingKyc = false);
+    }
   }
 
   Future<void> _loadProfileBeforeShow() async {
@@ -66,20 +126,27 @@ class _MainBottomNavState extends State<MainBottomNav> {
 
   @override
   Widget build(BuildContext context) {
+    // 1) While either profile or kyc is loading → show loader
+    if (_profileLoading || _checkingKyc) {
+      return const Center(
+        child: SizedBox(
+          width: 120,
+          height: 120,
+          child: Center(child: CircularProgressIndicator()),
+        ),
+      );
+    }
+
+    // 2) If KYC is NOT approved (1 = approved, everything else -> show checker)
+    if (_kycApproval != 1) {
+      // stay on KYC checker page
+      return const KycCheckerPage();
+    }
+
+    // 3) If KYC is approved → show original MainBottomNav UI
     return AppDrawerWrapper(
       child: LayoutBuilder(
         builder: (context, constraints) {
-          // while profile is loading, show a centered loader (inside drawer wrapper)
-          if (_profileLoading) {
-            return const Center(
-              child: SizedBox(
-                width: 120,
-                height: 120,
-                child: Center(child: CircularProgressIndicator()),
-              ),
-            );
-          }
-
           final bool isWeb = constraints.maxWidth > 800;
 
           if (isWeb) {

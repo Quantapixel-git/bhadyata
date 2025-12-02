@@ -373,11 +373,7 @@ class _EmployerOtpScreenState extends State<EmployerOtpScreen> {
 
         return Scaffold(
           backgroundColor: AppColors.white,
-          // appBar: AppBar(
-          //   backgroundColor: AppColors.white,
-          //   elevation: 0.5,
-          //   iconTheme: const IconThemeData(color: Colors.black87),
-          // ),
+         
           body: Center(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 40),

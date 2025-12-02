@@ -1,9 +1,16 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:jobshub/common/constants/base_url.dart';
+
+import 'package:jobshub/common/utils/app_color.dart';
+import 'package:jobshub/common/utils/session_manager.dart';
+
+// ⬇️ Adjust this import to wherever your HR KYC checker page lives
+// import 'package:jobshub/hr/views/auth/hr_kyc_checker_page.dart';
+import 'package:jobshub/hr/views/auth/kyc_checker.dart';
 
 import 'package:jobshub/hr/views/sidebar_dashboard/hr_sidebar.dart';
-import 'package:jobshub/common/utils/app_color.dart';
 
 const String kApiBase = "https://dialfirst.in/quantapixel/badhyata/api/";
 
@@ -28,10 +35,97 @@ class _HrDashboardState extends State<HrDashboard> {
 
   int projects = 0;
 
+  // 🔹 NEW: KYC gate flags
+  bool _checkingKyc = true;
+  int?
+  _kycApproval; // 1 = approved, 2 = pending, 3 = rejected, null = not submitted
+
   @override
   void initState() {
     super.initState();
-    _fetchStats();
+    _init();
+  }
+
+  /// Run KYC check first; only load stats if KYC is approved
+  Future<void> _init() async {
+    await _checkKycStatus();
+
+    if (_kycApproval == 1) {
+      // only fetch dashboard stats when KYC is approved
+      await _fetchStats();
+    } else {
+      // don't keep "loading..." spinner for stats if we are anyway
+      // going to show the KYC checker
+      if (mounted) {
+        setState(() {
+          loading = false;
+        });
+      }
+    }
+  }
+
+  /// 🔹 NEW: Check HR KYC status (similar style as employee)
+  Future<void> _checkKycStatus() async {
+    setState(() {
+      _checkingKyc = true;
+      _kycApproval = null;
+    });
+
+    try {
+      // 🔹 use SAME key as HrKyccheckerPage
+      final hrIdStr = await SessionManager.getValue('hr_id');
+      final hrId = hrIdStr?.toString() ?? '0';
+
+      // 🔹 use SAME endpoint as HrKyccheckerPage
+      final uri = Uri.parse("${ApiConstants.baseUrl}getHrProfileByUserId");
+
+      final res = await http.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({"user_id": hrId}),
+      );
+
+      if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+
+        if (data['success'] == true && data['data'] != null) {
+          final raw = data['data']['kyc_approval'];
+
+          int? approval;
+          if (raw is int) {
+            approval = raw;
+          } else if (raw != null) {
+            approval = int.tryParse(raw.toString());
+          }
+
+          if (!mounted) return;
+          setState(() {
+            _kycApproval = approval; // 1 = approved, others = not approved
+          });
+        } else {
+          if (!mounted) return;
+          setState(() {
+            _kycApproval = null;
+          });
+        }
+      } else {
+        if (!mounted) return;
+        setState(() {
+          _kycApproval = null;
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      debugPrint("❌ Error checking HR KYC: $e");
+      setState(() {
+        _kycApproval = null;
+      });
+    } finally {
+      if (!mounted) return;
+      setState(() {
+        _checkingKyc = false;
+      });
+    }
   }
 
   Future<void> _fetchStats() async {
@@ -87,6 +181,17 @@ class _HrDashboardState extends State<HrDashboard> {
 
   @override
   Widget build(BuildContext context) {
+    // 1️⃣ While KYC status is loading → show loader
+    if (_checkingKyc) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    // 2️⃣ If KYC is NOT approved → show HR KYC checker page instead of dashboard
+    if (_kycApproval != 1) {
+      return const HrKyccheckerPage();
+    }
+
+    // 3️⃣ Only when KYC is approved, show real HR Dashboard UI
     return LayoutBuilder(
       builder: (context, constraints) {
         final bool isWeb = constraints.maxWidth >= 900;
