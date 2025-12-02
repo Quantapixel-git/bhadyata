@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:jobshub/common/utils/app_routes.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/common/views/onboarding/mobile_onboarding_screen.dart';
 import 'package:jobshub/common/views/onboarding/web_onboarding_screen.dart';
@@ -26,7 +27,7 @@ import 'package:jobshub/hr/views/notification/hr_send_notification_page.dart';
 import 'package:jobshub/hr/views/notification/hr_view_notifications_page.dart';
 import 'package:jobshub/hr/views/kyc/upload_kyc_hr.dart';
 import 'package:jobshub/common/utils/app_color.dart';
-import 'package:jobshub/hr/views/sidebar_dashboard/hr_leads.dart';
+import 'package:jobshub/hr/views/leads/hr_leads.dart';
 
 class HrSidebar extends StatelessWidget {
   final bool isWeb;
@@ -396,9 +397,7 @@ class HrSidebarMobile extends StatelessWidget {
                   ),
 
                   _sidebarItem(context, Icons.logout, "Logout", () async {
-                    // final prefs = await SharedPreferences.getInstance();
                     await SessionManager.clearAll();
-                    // await prefs.clear();
                     debugPrint("✅ SharedPreferences cleared successfully!");
 
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -409,16 +408,10 @@ class HrSidebarMobile extends StatelessWidget {
                       ),
                     );
 
-                    final bool isWebPlatform =
-                        kIsWeb || MediaQuery.of(context).size.width > 800;
-
-                    Navigator.pushAndRemoveUntil(
+                    Navigator.pushNamedAndRemoveUntil(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => isWebPlatform
-                            ? const WebOnboardingPage() // your web onboarding
-                            : const MobileOnboardingPage(), // your mobile onboarding
-                      ),
+                      AppRoutes
+                          .home, // '/onboarding' (handled in main.dart to choose web/mobile)
                       (route) => false,
                     );
                   }),
@@ -779,9 +772,7 @@ class HrSidebarWeb extends StatelessWidget {
                     }),
                   ]),
                   _menuItem(context, Icons.logout, "Logout", () async {
-                    // final prefs = await SharedPreferences.getInstance();
                     await SessionManager.clearAll();
-                    // await prefs.clear();
                     debugPrint("✅ SharedPreferences cleared successfully!");
 
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -792,19 +783,13 @@ class HrSidebarWeb extends StatelessWidget {
                       ),
                     );
 
-                    final bool isWebPlatform =
-                        kIsWeb || MediaQuery.of(context).size.width > 800;
-
-                    Navigator.pushAndRemoveUntil(
+                    Navigator.pushNamedAndRemoveUntil(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => isWebPlatform
-                            ? const WebOnboardingPage() // your web onboarding
-                            : const MobileOnboardingPage(), // your mobile onboarding
-                      ),
+                      AppRoutes.home,
                       (route) => false,
                     );
                   }),
+
                   const SizedBox(height: 20),
                 ],
               ),

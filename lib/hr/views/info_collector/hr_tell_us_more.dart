@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:jobshub/common/utils/app_routes.dart';
 
 import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/hr/views/sidebar_dashboard/hr_dashboard.dart';
@@ -103,11 +104,7 @@ class _HrTellUsMoreState extends State<HrTellUsMore> {
             behavior: SnackBarBehavior.floating,
           ),
         );
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => HrDashboard()),
-          (route) => false,
-        );
+        Navigator.pushReplacementNamed(context, AppRoutes.hrDashboard);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -151,13 +148,12 @@ class _HrTellUsMoreState extends State<HrTellUsMore> {
         final isWeb = constraints.maxWidth > 800;
 
         return Scaffold(
-           backgroundColor: AppColors.white,
+          backgroundColor: AppColors.white,
           appBar: AppBar(
-             backgroundColor: AppColors.white,
+            backgroundColor: AppColors.white,
             automaticallyImplyLeading: true,
             elevation: 0,
             iconTheme: const IconThemeData(color: Colors.black),
-           
           ),
           body: SafeArea(
             child: Center(
@@ -291,7 +287,10 @@ class _HrTellUsMoreState extends State<HrTellUsMore> {
                                         ),
                                         child: Padding(
                                           padding: const EdgeInsets.all(6.0),
-                                          child: const Text("Back", style: TextStyle(fontSize: 18),),
+                                          child: const Text(
+                                            "Back",
+                                            style: TextStyle(fontSize: 18),
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -463,7 +462,6 @@ class _HrTellUsMoreState extends State<HrTellUsMore> {
           borderRadius: BorderRadius.circular(14),
         ),
       ),
-     
     );
   }
 }

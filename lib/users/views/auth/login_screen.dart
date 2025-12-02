@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:jobshub/common/constants/base_url.dart';
+import 'package:jobshub/common/utils/app_routes.dart';
 import 'package:jobshub/users/views/auth/otp_screen.dart';
 import 'package:jobshub/common/utils/app_color.dart';
 import 'dart:convert';
@@ -79,14 +80,13 @@ class _LoginScreenState extends State<LoginScreen> {
           );
 
           // ✅ Pass OTP to next screen (for dev only)
-          Navigator.push(
+          Navigator.pushNamed(
             context,
-            MaterialPageRoute(
-              builder: (_) => UserOtpScreen(
-                mobile: mobile,
-                otp: otp, // Add this param in OtpScreen
-              ),
-            ),
+            AppRoutes.userOtp,
+            arguments: {
+              'mobile': mobile,
+              'otp': otp, // for dev autofill
+            },
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -116,9 +116,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
- 
-
- 
   Widget _buildLoginContent(bool isWeb, double width) {
     return Column(
       mainAxisSize: MainAxisSize.min,

@@ -4,10 +4,9 @@ import 'package:http/http.dart' as http;
 
 import 'package:jobshub/common/constants/base_url.dart';
 import 'package:jobshub/common/utils/app_color.dart';
+import 'package:jobshub/common/utils/app_routes.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/employer/views/sidebar_dashboard/employer_sidebar.dart';
-
-// ⬇️ Adjust this import path to where your EmployerKyccheckerPage actually lives
 import 'package:jobshub/employer/views/auth/kyc_checker.dart';
 
 class EmployerDashboardPage extends StatefulWidget {
@@ -195,7 +194,10 @@ class _EmployerDashboardPageState extends State<EmployerDashboardPage> {
 
     // 2️⃣ If KYC is NOT approved → show Employer KYC checker page instead of dashboard
     if (_kycApproval != 1) {
-      return const EmployerKyccheckerPage();
+      Future.microtask(() {
+        Navigator.pushReplacementNamed(context, AppRoutes.employerKycChecker);
+      });
+      return const SizedBox(); // temporary placeholder
     }
 
     // 3️⃣ Only when KYC is approved, show real Employer Dashboard UI

@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:jobshub/common/utils/app_routes.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/users/views/info_collector/user_tell_us_more.dart';
 import 'package:jobshub/common/utils/app_color.dart';
@@ -139,10 +140,7 @@ class _SignUpPageState extends State<SignUpPage> {
             content: Text("Profile updated successfully"),
           ),
         );
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const JobProfileDetailsPage()),
-        );
+        Navigator.pushReplacementNamed(context, AppRoutes.userTellUsMore);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

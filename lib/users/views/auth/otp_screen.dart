@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:jobshub/common/constants/base_url.dart';
+import 'package:jobshub/common/utils/app_routes.dart';
 import 'package:jobshub/common/utils/fetch_user_profile.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/users/views/bottomnav_sidebar/bottom_nav.dart';
@@ -137,12 +138,10 @@ class _UserOtpScreenState extends State<UserOtpScreen> {
           // ✅ Save mobile also to SharedPreferences for later use
           await SessionManager.setValue('mobile', widget.mobile);
 
-          Navigator.pushReplacement(
+          Navigator.pushReplacementNamed(
             context,
-            MaterialPageRoute(
-              builder: (_) =>
-                  SignUpPage(mobile: widget.mobile), // 👈 send to next page
-            ),
+            AppRoutes.userCompleteProfile,
+            arguments: {'mobile': widget.mobile},
           );
         } else {
           // show a loader while we fetch profile
@@ -177,10 +176,7 @@ class _UserOtpScreenState extends State<UserOtpScreen> {
           }
 
           if (fetchedOk) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const MainBottomNav()),
-            );
+            Navigator.pushReplacementNamed(context, AppRoutes.userDashboard);
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -403,7 +399,11 @@ class _UserOtpScreenState extends State<UserOtpScreen> {
             _canResend
                 ? TextButton(
                     onPressed: () {
-                      Navigator.pop(context); // 👈 Go back to previous page
+                      Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        AppRoutes.userLogin,
+                        (route) => false,
+                      );
                     },
                     child: const Text(
                       "Resend OTP",

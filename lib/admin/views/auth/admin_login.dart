@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:jobshub/common/utils/app_routes.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/admin/views/sidebar_dashboard/admin_dashboard.dart';
 import 'package:jobshub/common/utils/app_color.dart';
@@ -88,10 +89,8 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
         );
 
         // ✅ Navigate to Dashboard
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => AdminDashboard()),
-        );
+        // ✅ Navigate to Dashboard via named route
+        Navigator.pushReplacementNamed(context, AppRoutes.adminDashboard);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

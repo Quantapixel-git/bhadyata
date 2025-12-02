@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jobshub/common/utils/app_color.dart';
+import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/employer/views/leads/leads_list_page.dart';
 import 'package:jobshub/employer/views/sidebar_dashboard/employer_sidebar.dart';
 
@@ -39,13 +40,26 @@ class _LeadsPageState extends State<LeadsPage> {
       _employees = [];
     });
 
-    final uri = Uri.parse('$API_BASE/commissionEmployeesByEmployerWithLeads');
-    final body = jsonEncode({
-      'employer_id': _employerId,
-      'include_terminated': _includeTerminated,
-    });
-
     try {
+      // ✅ Get employer_id from SessionManager
+      final employerIdStr = await SessionManager.getValue('employer_id');
+
+      if (employerIdStr == null || employerIdStr.toString().isEmpty) {
+        setState(() {
+          _error = 'Employer ID not found. Please log in again.';
+          _loading = false;
+        });
+        return;
+      }
+
+      final employerId = int.tryParse(employerIdStr.toString()) ?? 0;
+
+      final uri = Uri.parse('$API_BASE/commissionEmployeesByEmployerWithLeads');
+      final body = jsonEncode({
+        'employer_id': employerId,
+        'include_terminated': _includeTerminated,
+      });
+
       final resp = await http
           .post(uri, headers: {'Content-Type': 'application/json'}, body: body)
           .timeout(const Duration(seconds: 15));
@@ -142,12 +156,15 @@ class _LeadsPageState extends State<LeadsPage> {
 
     if (chosen == null) return;
 
-    // navigate to EmployeeLeadsPageNetwork — keep this as-is if you already have that page.
+    // ✅ Get employer_id from SessionManager here too
+    final employerIdStr = await SessionManager.getValue('employer_id');
+    final employerId = int.tryParse(employerIdStr?.toString() ?? '0') ?? 0;
+
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => EmployeeLeadsPageNetwork(
-          employerId: _employerId,
+          employerId: employerId,
           employeeId: (employee['employee_id'] as num).toInt(),
           jobId: (chosen?['job_id'] as num).toInt(),
           employeeName: _fullName(employee),
@@ -440,8 +457,8 @@ class _CommissionEmployeeCardState extends State<_CommissionEmployeeCard> {
                       ),
                     ),
                   ),
+
                   // const SizedBox(height: 8),
-                 
                 ],
               ),
             ],
@@ -451,4 +468,3 @@ class _CommissionEmployeeCardState extends State<_CommissionEmployeeCard> {
     );
   }
 }
-

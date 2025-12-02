@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:file_picker/file_picker.dart';
+import 'package:jobshub/common/utils/app_routes.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:jobshub/common/constants/base_url.dart';
@@ -283,7 +284,9 @@ class _KycCheckerPageState extends State<KycCheckerPage> {
                   const SizedBox(height: 30),
 
                   // Only show Submit when something missing OR Rejected
+                  // Buttons section
                   if (!hasUploaded || kycApproval == 3)
+                    // ❌ Missing docs OR Rejected → show Submit button
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
@@ -322,12 +325,63 @@ class _KycCheckerPageState extends State<KycCheckerPage> {
                         ),
                       ),
                     )
+                  else if (kycApproval == 1)
+                    // ✅ Approved → show message + Go to Dashboard button
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const Center(
+                          child: Text(
+                            "✅ KYC approved.",
+                            style: TextStyle(
+                              color: Colors.green,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              Navigator.pushReplacementNamed(
+                                context,
+                                AppRoutes.userDashboard,
+                              );
+                            },
+                            icon: const Icon(
+                              Icons.dashboard,
+                              color: Colors.white,
+                            ),
+                            label: const Padding(
+                              padding: EdgeInsets.all(6.0),
+                              child: Text(
+                                "Go to Dashboard",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
                   else
+                    // 🕒 Uploaded but Pending → only info
                     const Center(
                       child: Text(
-                        "KYC documents already uploaded.",
+                        "KYC documents uploaded. Waiting for approval.",
                         style: TextStyle(
-                          color: Colors.green,
+                          color: Colors.orange,
                           fontWeight: FontWeight.w600,
                         ),
                       ),

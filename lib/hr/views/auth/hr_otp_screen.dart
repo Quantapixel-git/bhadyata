@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jobshub/common/constants/base_url.dart';
 import 'package:jobshub/common/utils/app_color.dart';
+import 'package:jobshub/common/utils/app_routes.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/hr/views/sidebar_dashboard/hr_dashboard.dart';
 import 'package:jobshub/hr/views/info_collector/hr_complete_profile.dart';
@@ -132,17 +133,13 @@ class _HROtpScreenState extends State<HROtpScreen> {
         );
 
         if (isNewUser) {
-          Navigator.pushReplacement(
+          Navigator.pushReplacementNamed(
             context,
-            MaterialPageRoute(
-              builder: (_) => HrCompleteProfile(mobile: widget.mobile),
-            ),
+            AppRoutes.hrCompleteProfile,
+            arguments: {'mobile': widget.mobile},
           );
         } else {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => HrDashboard()),
-          );
+          Navigator.pushReplacementNamed(context, AppRoutes.hrDashboard);
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -353,7 +350,10 @@ class _HROtpScreenState extends State<HROtpScreen> {
             _canResend
                 ? TextButton(
                     onPressed: () {
-                      Navigator.pop(context); // Go back to HR login
+                      Navigator.pushReplacementNamed(
+                        context,
+                        AppRoutes.hrLogin,
+                      );
                     },
                     child: const Text(
                       "Resend OTP",

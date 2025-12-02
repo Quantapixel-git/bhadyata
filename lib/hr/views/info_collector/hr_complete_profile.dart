@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:jobshub/common/utils/app_routes.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/hr/views/info_collector/hr_tell_us_more.dart';
 import 'package:jobshub/common/utils/app_color.dart';
@@ -132,10 +133,7 @@ class _HrCompleteProfileState extends State<HrCompleteProfile> {
             behavior: SnackBarBehavior.floating,
           ),
         );
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => HrTellUsMore()),
-        );
+        Navigator.pushReplacementNamed(context, AppRoutes.hrTellUsMore);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:jobshub/common/utils/app_routes.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/employer/views/info_collector/employer_tell_us_more.dart';
 import 'package:jobshub/common/utils/app_color.dart';
@@ -136,9 +137,10 @@ class _EmployerCompleteProfileState extends State<EmployerCompleteProfile> {
             behavior: SnackBarBehavior.floating,
           ),
         );
-        Navigator.pushReplacement(
+        Navigator.pushNamedAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (_) => const EmployerTellUsMore()),
+          AppRoutes.employerTellUsMore,
+          (route) => false,
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(

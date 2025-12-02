@@ -1,17 +1,12 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:jobshub/admin/views/auth/admin_login.dart';
 import 'package:jobshub/common/utils/app_color.dart';
+import 'package:jobshub/common/utils/app_routes.dart';
 import 'package:jobshub/employer/views/auth/employer_login.dart';
 import 'package:jobshub/hr/views/auth/hr_login_screen.dart';
 import 'package:jobshub/users/views/auth/login_screen.dart';
-
-// This file is a redesigned, professional mobile-first onboarding screen.
-// Features:
-// - Three crisp onboarding pages (illustration, headline, short copy)
-// - Smooth animated transitions and page indicator
-// - Prominent primary CTA (Next / Get started)
-// - Polished header with logo and a professional "More" dropdown for HR/Admin/Employer
-// - Accessibility-friendly sizes and contrast
 
 enum _MoreAction { hr, admin }
 
@@ -25,7 +20,6 @@ class MobileOnboardingPage extends StatefulWidget {
 class _MobileOnboardingPageState extends State<MobileOnboardingPage> {
   final PageController _pageController = PageController();
   int _page = 0;
-  bool _isAnimating = false;
 
   final _pages = <_OnboardItem>[
     _OnboardItem(
@@ -61,14 +55,6 @@ class _MobileOnboardingPageState extends State<MobileOnboardingPage> {
 
   void _goToNext() {
     if (_page < _pages.length - 1) {
-      setState(() => _isAnimating = true);
-      _pageController
-          .animateToPage(
-            _page + 1,
-            duration: const Duration(milliseconds: 420),
-            curve: Curves.easeOut,
-          )
-          .then((_) => setState(() => _isAnimating = false));
     } else {
       _openGetStarted();
     }
@@ -113,10 +99,12 @@ class _MobileOnboardingPageState extends State<MobileOnboardingPage> {
                   child: OutlinedButton(
                     onPressed: () {
                       Navigator.pop(ctx);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const LoginScreen()),
-                      );
+                      // Navigator.push(
+                      //   context,
+                      //   MaterialPageRoute(builder: (_) => const LoginScreen()),
+                      // );
+                      Navigator.pushNamed(context, AppRoutes.userLogin);
+
                     },
                     style: OutlinedButton.styleFrom(
                       side: BorderSide(color: AppColors.primary),
@@ -153,8 +141,7 @@ class _MobileOnboardingPageState extends State<MobileOnboardingPage> {
               ],
             ),
             const SizedBox(height: 12),
-            // optional sign-in link
-           
+
             const SizedBox(height: 28),
           ],
         ),

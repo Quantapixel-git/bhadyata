@@ -1,12 +1,8 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:jobshub/admin/views/sidebar_dashboard/admin_dashboard.dart';
-import 'package:jobshub/common/views/onboarding/mobile_onboarding_screen.dart';
-import 'package:jobshub/common/views/onboarding/web_onboarding_screen.dart';
-import 'package:jobshub/employer/views/sidebar_dashboard/employer_dashboard.dart';
-import 'package:jobshub/hr/views/sidebar_dashboard/hr_dashboard.dart';
-import 'package:jobshub/users/views/bottomnav_sidebar/bottom_nav.dart';
+import 'package:jobshub/common/utils/app_routes.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -53,32 +49,56 @@ class _SplashScreenState extends State<SplashScreen>
     final employerId = await SessionManager.getValue('employer_id');
     final hrId = await SessionManager.getValue('hr_id');
 
-    // detect web (kIsWeb OR large width)
-    final bool isWebPlatform =
-        kIsWeb || MediaQuery.of(context).size.width > 800;
+    // debug – see what actually comes from SharedPreferences
+    debugPrint('adminLogin: $adminLogin');
+    debugPrint('userId: $userId');
+    debugPrint('employerId: $employerId');
+    debugPrint('hrId: $hrId');
 
-    // default onboarding depends on platform
-    Widget nextScreen = isWebPlatform
-        ? const WebOnboardingPage() // replace with your web onboarding widget
-        : const MobileOnboardingPage(); // replace with your mobile onboarding widget
+    if (!mounted) return;
 
     if (adminLogin == 'true') {
-      nextScreen = AdminDashboard();
-    } else if (userId != null && userId.isNotEmpty) {
-      nextScreen = const MainBottomNav();
-    } else if (employerId != null && employerId.isNotEmpty) {
-      nextScreen = EmployerDashboardPage();
-    } else if (hrId != null && hrId.isNotEmpty) {
-      nextScreen = HrDashboard();
-    }
-
-    if (mounted) {
-      Navigator.pushAndRemoveUntil(
+      Navigator.pushNamedAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (_) => nextScreen),
+        AppRoutes.adminDashboard,
         (route) => false,
       );
+      return;
     }
+
+    if (userId != null && userId.isNotEmpty) {
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        AppRoutes.userDashboard,
+        (route) => false,
+      );
+      return;
+    }
+
+    if (employerId != null && employerId.isNotEmpty) {
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        AppRoutes.employerDashboard,
+        (route) => false,
+      );
+      return;
+    }
+
+    if (hrId != null && hrId.isNotEmpty) {
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        AppRoutes.hrDashboard,
+        (route) => false,
+      );
+      return;
+    }
+
+    // Not logged in → onboarding
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      AppRoutes.home,
+      (route) => false,
+    );
   }
 
   @override

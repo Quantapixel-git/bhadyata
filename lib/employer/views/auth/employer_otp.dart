@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jobshub/common/constants/base_url.dart';
 import 'package:jobshub/common/utils/app_color.dart';
+import 'package:jobshub/common/utils/app_routes.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/employer/views/sidebar_dashboard/employer_dashboard.dart';
 import 'package:jobshub/employer/views/info_collector/employer_complete_profile.dart';
@@ -137,16 +138,19 @@ class _EmployerOtpScreenState extends State<EmployerOtpScreen> {
 
         // Redirect based on new or existing user
         if (isNew) {
-          Navigator.pushReplacement(
+          // New employer → complete profile
+          Navigator.pushNamedAndRemoveUntil(
             context,
-            MaterialPageRoute(
-              builder: (_) => EmployerCompleteProfile(mobile: widget.mobile),
-            ),
+            AppRoutes.employerCompleteProfile,
+            (route) => false,
+            arguments: {'mobile': widget.mobile},
           );
         } else {
-          Navigator.pushReplacement(
+          // Existing employer → dashboard
+          Navigator.pushNamedAndRemoveUntil(
             context,
-            MaterialPageRoute(builder: (_) => EmployerDashboardPage()),
+            AppRoutes.employerDashboard,
+            (route) => false,
           );
         }
       } else {
@@ -183,16 +187,20 @@ class _EmployerOtpScreenState extends State<EmployerOtpScreen> {
   /// - If boxWidth would be too small (< minBoxWidth) then fallback to a scrollable row.
   Widget _buildOtpFields(double totalAvailableWidth, bool isWeb) {
     // Visual constants (match UserOtpScreen style)
-    const double horizontalPadding = 70; // surrounding padding (30 left + 30 right + small buffer)
+    const double horizontalPadding =
+        70; // surrounding padding (30 left + 30 right + small buffer)
     const double spacing = 6; // space between boxes
-    const double maxBoxWidth = 40; // desired max width for a box on wide screens
-    const double minBoxWidth = 40; // minimum acceptable width before we fallback to scroll
+    const double maxBoxWidth =
+        40; // desired max width for a box on wide screens
+    const double minBoxWidth =
+        40; // minimum acceptable width before we fallback to scroll
 
     // total spacing between boxes = spacing * (n - 1)
     final totalSpacing = spacing * (6 - 1);
 
     // compute available width for boxes (subtract typical paddings)
-    final availableForBoxes = totalAvailableWidth - horizontalPadding - totalSpacing;
+    final availableForBoxes =
+        totalAvailableWidth - horizontalPadding - totalSpacing;
 
     // computed box width
     final computedBoxWidth = (availableForBoxes / 6).clamp(0.0, maxBoxWidth);
@@ -354,7 +362,11 @@ class _EmployerOtpScreenState extends State<EmployerOtpScreen> {
             _canResend
                 ? TextButton(
                     onPressed: () {
-                      Navigator.pop(context);
+                      Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        AppRoutes.employerLogin,
+                        (route) => false,
+                      );
                     },
                     child: const Text(
                       "Resend OTP",
@@ -373,7 +385,7 @@ class _EmployerOtpScreenState extends State<EmployerOtpScreen> {
 
         return Scaffold(
           backgroundColor: AppColors.white,
-         
+
           body: Center(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 40),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jobshub/common/constants/base_url.dart';
 import 'package:jobshub/common/utils/app_color.dart';
+import 'package:jobshub/common/utils/app_routes.dart';
 import 'package:jobshub/hr/views/auth/hr_otp_screen.dart';
 
 class HrLoginPage extends StatefulWidget {
@@ -84,11 +85,11 @@ class _HrLoginPageState extends State<HrLoginPage> {
           );
 
           // Navigate to HR OTP screen
-          Navigator.push(
+          // Navigate to HR OTP screen via named route
+          Navigator.pushNamed(
             context,
-            MaterialPageRoute(
-              builder: (_) => HROtpScreen(mobile: mobile, otp: otp),
-            ),
+            AppRoutes.hrOtp,
+            arguments: {'mobile': mobile, 'otp': otp},
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(

@@ -1,6 +1,7 @@
 // users/views/bottomnav_sidebar/user_sidedrawer.dart
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:jobshub/common/utils/app_routes.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/common/views/onboarding/mobile_onboarding_screen.dart';
 import 'package:jobshub/common/views/onboarding/web_onboarding_screen.dart';
@@ -229,13 +230,9 @@ class AppDrawerMobile extends StatelessWidget {
                     final preItems = <Widget>[
                       _sectionTitle("👤 Dashboard"),
                       _sidebarItem(context, Icons.home_outlined, "Home", () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const MainBottomNav(),
-                          ),
-                        );
+                        Navigator.pushNamed(context, AppRoutes.userDashboard);
                       }),
+
                       _sidebarItem(
                         context,
                         Icons.person_outline,
@@ -298,16 +295,11 @@ class AppDrawerMobile extends StatelessWidget {
                             duration: Duration(seconds: 2),
                           ),
                         );
-                        final bool isWebPlatform =
-                            kIsWeb || MediaQuery.of(context).size.width > 800;
 
-                        Navigator.pushAndRemoveUntil(
+                        // 👇 Named route: goes to onboarding, which itself picks web/mobile
+                        Navigator.pushNamedAndRemoveUntil(
                           context,
-                          MaterialPageRoute(
-                            builder: (_) => isWebPlatform
-                                ? const WebOnboardingPage() // your web onboarding
-                                : const MobileOnboardingPage(), // your mobile onboarding
-                          ),
+                          AppRoutes.home,
                           (route) => false,
                         );
                       }),
@@ -535,11 +527,9 @@ class AppDrawerWeb extends StatelessWidget {
                     context,
                     Icons.home_outlined,
                     "Home",
-                    () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const MainBottomNav()),
-                    ),
+                    () => Navigator.pushNamed(context, AppRoutes.userDashboard),
                   ),
+
                   _menuItem(
                     context,
                     Icons.person_outline,
@@ -714,19 +704,14 @@ class AppDrawerWeb extends StatelessWidget {
                         duration: Duration(seconds: 2),
                       ),
                     );
-                    final bool isWebPlatform =
-                        kIsWeb || MediaQuery.of(context).size.width > 800;
 
-                    Navigator.pushAndRemoveUntil(
+                    Navigator.pushNamedAndRemoveUntil(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => isWebPlatform
-                            ? const WebOnboardingPage() // your web onboarding
-                            : const MobileOnboardingPage(), // your mobile onboarding
-                      ),
+                      AppRoutes.home,
                       (route) => false,
                     );
                   }),
+
                   const SizedBox(height: 20),
                 ],
               ),

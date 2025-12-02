@@ -15,6 +15,7 @@ import 'package:jobshub/admin/views/sidebar_dashboard/admin_dashboard.dart';
 import 'package:jobshub/admin/views/manage_users/admin_employee_users.dart';
 import 'package:jobshub/admin/views/kyc_status/admin_employee_kyc.dart';
 import 'package:jobshub/admin/views/salary_management/admin_employee_salary.dart';
+import 'package:jobshub/common/utils/app_routes.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/admin/views/manage_users/admin_employer_users.dart';
 import 'package:jobshub/admin/views/revenue_commission/admin_evenue_total.dart';
@@ -74,10 +75,7 @@ class AdminSidebarMobile extends StatelessWidget {
                 children: [
                   _sectionTitle("🏠 General"),
                   _sidebarItem(context, Icons.dashboard, "Dashboard", () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => AdminDashboard()),
-                    );
+                    Navigator.pushNamed(context, AppRoutes.adminDashboard);
                   }),
                   _sidebarItem(context, Icons.pie_chart, "Chart", () {
                     Navigator.push(
@@ -513,12 +511,7 @@ class AdminSidebarMobile extends StatelessWidget {
                     ],
                   ),
                   _sidebarItem(context, Icons.logout, "Logout", () async {
-                    // final prefs = await SharedPreferences.getInstance();
-
-                    // // 🧹 Clear all stored preferences
-                    // await prefs.clear();
                     await SessionManager.clearAll();
-                    // 🖨️ Optional: Log in console for debugging
                     debugPrint("SharedPreferences cleared successfully!");
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -528,17 +521,10 @@ class AdminSidebarMobile extends StatelessWidget {
                       ),
                     );
 
-                    // 🔁 Navigate back to login screen
-                    final bool isWebPlatform =
-                        kIsWeb || MediaQuery.of(context).size.width > 800;
-
-                    Navigator.pushAndRemoveUntil(
+                    // ✅ Use named route, which already decides Web vs Mobile in main.dart
+                    Navigator.pushNamedAndRemoveUntil(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => isWebPlatform
-                            ? const WebOnboardingPage() // your web onboarding
-                            : const MobileOnboardingPage(), // your mobile onboarding
-                      ),
+                      AppRoutes.home, // '/onboarding'
                       (route) => false,
                     );
                   }),
@@ -652,10 +638,7 @@ class AdminSidebarWeb extends StatelessWidget {
                 children: [
                   _sectionTitle("🏠 General"),
                   _menuItem(context, Icons.dashboard, "Dashboard", () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => AdminDashboard()),
-                    );
+                    Navigator.pushNamed(context, AppRoutes.adminDashboard);
                   }),
                   _menuItem(context, Icons.pie_chart, "Chart", () {
                     Navigator.push(
@@ -891,9 +874,7 @@ class AdminSidebarWeb extends StatelessWidget {
                     }),
                   ]),
                   _menuItem(context, Icons.logout, "Logout", () async {
-                    // final prefs = await SharedPreferences.getInstance();
                     await SessionManager.clearAll();
-                    // await prefs.clear();
                     debugPrint("✅ SharedPreferences cleared successfully!");
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -903,19 +884,14 @@ class AdminSidebarWeb extends StatelessWidget {
                       ),
                     );
 
-                    final bool isWebPlatform =
-                        kIsWeb || MediaQuery.of(context).size.width > 800;
-
-                    Navigator.pushAndRemoveUntil(
+                    // ✅ Use named route for onboarding/home
+                    Navigator.pushNamedAndRemoveUntil(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => isWebPlatform
-                            ? const WebOnboardingPage() // your web onboarding
-                            : const MobileOnboardingPage(), // your mobile onboarding
-                      ),
+                      AppRoutes.home,
                       (route) => false,
                     );
                   }),
+
                   const SizedBox(height: 20),
                 ],
               ),

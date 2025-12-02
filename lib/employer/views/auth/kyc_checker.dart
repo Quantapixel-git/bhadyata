@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:file_picker/file_picker.dart';
 import 'package:jobshub/common/constants/base_url.dart';
 import 'package:jobshub/common/utils/app_color.dart';
+import 'package:jobshub/common/utils/app_routes.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -272,6 +273,7 @@ class _EmployerKyccheckerPageState extends State<EmployerKyccheckerPage> {
                   const SizedBox(height: 30),
 
                   // Match HR intent: show button if any doc missing OR status is Rejected
+                  // Match HR intent: show button if any doc missing OR status is Rejected
                   if (!hasUploaded || kycApproval == 3)
                     SizedBox(
                       width: double.infinity,
@@ -312,13 +314,46 @@ class _EmployerKyccheckerPageState extends State<EmployerKyccheckerPage> {
                       ),
                     )
                   else
-                    const Center(
-                      child: Text(
-                        "✅ KYC documents already uploaded.",
-                        style: TextStyle(
-                          color: Colors.green,
-                          fontWeight: FontWeight.w600,
-                        ),
+                    Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text(
+                            "✅ KYC documents already uploaded.",
+                            style: TextStyle(
+                              color: Colors.green,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.pushNamedAndRemoveUntil(
+                                context,
+                                AppRoutes.employerDashboard,
+                                (route) => false,
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 12,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                            ),
+                            child: const Text(
+                              "Go to Dashboard",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                 ],

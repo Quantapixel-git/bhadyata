@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:jobshub/common/utils/app_routes.dart';
 
 import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/users/views/bottomnav_sidebar/bottom_nav.dart';
@@ -204,11 +205,7 @@ class _JobProfileDetailsPageState extends State<JobProfileDetailsPage> {
             content: Text(data['message'] ?? "Profile saved successfully"),
           ),
         );
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => const MainBottomNav()),
-          (route) => false,
-        );
+        Navigator.pushReplacementNamed(context, AppRoutes.userDashboard);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

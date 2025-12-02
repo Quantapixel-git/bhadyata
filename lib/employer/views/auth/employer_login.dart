@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jobshub/common/constants/base_url.dart';
 import 'package:jobshub/common/utils/app_color.dart';
+import 'package:jobshub/common/utils/app_routes.dart';
 import 'package:jobshub/employer/views/auth/employer_otp.dart';
 
 class EmployerLogin extends StatefulWidget {
@@ -85,14 +86,22 @@ class _EmployerLoginState extends State<EmployerLogin> {
           );
 
           // ✅ Navigate to OTP screen
-          Navigator.push(
+          // Navigator.push(
+          //   context,
+          //   MaterialPageRoute(
+          //     builder: (_) => EmployerOtpScreen(
+          //       mobile: mobile,
+          //       otp: otp, // Pass OTP for development
+          //     ),
+          //   ),
+          // );
+          Navigator.pushNamed(
             context,
-            MaterialPageRoute(
-              builder: (_) => EmployerOtpScreen(
-                mobile: mobile,
-                otp: otp, // Pass OTP for development
-              ),
-            ),
+            AppRoutes.employerOtp,
+            arguments: {
+              'mobile': mobile,
+              'otp': otp, // Pass OTP for development
+            },
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -212,7 +221,7 @@ class _EmployerLoginState extends State<EmployerLogin> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-     backgroundColor: AppColors.white,
+      backgroundColor: AppColors.white,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {

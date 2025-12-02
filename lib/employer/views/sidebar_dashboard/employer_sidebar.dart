@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:jobshub/common/utils/app_routes.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/common/views/onboarding/mobile_onboarding_screen.dart';
 import 'package:jobshub/common/views/onboarding/web_onboarding_screen.dart';
@@ -509,7 +510,7 @@ class EmployerSidebarMobile extends StatelessWidget {
                           MaterialPageRoute(builder: (_) => SalaryDuePage()),
                         );
                       }),
-                         _expTileChild(context, "Commission-based", () {
+                      _expTileChild(context, "Commission-based", () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder: (_) => SalaryDuePage()),
@@ -587,9 +588,7 @@ class EmployerSidebarMobile extends StatelessWidget {
                   ),
 
                   _sidebarItem(context, Icons.logout, "Logout", () async {
-                    // final prefs = await SharedPreferences.getInstance();
                     await SessionManager.clearAll();
-                    // await prefs.clear();
                     debugPrint("✅ SharedPreferences cleared successfully!");
 
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -600,16 +599,10 @@ class EmployerSidebarMobile extends StatelessWidget {
                       ),
                     );
 
-                    final bool isWebPlatform =
-                        kIsWeb || MediaQuery.of(context).size.width > 800;
-
-                    Navigator.pushAndRemoveUntil(
+                    // No need to detect web here – main.dart will route correctly
+                    Navigator.pushNamedAndRemoveUntil(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => isWebPlatform
-                            ? const WebOnboardingPage() // your web onboarding
-                            : const MobileOnboardingPage(), // your mobile onboarding
-                      ),
+                      AppRoutes.home, // '/onboarding'
                       (route) => false,
                     );
                   }),
@@ -1068,7 +1061,7 @@ class EmployerSidebarWeb extends StatelessWidget {
                           MaterialPageRoute(builder: (_) => SalaryDuePage()),
                         );
                       }),
-                       _expTileChild(context, "Commission-based", () {
+                      _expTileChild(context, "Commission-based", () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder: (_) => SalaryDuePage()),
@@ -1124,9 +1117,7 @@ class EmployerSidebarWeb extends StatelessWidget {
                     }),
                   ]),
                   _menuItem(context, Icons.logout, "Logout", () async {
-                    // final prefs = await SharedPreferences.getInstance();
                     await SessionManager.clearAll();
-                    // await prefs.clear();
                     debugPrint("✅ SharedPreferences cleared successfully!");
 
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -1137,16 +1128,9 @@ class EmployerSidebarWeb extends StatelessWidget {
                       ),
                     );
 
-                    final bool isWebPlatform =
-                        kIsWeb || MediaQuery.of(context).size.width > 800;
-
-                    Navigator.pushAndRemoveUntil(
+                    Navigator.pushNamedAndRemoveUntil(
                       context,
-                      MaterialPageRoute(
-                        builder: (_) => isWebPlatform
-                            ? const WebOnboardingPage() // your web onboarding
-                            : const MobileOnboardingPage(), // your mobile onboarding
-                      ),
+                      AppRoutes.home, // '/onboarding'
                       (route) => false,
                     );
                   }),

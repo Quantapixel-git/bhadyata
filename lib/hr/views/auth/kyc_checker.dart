@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:file_picker/file_picker.dart';
 import 'package:jobshub/common/constants/base_url.dart';
 import 'package:jobshub/common/utils/app_color.dart';
+import 'package:jobshub/common/utils/app_routes.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
 // import 'package:jobshub/hr/views/sidebar_dashboard/hr_sidebar.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -270,56 +271,118 @@ class _HrKyccheckerPageState extends State<HrKyccheckerPage> {
 
                   const SizedBox(height: 30),
 
-                  // Submit button visible if any doc missing OR if rejected (allow re-upload)
-                  if (!hasUploaded)
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: isLoading ? null : _uploadKyc,
-                        icon: isLoading
-                            ? const SizedBox(
-                                width: 18,
-                                height: 18,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
+                  Builder(
+                    builder: (context) {
+                      final bool isApproved = kycApproval == 1;
+                      final bool isRejected = kycApproval == 3;
+
+                      // Show submit when missing OR rejected
+                      if (!hasUploaded || isRejected) {
+                        return SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: isLoading ? null : _uploadKyc,
+                            icon: isLoading
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Icon(
+                                    Icons.upload,
+                                    color: Colors.white,
+                                    size: 22,
+                                  ),
+                            label: const Padding(
+                              padding: EdgeInsets.all(6.0),
+                              child: Text(
+                                "Submit KYC",
+                                style: TextStyle(
                                   color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
                                 ),
-                              )
-                            : const Icon(
-                                Icons.upload,
-                                color: Colors.white,
-                                size: 22,
                               ),
-                        label: Padding(
-                          padding: const EdgeInsets.all(6.0),
-                          child: Text(
-                            isLoading ? "Uploading..." : "Submit KYC",
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(14),
+                              ),
                             ),
                           ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
+                        );
+                      }
+
+                      // If approved → show “Go to Dashboard”
+                      if (isApproved) {
+                        return Column(
+                          children: [
+                            const Center(
+                              child: Text(
+                                "✅ Your KYC is approved.",
+                                style: TextStyle(
+                                  color: Colors.green,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  Navigator.pushReplacementNamed(
+                                    context,
+                                    AppRoutes.hrDashboard,
+                                  );
+                                },
+                                icon: const Icon(
+                                  Icons.dashboard,
+                                  color: Colors.white,
+                                ),
+                                label: const Padding(
+                                  padding: EdgeInsets.all(6.0),
+                                  child: Text(
+                                    "Go to Dashboard",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primary,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 12,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      }
+
+                      // Pending → waiting text
+                      return const Center(
+                        child: Text(
+                          "KYC documents uploaded. Awaiting approval.",
+                          style: TextStyle(
+                            color: Colors.orange,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                      ),
-                    )
-                  else
-                    const Center(
-                      child: Text(
-                        "KYC documents already uploaded.",
-                        style: TextStyle(
-                          color: Colors.green,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
+                      );
+                    },
+                  ),
                 ],
               ),
             ),

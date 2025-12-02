@@ -1,11 +1,12 @@
+// ignore_for_file: use_build_context_synchronously, deprecated_member_use
+
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:jobshub/admin/views/auth/admin_login.dart';
 import 'package:jobshub/common/utils/app_color.dart';
+import 'package:jobshub/common/utils/app_routes.dart';
 import 'package:jobshub/common/views/onboarding/banner_crousel_section.dart';
 import 'package:jobshub/common/views/onboarding/categories_job_section.dart';
 import 'package:jobshub/common/views/onboarding/company_crousel_section.dart';
-import 'package:jobshub/common/views/onboarding/expandable_feature_section.dart';
 import 'package:jobshub/common/views/onboarding/faq_section.dart';
 import 'package:jobshub/common/views/onboarding/footer_section.dart';
 import 'package:jobshub/common/views/onboarding/hero_section.dart';
@@ -13,10 +14,6 @@ import 'package:jobshub/common/views/onboarding/opportunity_section.dart';
 import 'package:jobshub/common/views/onboarding/over_number_section.dart';
 import 'package:jobshub/common/views/onboarding/review_section.dart';
 import 'package:jobshub/common/views/onboarding/what_makes_badhyata_better_section.dart';
-import 'package:jobshub/common/views/onboarding/who_using_badhyata_section.dart';
-import 'package:jobshub/employer/views/auth/employer_login.dart';
-import 'package:jobshub/hr/views/auth/hr_login_screen.dart';
-import 'package:jobshub/users/views/auth/login_screen.dart';
 
 class WebOnboardingPage extends StatelessWidget {
   const WebOnboardingPage({super.key});
@@ -47,16 +44,10 @@ class WebOnboardingPage extends StatelessWidget {
             HeroUnstopStyle(
               isDesktop: isDesktop,
               onHireNow: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => EmployerLogin()),
-                );
+                Navigator.pushNamed(context, AppRoutes.employerLogin);
               },
               onGetJob: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => LoginScreen()),
-                );
+                Navigator.pushNamed(context, AppRoutes.userLogin);
               },
             ),
             // KnowHowSection(isDesktop: isDesktop),
@@ -144,20 +135,16 @@ class WebOnboardingPage extends StatelessWidget {
 
     switch (selected) {
       case 'company':
-        // Navigate to company page if you have one
         // Navigator.push(ctx, MaterialPageRoute(builder: (_) => CompanyPage()));
         break;
       case 'teamlead':
         // Navigator.push(ctx, MaterialPageRoute(builder: (_) => TeamLeadPage()));
         break;
       case 'hr':
-        Navigator.push(ctx, MaterialPageRoute(builder: (c) => HrLoginPage()));
+        Navigator.pushNamed(ctx, AppRoutes.hrLogin);
         break;
       case 'admin':
-        Navigator.push(
-          ctx,
-          MaterialPageRoute(builder: (c) => AdminLoginPage()),
-        );
+        Navigator.pushNamed(ctx, AppRoutes.adminLogin);
         break;
     }
   }
@@ -185,7 +172,13 @@ class WebOnboardingPage extends StatelessWidget {
 
             // === LOGO + BRAND ===
             InkWell(
-              onTap: () {}, // navigate home
+              onTap: () {
+                Navigator.pushNamedAndRemoveUntil(
+                  context,
+                  AppRoutes.home,
+                  (route) => false,
+                );
+              },
               child: Row(
                 children: [
                   Image.asset(
@@ -295,9 +288,7 @@ class WebOnboardingPage extends StatelessWidget {
                   // 🔹 Download App button
                   // 🔹 Download App button (icon + text, no border)
                   TextButton.icon(
-                    onPressed: () {
-                      // TODO: open Play Store / App link
-                    },
+                    onPressed: () {},
                     icon: Icon(
                       Icons.smartphone_outlined,
                       size: 20,
@@ -318,10 +309,11 @@ class WebOnboardingPage extends StatelessWidget {
 
                   OutlinedButton(
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => const LoginScreen()),
-                      );
+                      // Navigator.push(
+                      //   context,
+                      //   MaterialPageRoute(builder: (_) => const LoginScreen()),
+                      // );
+                      Navigator.pushNamed(context, AppRoutes.userLogin);
                     },
                     style: OutlinedButton.styleFrom(
                       side: BorderSide(
@@ -346,13 +338,16 @@ class WebOnboardingPage extends StatelessWidget {
                   const SizedBox(width: 8),
 
                   ElevatedButton(
+                    // onPressed: () {
+                    //   Navigator.push(
+                    //     context,
+                    //     MaterialPageRoute(
+                    //       builder: (_) => const EmployerLogin(),
+                    //     ),
+                    //   );
+                    // },
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const EmployerLogin(),
-                        ),
-                      );
+                      Navigator.pushNamed(context, AppRoutes.employerLogin);
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
@@ -421,19 +416,19 @@ Future<void> _showOthersMenu(BuildContext ctx) async {
 
   switch (selected) {
     case 'privacy':
-      // Navigator.push(ctx, MaterialPageRoute(builder: (_) => PrivacyPage()));
+      Navigator.pushNamed(ctx, AppRoutes.privacy);
       break;
     case 'terms':
-      // Navigator.push(ctx, MaterialPageRoute(builder: (_) => TermsPage()));
+      Navigator.pushNamed(ctx, AppRoutes.terms);
       break;
     case 'contact':
-      // Navigator.push(ctx, MaterialPageRoute(builder: (_) => ContactUsPage()));
+      Navigator.pushNamed(ctx, AppRoutes.contact);
       break;
     case 'refund':
-      // Navigator.push(ctx, MaterialPageRoute(builder: (_) => RefundPolicyPage()));
+      Navigator.pushNamed(ctx, AppRoutes.refund);
       break;
     case 'blogs':
-      // Navigator.push(ctx, MaterialPageRoute(builder: (_) => BlogsPage()));
+      Navigator.pushNamed(ctx, AppRoutes.blogs);
       break;
   }
 }
@@ -488,20 +483,12 @@ class _MobileNavDrawer extends StatelessWidget {
                   ),
                   _drawerTile(context, Icons.work_outline, 'Team Lead', () {}),
                   _drawerTile(context, Icons.emoji_events_outlined, 'HR', () {
-                    //  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => HrLoginPage()),
-                    );
-                    // },
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, AppRoutes.hrLogin);
                   }),
                   _drawerTile(context, Icons.school_outlined, 'Admin', () {
-                    //  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => AdminLoginPage()),
-                    );
-                    // },
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, AppRoutes.adminLogin);
                   }),
 
                   // const Divider(),
@@ -521,12 +508,7 @@ class _MobileNavDrawer extends StatelessWidget {
                     child: OutlinedButton(
                       onPressed: () {
                         Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const LoginScreen(),
-                          ),
-                        );
+                        Navigator.pushNamed(context, AppRoutes.userLogin);
                       },
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 12),
@@ -539,12 +521,7 @@ class _MobileNavDrawer extends StatelessWidget {
                     child: ElevatedButton(
                       onPressed: () {
                         Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => const EmployerLogin(),
-                          ),
-                        );
+                        Navigator.pushNamed(context, AppRoutes.employerLogin);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.secondary,

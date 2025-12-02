@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:jobshub/common/constants/base_url.dart';
+import 'package:jobshub/common/utils/app_routes.dart';
 import 'package:jobshub/common/utils/fetch_user_profile.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/users/views/auth/kyc_checker.dart';
@@ -140,7 +141,11 @@ class _MainBottomNavState extends State<MainBottomNav> {
     // 2) If KYC is NOT approved (1 = approved, everything else -> show checker)
     if (_kycApproval != 1) {
       // stay on KYC checker page
-      return const KycCheckerPage();
+      // return const KycCheckerPage();
+      Future.microtask(() {
+        Navigator.pushReplacementNamed(context, AppRoutes.userKycChecker);
+      });
+      return const SizedBox(); // temporary placeholder
     }
 
     // 3) If KYC is approved → show original MainBottomNav UI

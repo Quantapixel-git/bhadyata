@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:jobshub/common/constants/base_url.dart';
 
 import 'package:jobshub/common/utils/app_color.dart';
+import 'package:jobshub/common/utils/app_routes.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
 
 // ⬇️ Adjust this import to wherever your HR KYC checker page lives
@@ -188,7 +189,11 @@ class _HrDashboardState extends State<HrDashboard> {
 
     // 2️⃣ If KYC is NOT approved → show HR KYC checker page instead of dashboard
     if (_kycApproval != 1) {
-      return const HrKyccheckerPage();
+      // return const HrKyccheckerPage();
+      Future.microtask(() {
+        Navigator.pushReplacementNamed(context, AppRoutes.hrKycChecker);
+      });
+      return const SizedBox(); // temporary placeholder
     }
 
     // 3️⃣ Only when KYC is approved, show real HR Dashboard UI
