@@ -11,26 +11,24 @@ import 'package:jobshub/admin/views/notification/admin_all_notification.dart';
 import 'package:jobshub/admin/views/category/admin_category_job.dart';
 import 'package:jobshub/admin/views/ratings/employee_to_employer_ratings.dart';
 import 'package:jobshub/admin/views/ratings/employer_to_employee_ratings.dart';
-import 'package:jobshub/admin/views/sidebar_dashboard/admin_dashboard.dart';
 import 'package:jobshub/admin/views/manage_users/admin_employee_users.dart';
 import 'package:jobshub/admin/views/kyc_status/admin_employee_kyc.dart';
 import 'package:jobshub/admin/views/salary_management/admin_employee_salary.dart';
+import 'package:jobshub/admin/views/sidebar_dashboard/assignjob.dart';
 import 'package:jobshub/common/utils/app_routes.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/admin/views/manage_users/admin_employer_users.dart';
-import 'package:jobshub/admin/views/revenue_commission/admin_evenue_total.dart';
 import 'package:jobshub/admin/views/query/admin_query_from_employer_to_admin.dart';
 import 'package:jobshub/admin/views/query/admin_query_from_hr_to_admin.dart';
 import 'package:jobshub/admin/views/query/admin_query_from_user.dart';
 import 'package:jobshub/admin/views/revenue_commission/admin_revenue_profit.dart';
 import 'package:jobshub/admin/views/notification/admin_send_notification.dart';
 import 'package:jobshub/admin/views/chart/admin_chart.dart';
-import 'package:jobshub/common/views/onboarding/mobile_onboarding_screen.dart';
-import 'package:jobshub/common/views/onboarding/web_onboarding_screen.dart';
 import 'package:jobshub/common/utils/app_color.dart';
 import 'package:jobshub/hr/views/job_approval/hr_commission_based_job_approval.dart';
 import 'package:jobshub/hr/views/job_approval/hr_one_time_job_approval.dart';
 import 'package:jobshub/hr/views/job_approval/hr_salary_based_job_approval.dart';
+import 'package:jobshub/hr/views/project_approval/project_approval.dart';
 
 class AdminSidebar extends StatelessWidget {
   final bool isWeb;
@@ -146,7 +144,7 @@ class AdminSidebarMobile extends StatelessWidget {
                       color: AppColors.primary,
                     ),
                     title: const Text(
-                      "All Jobs",
+                      "Jobs Approval",
                       style: TextStyle(fontSize: 14),
                     ),
                     childrenPadding: const EdgeInsets.only(left: 20, bottom: 8),
@@ -195,7 +193,33 @@ class AdminSidebarMobile extends StatelessWidget {
                           );
                         },
                       ),
+                       ListTile(
+                        title: const Text(
+                          "Projects",
+                          style: TextStyle(fontSize: 13.5),
+                        ),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => HrProjectApproval(),
+                            ),
+                          );
+                        },
+                      ),
                     ],
+                  ),
+
+                  _sidebarItem(
+                    context,
+                    Icons.assignment_ind_outlined,
+                    "Asign Job",
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => AdminAssignJobPage()),
+                      );
+                    },
                   ),
 
                   ExpansionTile(
@@ -727,8 +751,28 @@ class AdminSidebarWeb extends StatelessWidget {
                           ),
                         );
                       }),
+                      _expTileChild(context, "Projects", () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => HrProjectApproval(),
+                          ),
+                        );
+                      }),
                     ],
                   ),
+                  _menuItem(
+                    context,
+                    Icons.assignment_ind_outlined,
+                    "Asign Job",
+                    () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => AdminAssignJobPage()),
+                      );
+                    },
+                  ),
+
                   _expansionGroup(
                     context,
                     Icons.person_4_outlined,

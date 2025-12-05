@@ -6,7 +6,6 @@ import 'package:jobshub/common/utils/app_color.dart';
 import 'package:jobshub/common/utils/app_routes.dart';
 import 'package:jobshub/employer/views/auth/employer_login.dart';
 import 'package:jobshub/hr/views/auth/hr_login_screen.dart';
-import 'package:jobshub/users/views/auth/login_screen.dart';
 
 enum _MoreAction { hr, admin }
 
@@ -55,6 +54,11 @@ class _MobileOnboardingPageState extends State<MobileOnboardingPage> {
 
   void _goToNext() {
     if (_page < _pages.length - 1) {
+      _pageController.animateToPage(
+        _page + 1,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
     } else {
       _openGetStarted();
     }
@@ -104,7 +108,6 @@ class _MobileOnboardingPageState extends State<MobileOnboardingPage> {
                       //   MaterialPageRoute(builder: (_) => const LoginScreen()),
                       // );
                       Navigator.pushNamed(context, AppRoutes.userLogin);
-
                     },
                     style: OutlinedButton.styleFrom(
                       side: BorderSide(color: AppColors.primary),

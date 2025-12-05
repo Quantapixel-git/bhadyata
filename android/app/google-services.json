@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "673520634856",
+    "project_id": "badhyata-6452a",
+    "storage_bucket": "badhyata-6452a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:673520634856:android:989069eebcfb9000e6b25d",
+        "android_client_info": {
+          "package_name": "com.example.jobshub"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDnTj5vb9fZs13qR1hA0GUkBStSPaVDwjw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
