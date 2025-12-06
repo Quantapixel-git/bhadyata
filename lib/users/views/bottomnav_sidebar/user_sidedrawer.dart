@@ -5,6 +5,7 @@ import 'package:jobshub/common/utils/app_routes.dart';
 import 'package:jobshub/common/utils/session_manager.dart';
 import 'package:jobshub/common/views/onboarding/mobile_onboarding_screen.dart';
 import 'package:jobshub/common/views/onboarding/web_onboarding_screen.dart';
+import 'package:jobshub/users/views/drawer_pages/UserNotificationPage.dart';
 import 'package:jobshub/users/views/drawer_pages/kyc_upload.dart';
 import 'package:jobshub/users/views/bottomnav_sidebar/bottom_nav.dart';
 import 'package:jobshub/users/views/drawer_pages/job_application/my_salary_based_job.dart';
@@ -254,6 +255,21 @@ class AppDrawerMobile extends StatelessWidget {
                           ),
                         );
                       }),
+
+                      _sidebarItem(
+                        context,
+                        Icons.notifications_outlined,
+                        "Notifications",
+                        () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  const UserNotificationPage(), // <- your screen
+                            ),
+                          );
+                        },
+                      ),
                     ];
 
                     final dynamicChildren = _buildMenuChildrenForType(
@@ -546,6 +562,18 @@ class AppDrawerWeb extends StatelessWidget {
                     () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (_) => const KycUploadPage()),
+                    ),
+                  ),
+
+                  _menuItem(
+                    context,
+                    Icons.notifications_outlined,
+                    "Notifications",
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const UserNotificationPage(),
+                      ),
                     ),
                   ),
 

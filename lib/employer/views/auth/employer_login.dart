@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:jobshub/common/constants/base_url.dart';
 import 'package:jobshub/common/utils/app_color.dart';
 import 'package:jobshub/common/utils/app_routes.dart';
-import 'package:jobshub/employer/views/auth/employer_otp.dart';
+import 'package:firebase_messaging/firebase_messaging.dart'; // 👈 ADD THIS
 
 class EmployerLogin extends StatefulWidget {
   const EmployerLogin({super.key});
@@ -17,6 +17,24 @@ class _EmployerLoginState extends State<EmployerLogin> {
   final _mobileController = TextEditingController();
   String? _mobileError;
 
+  String? _fcmToken; // 🔹 Store employer token here
+
+  @override
+  void initState() {
+    super.initState();
+    _initFcmToken();
+  }
+
+  Future<void> _initFcmToken() async {
+    try {
+      final token = await FirebaseMessaging.instance.getToken();
+      print("🔑 BADHYATA Employer Login FCM Token: $token");
+      setState(() => _fcmToken = token);
+    } catch (e) {
+      print("❌ Error getting employer FCM token: $e");
+    }
+  }
+
   Future<void> _sendOtp() async {
     final mobile = _mobileController.text.trim();
 
@@ -26,6 +44,17 @@ class _EmployerLoginState extends State<EmployerLogin> {
       return;
     } else {
       setState(() => _mobileError = null);
+    }
+
+    // 🔹 Ensure FCM token is ready
+    if (_fcmToken == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: Text("FCM token not ready yet, please try again."),
+        ),
+      );
+      return;
     }
 
     final url = Uri.parse("${ApiConstants.baseUrl}sendOtp");
@@ -41,8 +70,8 @@ class _EmployerLoginState extends State<EmployerLogin> {
       // 🔹 Prepare body
       final body = {
         "mobile": mobile,
-        "fcm_token": "abc123xyz",
-        "role": 2, // ✅ Employer Role
+        "fcm_token": _fcmToken, // 🔥 REAL FCM TOKEN
+        "role": 2, // Employer
       };
 
       final response = await http.post(
@@ -85,23 +114,11 @@ class _EmployerLoginState extends State<EmployerLogin> {
             ),
           );
 
-          // ✅ Navigate to OTP screen
-          // Navigator.push(
-          //   context,
-          //   MaterialPageRoute(
-          //     builder: (_) => EmployerOtpScreen(
-          //       mobile: mobile,
-          //       otp: otp, // Pass OTP for development
-          //     ),
-          //   ),
-          // );
+          // Navigate to Employer OTP Screen
           Navigator.pushNamed(
             context,
             AppRoutes.employerOtp,
-            arguments: {
-              'mobile': mobile,
-              'otp': otp, // Pass OTP for development
-            },
+            arguments: {'mobile': mobile, 'otp': otp},
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -137,7 +154,6 @@ class _EmployerLoginState extends State<EmployerLogin> {
       children: [
         const SizedBox(height: 20),
 
-        // 🔹 Logo and Heading
         Column(
           children: [
             Image.asset("assets/job_bgr.png", height: isWeb ? 120 : 100),
@@ -161,9 +177,9 @@ class _EmployerLoginState extends State<EmployerLogin> {
           ],
         ),
 
-        const SizedBox(height: 40),
+        const SizedBox(height: 30),
 
-        // 🔹 Mobile Input
+        // 🔹 Mobile input
         SizedBox(
           width: isWeb ? width * 0.9 : double.infinity,
           child: TextField(
@@ -189,9 +205,8 @@ class _EmployerLoginState extends State<EmployerLogin> {
           ),
         ),
 
-        const SizedBox(height: 25),
+        const SizedBox(height: 20),
 
-        // 🔹 Send OTP Button
         SizedBox(
           width: isWeb ? width * 0.9 : double.infinity,
           height: 50,
@@ -228,7 +243,6 @@ class _EmployerLoginState extends State<EmployerLogin> {
             bool isWeb = constraints.maxWidth > 800;
 
             if (isWeb) {
-              // 💻 Desktop/Web Layout
               return Center(
                 child: Container(
                   margin: const EdgeInsets.symmetric(vertical: 50),
@@ -250,7 +264,6 @@ class _EmployerLoginState extends State<EmployerLogin> {
                   ),
                   child: Row(
                     children: [
-                      // Left Branding
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.only(right: 30),
@@ -270,7 +283,7 @@ class _EmployerLoginState extends State<EmployerLogin> {
                               ),
                               const SizedBox(height: 12),
                               const Text(
-                                "Easily manage your job postings and find the best talent on Badhyata.",
+                                "Easily manage your job postings and find ideal talent.",
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   fontSize: 15,
@@ -282,14 +295,12 @@ class _EmployerLoginState extends State<EmployerLogin> {
                         ),
                       ),
 
-                      // Divider
                       Container(
                         width: 1,
                         height: 400,
                         color: Colors.grey.shade300,
                       ),
 
-                      // Right Form
                       Expanded(
                         child: SingleChildScrollView(
                           child: Padding(
@@ -303,7 +314,6 @@ class _EmployerLoginState extends State<EmployerLogin> {
                 ),
               );
             } else {
-              // 📱 Mobile Layout
               return Center(
                 child: SingleChildScrollView(
                   child: Padding(

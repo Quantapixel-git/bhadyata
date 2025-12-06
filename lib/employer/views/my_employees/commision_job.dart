@@ -31,9 +31,9 @@ class _CommissionEmployeesPageState extends State<CommissionEmployeesPage> {
   // minimal API base you already used
   final String apiBase = 'https://dialfirst.in/quantapixel/badhyata/api';
 
-  // debug screenshot path (your tooling will transform this path to a URL if needed)
-  final String debugScreenshotPath =
-      '/mnt/data/d128e1cf-fb88-4966-a6df-f6fc82f26061.png';
+  // // debug screenshot path (your tooling will transform this path to a URL if needed)
+  // final String debugScreenshotPath =
+  //     '/mnt/data/d128e1cf-fb88-4966-a6df-f6fc82f26061.png';
 
   // UI state
   bool _includeTerminated = true;

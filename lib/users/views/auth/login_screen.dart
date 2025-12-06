@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:jobshub/common/constants/base_url.dart';
 import 'package:jobshub/common/utils/app_routes.dart';
-import 'package:jobshub/users/views/auth/otp_screen.dart';
 import 'package:jobshub/common/utils/app_color.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
@@ -16,13 +17,38 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _mobileController = TextEditingController();
   String? _mobileError;
+  String? _fcmToken; // 🔹 store token here
+
+  @override
+  void initState() {
+    super.initState();
+    _initFcmToken();
+  }
+
+  Future<void> _initFcmToken() async {
+    try {
+      final token = await FirebaseMessaging.instance.getToken();
+      print("🔑 BADHYATA LoginScreen FCM Token: $token");
+      setState(() {
+        _fcmToken = token;
+      });
+    } catch (e) {
+      print("❌ Error getting FCM token in LoginScreen: $e");
+    }
+  }
 
   void _sendOtp() async {
     final mobile = _mobileController.text.trim();
 
-    // 🔹 Validation
-    if (mobile.isEmpty || mobile.length != 10) {
-      setState(() => _mobileError = "Enter a valid 10-digit mobile number");
+    if (_fcmToken == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: Text(
+            "FCM token not ready yet, please try again in a moment.",
+          ),
+        ),
+      );
       return;
     } else {
       setState(() => _mobileError = null);
@@ -38,7 +64,11 @@ class _LoginScreenState extends State<LoginScreen> {
         builder: (_) => const Center(child: CircularProgressIndicator()),
       );
 
-      final body = {"mobile": mobile, "fcm_token": "abc123xyz", "role": 1};
+      final body = {
+        "mobile": mobile,
+        "fcm_token": _fcmToken, // 🔥 real token (can be null)
+        "role": 1,
+      };
 
       final response = await http.post(
         url,

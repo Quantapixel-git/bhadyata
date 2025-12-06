@@ -213,7 +213,7 @@ class AdminSidebarMobile extends StatelessWidget {
                   _sidebarItem(
                     context,
                     Icons.assignment_ind_outlined,
-                    "Asign Job",
+                    "Assign Job",
                     () {
                       Navigator.push(
                         context,
@@ -764,7 +764,7 @@ class AdminSidebarWeb extends StatelessWidget {
                   _menuItem(
                     context,
                     Icons.assignment_ind_outlined,
-                    "Asign Job",
+                    "Assign Job",
                     () {
                       Navigator.push(
                         context,

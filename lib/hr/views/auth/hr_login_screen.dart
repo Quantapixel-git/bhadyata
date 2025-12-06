@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:jobshub/common/constants/base_url.dart';
 import 'package:jobshub/common/utils/app_color.dart';
 import 'package:jobshub/common/utils/app_routes.dart';
-import 'package:jobshub/hr/views/auth/hr_otp_screen.dart';
+import 'package:firebase_messaging/firebase_messaging.dart'; // 👈 add this
 
 class HrLoginPage extends StatefulWidget {
   const HrLoginPage({super.key});
@@ -17,6 +17,26 @@ class _HrLoginPageState extends State<HrLoginPage> {
   final _mobileController = TextEditingController();
   String? _mobileError;
 
+  String? _fcmToken; // 🔹 store HR FCM token here
+
+  @override
+  void initState() {
+    super.initState();
+    _initFcmToken();
+  }
+
+  Future<void> _initFcmToken() async {
+    try {
+      final token = await FirebaseMessaging.instance.getToken();
+      print("🔑 BADHYATA HR Login FCM Token: $token");
+      setState(() {
+        _fcmToken = token;
+      });
+    } catch (e) {
+      print("❌ Error getting FCM token in HrLoginPage: $e");
+    }
+  }
+
   /// 🔹 Send OTP API (role = 3 for HR)
   void _sendOtp() async {
     final mobile = _mobileController.text.trim();
@@ -26,6 +46,19 @@ class _HrLoginPageState extends State<HrLoginPage> {
       return;
     } else {
       setState(() => _mobileError = null);
+    }
+
+    // optional: block if token not ready yet
+    if (_fcmToken == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: Text(
+            "FCM token not ready yet, please try again in a moment.",
+          ),
+        ),
+      );
+      return;
     }
 
     final url = Uri.parse("${ApiConstants.baseUrl}sendOtp");
@@ -40,7 +73,7 @@ class _HrLoginPageState extends State<HrLoginPage> {
 
       final body = {
         "mobile": mobile,
-        "fcm_token": "abc123xyz",
+        "fcm_token": _fcmToken, // ✅ real HR FCM token
         "role": 3, // ✅ HR role
       };
 
@@ -78,14 +111,12 @@ class _HrLoginPageState extends State<HrLoginPage> {
               "";
 
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
+            const SnackBar(
               behavior: SnackBarBehavior.floating,
               content: Text("OTP sent successfully!"),
             ),
           );
 
-          // Navigate to HR OTP screen
-          // Navigate to HR OTP screen via named route
           Navigator.pushNamed(
             context,
             AppRoutes.hrOtp,
